@@ -7,7 +7,38 @@ import manifestJson from './src/pwa-manifest.json'
 // Bei Umbenennung des Repos hier anpassen — sonst laden Assets auf GitHub Pages nicht.
 export default defineConfig({
   base: '/Wunderwald/',
-  build: { assetsInlineLimit: 0 },
+  build: {
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        /*
+         * Vendor-Chunks: Ohne diese Aufteilung lag alles in einem einzigen
+         * index-*.js von ~494 kB. Getrennt lädt der Browser parallel, und ein
+         * Update am App-Code wirft die Bibliotheken nicht mehr aus dem Cache —
+         * für eine Offline-PWA, die ihre Dateien dauerhaft vorhält, zählt das
+         * doppelt.
+         *
+         * Bewusst als Funktion statt als Objekt: So landen auch die internen
+         * Pakete zuverlässig im richtigen Chunk (`scheduler` bei React,
+         * `motion-dom`/`motion-utils` bei Framer Motion) statt zurück im
+         * Hauptbündel.
+         */
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) {
+            return 'react'
+          }
+          if (/[\\/]node_modules[\\/](framer-motion|motion|motion-dom|motion-utils)[\\/]/.test(id)) {
+            return 'motion'
+          }
+          if (/[\\/]node_modules[\\/](dexie|zustand|use-sync-external-store)[\\/]/.test(id)) {
+            return 'db'
+          }
+          return undefined
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

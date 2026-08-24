@@ -160,3 +160,28 @@ Ein PAT wäre ein langlebiges Geheimnis mit Administrationsrechten am Repo, nur 
 Schalter zu ersetzen. Für dieses Projekt ist der eine Klick unter Settings → Pages → Source:
 GitHub Actions das kleinere Übel; das Secret bleibt als Option dokumentiert.
 
+
+## D20 — Vendor-Chunks statt eines 494-kB-Bündels
+Trotz Route-Splitting (D12) lag alles, was nicht lazy war, in einem einzigen `index-*.js` von
+494 kB (164 kB gzip). Über `build.rollupOptions.output.manualChunks` liegen die Bibliotheken jetzt
+in drei eigenen Chunks:
+
+| Chunk | Inhalt | Größe | gzip |
+|---|---|---|---|
+| `react` | react, react-dom, react-router-dom, scheduler | 180,0 kB | 59,0 kB |
+| `motion` | framer-motion samt motion-dom/motion-utils | 114,7 kB | 37,9 kB |
+| `db` | dexie, zustand | 97,1 kB | 32,8 kB |
+| `index` | der eigene App-Code | 100,6 kB | 33,8 kB |
+
+Kein Chunk liegt mehr über 250 kB, das Hauptbündel ist von 494 kB auf 101 kB geschrumpft. Zwei
+Gründe, warum das hier mehr bringt als üblich: Der Browser lädt die Teile parallel, und ein Update
+am App-Code wirft die Bibliotheken nicht mehr aus dem Cache — bei einer Offline-PWA, die ihre
+Dateien dauerhaft vorhält, spart das bei jedem Deploy den erneuten Download von rund 390 kB.
+
+`manualChunks` ist bewusst als **Funktion** geschrieben, nicht als Objekt: Nur so landen auch die
+internen Pakete zuverlässig im richtigen Chunk (`scheduler` bei React, `motion-dom`/`motion-utils`
+bei Framer Motion) statt zurück im Hauptbündel.
+
+Geprüft: Der Workbox-Precache enthält alle 35 Einträge inklusive der drei neuen Chunks, und die
+App startet im Flugmodus weiterhin — Weltkarte, Spiel, Wald und Elternbereich (alle vier lazy
+geladen) laufen ohne Netz.
