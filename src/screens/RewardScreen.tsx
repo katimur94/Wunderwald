@@ -38,6 +38,8 @@ export function RewardScreen({ stars, correct, total, milestone, onAgain, onFore
   return (
     <main className="ww-reward">
       <Confetti active />
+      <div className="ww-reward__scroll">
+      <div className="ww-reward__inner">
       <div className="ww-reward__counter">
         <StarCounter stars={counterValue} size="l" bump={flown > 0} />
       </div>
@@ -82,6 +84,9 @@ export function RewardScreen({ stars, correct, total, milestone, onAgain, onFore
             ⭐
           </motion.span>
         ))}
+      </div>
+
+      </div>
       </div>
 
       <div className="ww-reward__actions">

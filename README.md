@@ -70,7 +70,20 @@ npm i -D playwright && npx playwright install chromium
 npm run build && npx vite preview --port 4173 &
 npm run smoke        # kompletter Durchlauf, prüft auch: keine externen Requests
 npm run acceptance   # Akzeptanzkriterien aus der Spezifikation, Abschnitt 15
+npm run layout-guard # Viewport-Wächter (siehe unten)
 ```
+
+### Layout-Wächter
+
+`npm run layout-guard` fährt fünf echte Gerätegrößen ab — 360×560, 360×640, 390×780, 768×1024 und
+quer 740×360 — und prüft auf jedem Screen, ob sichtbarer Spielinhalt unter die Kopfleiste oder das
+Funkel-Panel rutscht und ob irgendwo horizontal gescrollt werden muss. Durchlaufen werden
+Weltkarte, alle Welten, **jedes Spiel auf niedriger und hoher Stufe**, Mein Wald und der
+Elternbereich; Screenshots landen unter `/tmp/wunderwald-layout` (oder `$SHOTS`).
+
+Das ist das Netz gegen genau die Klasse von Fehlern, die auf einem Desktop-Browser nie auffällt:
+Auf 360×560 ist zwischen den Leisten kaum Platz, und ein zentrierter Flex-Container schneidet bei
+Überlauf oben ab, statt zu scrollen.
 
 > **Repo-Name und `base` müssen zusammenpassen.** Das Repo heißt `Wunderwald`, deshalb steht in
 > `vite.config.ts` `base: '/Wunderwald/'`. Wird das Repo umbenannt, muss dieser Wert mit.

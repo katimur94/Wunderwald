@@ -2,10 +2,22 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html, body, #root {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/*
+ * Kein Screen darf sich auf 100vh verlassen: Auf Android und iOS fährt die
+ * Browserleiste ein und aus, vh bleibt dabei stehen, dvh folgt mit.
+ * 100vh steht als Fallback zuerst für Browser ohne dvh.
+ */
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 html {
@@ -77,6 +89,29 @@ button { cursor: pointer; }
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------------
+   Bildschirme mit festen Leisten
+   Prinzip: Leisten stehen fest (flex: none), die Mitte scrollt.
+   Zentriert wird ausschliesslich ueber `margin: auto` des inneren
+   Wrappers — `align-items: center` schneidet bei Ueberlauf oben ab.
+   ------------------------------------------------------------------ */
+.ww-fixedbar { flex: none; }
+
+.ww-scrollarea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Der zu zentrierende Inhalt einer Scrollflaeche */
+.ww-scrollarea > .ww-centered {
+  margin: auto;
+  width: 100%;
 }
 
 .ww-page--wide { max-width: 1100px; }

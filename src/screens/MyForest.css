@@ -3,12 +3,16 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  /* Leisten stehen, die Szene dazwischen teilt sich den Rest. */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   background: var(--wald-creme);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .ww-forest__top {
+  flex: none;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -20,7 +24,7 @@
 .ww-forest__scene {
   position: relative;
   flex: 1;
-  min-height: 320px;
+  min-height: 0;
   margin: 0 var(--sp-3);
   border: var(--outline);
   border-radius: var(--r-l);
@@ -138,6 +142,7 @@
 
 /* ---------- Sprechblase ---------- */
 .ww-forest__bubble {
+  flex: none;
   padding: var(--sp-4) var(--sp-4) 0;
   min-height: 40px;
   display: flex;
@@ -147,6 +152,7 @@
 
 /* ---------- Fußleiste ---------- */
 .ww-forest__foot {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;

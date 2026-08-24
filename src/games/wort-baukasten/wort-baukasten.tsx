@@ -242,7 +242,24 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
     [d, slots, tries, fertig, onDone, onWrong, start],
   )
 
-  const { drag, hoverZone, start: startDrag, registerZone } = useDragDrop({ onDrop: place })
+  const sprichBaustein = useCallback(
+    (id: string | null) => {
+      if (!id) return
+      const stein = d.bausteine.find((b) => b.id === id)
+      if (stein) sprich(d.mode === 'buchstaben' ? stein.text.toUpperCase() : stein.text)
+    },
+    [d],
+  )
+
+  const {
+    drag,
+    hoverZone,
+    gewaehlt,
+    start: startDrag,
+    registerZone,
+    registerGhost,
+    tapZone,
+  } = useDragDrop({ onDrop: place, onTapPlace: place, onSelect: sprichBaustein })
 
   /** Nach dem 2. Fehler zeigt Funkel den nächsten richtigen Baustein. */
   const naechsterRichtiger = revealSolution
@@ -280,13 +297,15 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
             ref={(el) => registerZone(`slot-${i}`, el)}
             className={`ww-slot ${s ? 'ww-slot--voll' : ''} ${
               hoverZone === `slot-${i}` ? 'ww-slot--hover' : ''
-            }`}
+            } ${gewaehlt && !s ? 'ww-slot--bereit' : ''}`}
+            onClick={() => tapZone(`slot-${i}`)}
+            role={gewaehlt && !s ? 'button' : undefined}
             aria-label={s ? `Feld ${i + 1}: ${s.text}` : `Leeres Feld ${i + 1}`}
           >
             {s && (
               <button
                 type="button"
-                className="ww-stein ww-stein--gesetzt"
+                className={`ww-stein ww-stein--gesetzt ${gewaehlt === s.id ? 'ww-stein--gewaehlt' : ''}`}
                 onPointerDown={(e) => !fertig && startDrag(s.id, e)}
                 aria-label={`${s.text} wieder herausnehmen`}
               >
@@ -297,14 +316,19 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
         ))}
       </div>
 
-      <div className="ww-bau__vorrat" ref={(el) => registerZone('vorrat', el)}>
+      <div
+        className="ww-bau__vorrat"
+        ref={(el) => registerZone('vorrat', el)}
+        onClick={() => tapZone('vorrat')}
+      >
         {vorrat.map((b) => (
           <motion.button
             key={b.id}
             type="button"
             className={`ww-stein ${drag?.id === b.id ? 'ww-stein--drag' : ''} ${
-              naechsterRichtiger?.id === b.id ? 'ww-stein--tipp' : ''
-            }`}
+              gewaehlt === b.id ? 'ww-stein--gewaehlt' : ''
+            } ${naechsterRichtiger?.id === b.id ? 'ww-stein--tipp' : ''}`}
+            aria-pressed={gewaehlt === b.id}
             onPointerDown={(e) => startDrag(b.id, e)}
             animate={
               bounceId === b.id
@@ -325,16 +349,12 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
         ))}
       </div>
 
-      {/* Der Baustein, der gerade am Finger klebt */}
+      {/* Der Baustein am Finger: einmal gerendert, danach nur noch transform */}
       {drag && (
         <div
+          ref={registerGhost}
           className="ww-stein ww-stein--fliegt"
-          style={{
-            left: drag.x - drag.dx,
-            top: drag.y - drag.dy,
-            width: drag.width,
-            height: drag.height,
-          }}
+          style={{ width: drag.width, height: drag.height }}
           aria-hidden="true"
         >
           {d.bausteine.find((b) => b.id === drag.id)?.text}

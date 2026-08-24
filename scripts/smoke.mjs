@@ -78,19 +78,30 @@ await shot('05-weltkarte')
 await page.getByRole('button', { name: 'Zahlenland' }).click()
 await page.waitForTimeout(700)
 await shot('06-welt')
-await page.getByRole('button', { name: /Probe-Spiel/ }).click()
-await page.waitForTimeout(900)
+// Rechen-Bruecke: die Aufgabe steht sichtbar da, also laesst sie sich rechnen.
+await page.getByRole('button', { name: /Rechen-Brücke/ }).click()
+await page.waitForTimeout(1400)
 await shot('07-spiel')
 
-// 6 Aufgaben lösen (Antwort steht in der Aufgabe)
 let solved = 0
-for (let i = 0; i < 12 && solved < 6; i++) {
-  const sum = await page.locator('.ww-bigsum').innerText().catch(() => null)
-  if (!sum) break
-  const m = sum.match(/(\d+)\s*\+\s*(\d+)/)
-  if (!m) break
-  const answer = String(Number(m[1]) + Number(m[2]))
+for (let i = 0; i < 20 && solved < 6; i++) {
+  if (await page.locator('.ww-reward').count()) break
+  const term = await page.locator('.ww-bigsum').innerText().catch(() => null)
+  if (!term) { await page.waitForTimeout(600); continue }
+
+  // "4 + 3 = ?" / "12 − 5 = ?" / "3 · 4 = ?" / "? + 6 = 13" / "(3 + 4) − 2 = ?"
+  let answer = null
+  const rein = term.replace(/−/g, '-').replace(/·/g, '*').replace(/\s*=\s*\?\s*$/, '')
+  if (term.startsWith('?')) {
+    const [links, rechts] = term.split('=')
+    const b = Number(links.replace('?', '').replace('+', '').trim())
+    answer = String(Number(rechts.trim()) - b)
+  } else {
+    answer = String(Function(`"use strict"; return (${rein})`)())
+  }
+
   const btn = page.locator('.ww-choice', { hasText: new RegExp(`^${answer}$`) }).first()
+  if (await btn.count() === 0) { await page.waitForTimeout(600); continue }
   await btn.click()
   solved++
   await page.waitForTimeout(1300)

@@ -42,4 +42,9 @@ export interface GameModule<TTask extends GameTask = GameTask> {
   Component: React.FC<GameComponentProps<TTask>>
   /** Memory zählt anders: 1 Runde = 1 Brett statt 6 Aufgaben. */
   tasksPerRound?: number
+  /**
+   * true, wenn das Spiel die gesamte Spielfläche selbst aufteilt (Memory).
+   * Die GameShell zentriert dann nicht, sondern gibt die volle Höhe weiter.
+   */
+  fillsStage?: boolean
 }

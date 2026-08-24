@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { GameComponentProps, GameModule, GameTask } from '../types'
 import { pick, randInt, sample, shuffle, type Rng } from '../rng'
 import { anlaut, WORDS } from '../../learning/wordlist'
 import { sfx } from '../../audio/AudioManager'
 import { sprich } from '../../audio/tts'
+import { MIN_CARD_WIDTH, useBoardLayout, useMeasuredBox } from './useBoardLayout'
 import './paar-finder.css'
 
 /* ------------------------------------------------------------------ */
@@ -148,6 +149,22 @@ function PaarFinder({ task, onDone, onWrong, say }: GameComponentProps<FinderTas
   const [start, setStart] = useState(() => Date.now())
   const [sperre, setSperre] = useState(false)
   const [wackelt, setWackelt] = useState<string[]>([])
+  /** Wie viele Paare wegen zu kleiner Fläche entfallen (unsichtbare Anpassung). */
+  const [weggelassen, setWeggelassen] = useState(0)
+
+  const { ref: flaecheRef, box } = useMeasuredBox<HTMLDivElement>()
+
+  // Paare ggf. reduzieren, damit die Karten nie unter die Mindestgröße fallen.
+  const paare = Math.max(2, d.paare - weggelassen)
+  const karten = useMemo(() => {
+    if (weggelassen === 0) return d.karten
+    const erlaubt = new Set(
+      [...new Set(d.karten.map((k) => k.paarId))].slice(0, paare),
+    )
+    return d.karten.filter((k) => erlaubt.has(k.paarId))
+  }, [d.karten, paare, weggelassen])
+
+  const layout = useBoardLayout(karten.length, box.width, box.height)
 
   useEffect(() => {
     setOffen([])
@@ -156,8 +173,19 @@ function PaarFinder({ task, onDone, onWrong, say }: GameComponentProps<FinderTas
     setFehlversuche(0)
     setSperre(false)
     setWackelt([])
+    setWeggelassen(0)
     setStart(Date.now())
   }, [task])
+
+  /*
+   * Wird selbst die beste Aufteilung zu eng, verschwinden zwei Paare —
+   * still, wie die Stufenanpassung. Funkel sagt dazu nichts.
+   */
+  useEffect(() => {
+    if (!layout?.zuEng) return
+    if (paare <= 3) return
+    setWeggelassen((n) => n + 2)
+  }, [layout?.zuEng, paare])
 
   function aufdecken(karte: Karte) {
     if (sperre) return
@@ -174,8 +202,8 @@ function PaarFinder({ task, onDone, onWrong, say }: GameComponentProps<FinderTas
     setVersuche((v) => v + 1)
 
     const [aId, bId] = nun
-    const a = d.karten.find((k) => k.id === aId)!
-    const b = d.karten.find((k) => k.id === bId)!
+    const a = karten.find((k) => k.id === aId)!
+    const b = karten.find((k) => k.id === bId)!
 
     if (a.paarId === b.paarId) {
       sfx('success')
@@ -185,9 +213,9 @@ function PaarFinder({ task, onDone, onWrong, say }: GameComponentProps<FinderTas
         setOffen([])
         setSperre(false)
 
-        if (neuGefunden.length >= d.paare) {
+        if (neuGefunden.length >= paare) {
           // Brett geschafft: mit wenigen Fehlversuchen zählt es als "richtig"
-          const gutGespielt = versuche + 1 <= d.freiVersuche
+          const gutGespielt = versuche + 1 <= paare + 4
           setTimeout(
             () => onDone({ correct: gutGespielt, usedHint: false, timeMs: Date.now() - start }),
             700,
@@ -212,57 +240,71 @@ function PaarFinder({ task, onDone, onWrong, say }: GameComponentProps<FinderTas
     }, 950)
   }
 
-  const spalten = Math.min(4, Math.ceil(Math.sqrt(d.karten.length)))
+  const breite = layout?.cardWidth ?? MIN_CARD_WIDTH
 
   return (
-    <>
+    <div className="ww-finder">
       <p className="ww-finder__kopf">
         {d.frage}{' '}
         <span className="ww-finder__zaehler">
-          {gefunden.length} / {d.paare}
+          {gefunden.length} / {paare}
         </span>
       </p>
 
-      <div
-        className="ww-finder__brett"
-        style={{ gridTemplateColumns: `repeat(${spalten}, minmax(0, 1fr))` }}
-      >
-        {d.karten.map((k) => {
-          const istOffen = offen.includes(k.id)
-          const istGefunden = gefunden.includes(k.paarId)
-          const zeigt = istOffen || istGefunden
-          return (
-            <motion.button
-              key={k.id}
-              type="button"
-              className={`ww-karte ${zeigt ? 'ww-karte--offen' : ''} ${
-                istGefunden ? 'ww-karte--gefunden' : ''
-              } ${k.text.length > 2 ? 'ww-karte--text' : ''}`}
-              onClick={() => aufdecken(k)}
-              aria-label={zeigt ? `Karte zeigt ${k.speak || k.text}` : 'Verdeckte Karte'}
-              animate={
-                wackelt.includes(k.id)
-                  ? { x: [0, -7, 7, -4, 0] }
-                  : istGefunden
-                    ? { scale: [1, 1.08, 1] }
-                    : { x: 0, scale: 1 }
-              }
-              transition={{ duration: 0.42 }}
-            >
-              <span className="ww-karte__inner">
-                {zeigt ? (
-                  <span className="ww-karte__vorne">{k.text}</span>
-                ) : (
-                  <span className="ww-karte__ruecken" aria-hidden="true">
-                    <Blatt />
-                  </span>
-                )}
-              </span>
-            </motion.button>
-          )
-        })}
+      {/* Diese Fläche wird gemessen — daraus ergibt sich die Kartengröße. */}
+      <div className="ww-finder__flaeche" ref={flaecheRef}>
+        <div
+          className="ww-finder__brett"
+          style={{
+            gridTemplateColumns: `repeat(${layout?.cols ?? 4}, ${breite}px)`,
+            visibility: layout ? 'visible' : 'hidden',
+          }}
+        >
+          {karten.map((k) => {
+            const istOffen = offen.includes(k.id)
+            const istGefunden = gefunden.includes(k.paarId)
+            const zeigt = istOffen || istGefunden
+            const istText = k.text.length > 2
+            return (
+              <motion.button
+                key={k.id}
+                type="button"
+                className={`ww-karte ${zeigt ? 'ww-karte--offen' : ''} ${
+                  istGefunden ? 'ww-karte--gefunden' : ''
+                } ${istText ? 'ww-karte--text' : ''}`}
+                style={{
+                  width: breite,
+                  // Text muss auch auf kleinen Karten lesbar bleiben
+                  fontSize: istText
+                    ? Math.max(16, Math.round(breite * 0.4))
+                    : Math.round(breite * 0.5),
+                }}
+                onClick={() => aufdecken(k)}
+                aria-label={zeigt ? `Karte zeigt ${k.speak || k.text}` : 'Verdeckte Karte'}
+                animate={
+                  wackelt.includes(k.id)
+                    ? { x: [0, -7, 7, -4, 0] }
+                    : istGefunden
+                      ? { scale: [1, 1.08, 1] }
+                      : { x: 0, scale: 1 }
+                }
+                transition={{ duration: 0.42 }}
+              >
+                <span className="ww-karte__inner">
+                  {zeigt ? (
+                    <span className="ww-karte__vorne">{k.text}</span>
+                  ) : (
+                    <span className="ww-karte__ruecken" aria-hidden="true">
+                      <Blatt />
+                    </span>
+                  )}
+                </span>
+              </motion.button>
+            )
+          })}
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -299,4 +341,6 @@ export const paarFinder: GameModule<FinderTask> = {
   Component: PaarFinder,
   /** Sonderfall: 1 Runde = 1 Brett, nicht 6 Aufgaben. */
   tasksPerRound: 1,
+  /** Das Brett teilt sich die Fläche selbst ein und darf nie scrollen. */
+  fillsStage: true,
 }

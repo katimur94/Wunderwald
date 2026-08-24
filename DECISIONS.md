@@ -227,3 +227,78 @@ Auf Browsern ohne Pausierung ist der Aufruf ein No-op.
 Das Verhalten bei `ttsSupported() === false` ändert sich nicht: Ist `speechSynthesis` gar nicht da
 oder fehlt ihm `speak()`, wird kein Listener registriert und kein `resume()` gerufen — geprüft von
 `src/audio/tts.test.ts`, das beide Zweige mit einem gestellten DOM durchspielt.
+
+## D22 — Leisten stehen fest, die Mitte scrollt
+Der auf echten Geräten gemeldete Fehler hatte eine einzige Ursache: `.ww-gameshell__stage`
+zentrierte mit `align-items: center`, hatte aber kein `overflow`. Ein Flex-Container schneidet bei
+Überlauf **oben** ab — der Inhalt rutschte unter die Titelleiste und unten unter das Funkel-Panel,
+und weil nichts scrollte, war er schlicht nicht erreichbar.
+
+Die Regel lautet jetzt überall gleich: Leisten `flex: none`, der Inhalt dazwischen
+`flex: 1; min-height: 0; overflow-y: auto`, und zentriert wird ausschließlich über `margin: auto`
+des inneren Wrappers. `margin: auto` ist die einzige Zentrierung, die bei Überlauf oben stehen
+lässt statt abzuschneiden.
+
+Dazu `height: 100vh; height: 100dvh` in dieser Reihenfolge: `vh` bleibt beim Ein- und Ausfahren
+der mobilen Browserleiste stehen, `dvh` folgt mit. Die erste Zeile ist der Fallback für Browser
+ohne `dvh`. `#root` nutzt `min-height: 100dvh`; kein Screen rechnet mehr mit `100vh`.
+
+Betroffen: GameShell, Mein Wald, Belohnungsscreen. Weltkarte und Welt-Screens haben keine feste
+Fußleiste und dürfen als Ganzes scrollen.
+
+## D23 — Das Memory-Brett rechnet seine Kartengröße selbst aus
+`min-height: 64px` an der Karte plus festes Seitenverhältnis konnte ab 16 Karten gar nicht mehr
+passen — das Brett sprengte jede kleine Fläche zwangsläufig. Ein Memory-Brett zu scrollen ist
+keine Option: Wer sich merken soll, wo etwas lag, muss alles gleichzeitig sehen.
+
+Jetzt misst sich die Spielfläche per `ResizeObserver`, und `computeBoardLayout()` probiert die
+Spaltenzahlen 2–6 (hoch) bzw. 4–8 (quer) durch und nimmt die, bei der die Karten am größten
+werden. Die Größe kommt als Inline-Style an die Karte, die Emoji-Schrift als 50 % der
+Kartenbreite, Text (Buchstaben, Rechnungen) als 40 % bei mindestens 16 px.
+
+Unterschreitet selbst die beste Aufteilung 44 px Kartenbreite, fallen zwei Paare weg — still,
+ohne Ansage, genau wie die Stufenanpassung. Lieber ein kleineres Brett als unlesbare Karten.
+Die Rechnung ist eine reine Funktion und ohne DOM getestet (u. a.: passt das Brett in jede
+geprüfte Fläche wirklich vollständig hinein?).
+
+## D24 — Ziehen läuft am React-State vorbei
+`useDragDrop` machte pro `pointermove` ein `setState` (also einen React-Render pro
+Fingerbewegung), las dabei für **alle** Zonen `getBoundingClientRect()` (Layout-Thrashing) und
+bewegte den fliegenden Stein über `left`/`top` statt `transform`.
+
+Neu:
+- Die Position liegt in einer Ref. Ein `requestAnimationFrame`-Loop — der nur während eines Drags
+  läuft — schreibt sie einmal pro Frame direkt als `translate3d` auf das Element.
+- Die Zielzonen werden **einmal** beim Drag-Start vermessen und für die Dauer des Drags behalten.
+  Während eines Drags scrollt ohnehin nichts (`touch-action: none` auf dem Stein).
+- Der einzige React-State, der sich während eines Drags ändert, ist die hervorgehobene Zielzone —
+  und auch die nur bei echtem Wechsel.
+
+Gemessen mit 4-facher CPU-Drosselung: größte Lücke zwischen zwei Ghost-Frames **19 ms**
+(also ein Frame), und **eine** DOM-Mutation im Bausteine-Vorrat über den gesamten Zug — React
+rendert nicht mehr mit.
+
+**Tipp-Tipp als zweiter, gleichwertiger Weg:** Stein antippen wählt ihn aus (pulsierender Rahmen,
+Funkel spricht ihn), Ziel antippen setzt ihn, erneutes Antippen wählt ab. Für kleine Kinderhände
+oft leichter als Ziehen — und zugleich die barrierefreie Bedienung. Ziehen bleibt unverändert.
+
+## D25 — GameShell setzt beim Spielwechsel zurück
+Beim Bauen des Layout-Wächters fiel ein Absturz auf, der nichts mit dem Layout zu tun hatte:
+Wechselt man direkt von einem Spiel ins nächste (gleiche Route, nur anderer Parameter — per
+Adresse oder Zurück-Taste), bleibt die GameShell montiert. Das neue Spiel bekam dann für einen
+Render die Aufgabe des alten und stürzte beim Auspacken der Daten ab
+(`Cannot read properties of undefined`).
+
+Die Shell merkt sich jetzt, zu welchem Spiel die aktuelle Aufgabe gehört, rendert das Spiel erst
+bei Übereinstimmung und setzt bei einem Wechsel der `gameId` den kompletten Rundenzustand zurück.
+
+## D26 — Layout-Wächter als eigenes Werkzeug
+`scripts/layout-guard.mjs` fährt fünf echte Gerätegrößen ab (360×560, 360×640, 390×780, 768×1024
+und quer 740×360) und prüft auf jedem Screen zweierlei: Überlappt sichtbarer Inhalt der
+Spielfläche die Rechtecke von Kopfleiste oder Funkel-Panel, und muss irgendwo horizontal
+gescrollt werden. Genau die Messung, mit der der Fehler ursprünglich gefunden wurde.
+
+Durchlaufen werden Weltkarte, alle drei Welten, **jedes Spiel auf niedriger und auf hoher Stufe**
+(zwei Kinder werden dafür angelegt, eines auf Stufe 4, eines auf Stufe 9), Mein Wald und der
+Elternbereich. Wie `smoke.mjs` braucht das Skript eine lokale Playwright-Installation und läuft
+deshalb nicht in der CI.

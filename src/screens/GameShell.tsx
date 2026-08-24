@@ -34,6 +34,13 @@ export function GameShell() {
   const [difficulty, setDifficulty] = useState<number | null>(null)
   const [taskNo, setTaskNo] = useState(0)
   const [task, setTask] = useState<GameTask | null>(null)
+  /*
+   * Zu welchem Spiel die aktuelle Aufgabe gehoert. Wechselt man per Adresse
+   * direkt von einem Spiel ins naechste, bleibt diese Shell montiert — ohne
+   * diese Zuordnung bekaeme das neue Spiel fuer einen Render die Aufgabe des
+   * alten und stuerzte beim Auspacken der Daten ab.
+   */
+  const [taskFor, setTaskFor] = useState<string | null>(null)
   const [results, setResults] = useState<boolean[]>([])
   const [bubble, setBubble] = useState('')
   const [funkelState, setFunkelState] = useState<FunkelState>('idle')
@@ -84,6 +91,19 @@ export function GameShell() {
     [settings.ttsOn],
   )
 
+  /* ---------- Spielwechsel: alles zurücksetzen ---------- */
+  useEffect(() => {
+    setTask(null)
+    setTaskFor(null)
+    setDifficulty(null)
+    setResults([])
+    setTaskNo(0)
+    setFinished(false)
+    setEarned(0)
+    setMilestone(null)
+    setReveal(false)
+  }, [gameId])
+
   /* ---------- Startstufe laden ---------- */
   useEffect(() => {
     if (!childId || !game || limitErreicht !== false) return
@@ -96,6 +116,7 @@ export function GameShell() {
       if (!game) return
       const t = game.generateTask(lvl, rng)
       setTask(t)
+      setTaskFor(game.id)
       setReveal(false)
       startedAt.current = Date.now()
       say(t.speak)
@@ -291,12 +312,13 @@ export function GameShell() {
         </ol>
       </header>
 
-      <section className="ww-gameshell__stage">
+      <section className={`ww-gameshell__stage ${game.fillsStage ? 'ww-gameshell__stage--voll' : ''}`}>
         <AnimatePresence mode="wait">
-          {task && (
+          {task && taskFor === game.id && (
             <motion.div
               key={taskNo}
-              className="ww-gameshell__task"
+              className={`ww-gameshell__task ${game.fillsStage ? 'ww-gameshell__task--voll' : ''}`}
+              style={game.fillsStage ? { display: 'flex', flex: 1, minHeight: 0 } : undefined}
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -14 }}

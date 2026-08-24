@@ -2,7 +2,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  /*
+   * Feste Hoehe im sichtbaren Viewport: Kopfleiste und Funkel-Panel stehen,
+   * nur die Stage dazwischen scrollt. 100vh als Fallback, 100dvh folgt der
+   * ein- und ausfahrenden Browserleiste.
+   */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   --welt: var(--wald-moos);
   background:
     radial-gradient(120% 60% at 50% 0%, #FFFFFF00 0%, #E6F0DE 100%),
@@ -15,6 +23,7 @@
 
 /* ---------- Kopfleiste ---------- */
 .ww-gameshell__bar {
+  flex: none;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -73,14 +82,28 @@
 /* ---------- Spielfläche ---------- */
 .ww-gameshell__stage {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-4) var(--sp-3);
   min-height: 0;
+  display: flex;
+  /*
+   * KEIN align-items/justify-content: center. Beides schneidet bei Ueberlauf
+   * oben ab, der Inhalt verschwindet dann unter der Titelleiste. Zentriert
+   * wird ueber margin: auto am Kind — das laesst oben stehen, was nicht passt,
+   * und macht es scrollbar.
+   */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-4) var(--sp-3) var(--sp-5);
+}
+
+/* Memory: das Brett rechnet selbst, hier darf nichts scrollen. */
+.ww-gameshell__stage--voll {
+  overflow: hidden;
+  padding-bottom: var(--sp-4);
 }
 
 .ww-gameshell__task {
+  margin: auto;
   width: 100%;
   max-width: 680px;
   display: flex;
@@ -89,8 +112,20 @@
   gap: var(--sp-5);
 }
 
+/*
+ * Spiele, die die volle Flaeche brauchen (Memory), bekommen sie: dann
+ * uebernimmt das Spiel selbst die Aufteilung und nichts scrollt.
+ */
+.ww-gameshell__task--voll {
+  margin: 0;
+  flex: 1;
+  min-height: 0;
+  gap: var(--sp-3);
+}
+
 /* ---------- Funkel-Ecke ---------- */
 .ww-gameshell__funkel {
+  flex: none;
   display: flex;
   align-items: center;
   gap: var(--sp-3);

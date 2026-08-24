@@ -116,6 +116,7 @@
   touch-action: none;              /* sonst scrollt die Seite beim Ziehen */
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;     /* iOS-Lupe beim langen Druecken aus */
 }
 
 .ww-stein--gesetzt {
@@ -131,10 +132,26 @@
 
 .ww-stein--fliegt {
   position: fixed;
+  left: 0;
+  top: 0;
   z-index: 60;
   pointer-events: none;
-  transform: rotate(-3deg) scale(1.06);
+  /* Bewegt wird ausschliesslich ueber transform — nie ueber left/top. */
+  will-change: transform;
   box-shadow: 0 10px 0 var(--wald-sonne-dark), 0 16px 26px rgba(46, 64, 52, 0.28);
+}
+
+/* Tipp-Tipp: gewaehlter Stein wartet auf sein Ziel */
+.ww-stein--gewaehlt {
+  box-shadow: 0 5px 0 var(--wald-sonne-dark), 0 0 0 5px var(--wald-moos);
+  animation: ww-pulse-ring 1.4s ease-out infinite;
+}
+
+/* Freie Slots laden zum Antippen ein, sobald ein Stein gewaehlt ist */
+.ww-slot--bereit {
+  border-color: var(--wald-sonne-dark);
+  background: rgba(246, 189, 65, 0.2);
+  cursor: pointer;
 }
 
 .ww-bau__fertig {
