@@ -185,3 +185,22 @@ bei Framer Motion) statt zurück im Hauptbündel.
 Geprüft: Der Workbox-Precache enthält alle 35 Einträge inklusive der drei neuen Chunks, und die
 App startet im Flugmodus weiterhin — Weltkarte, Spiel, Wald und Elternbereich (alle vier lazy
 geladen) laufen ohne Netz.
+
+## D21 — Sprachausgabe nach Hintergrund-Wechsel wieder anwerfen
+Safari auf iOS pausiert `speechSynthesis`, sobald die Seite in den Hintergrund geht — Tab-Wechsel,
+Bildschirmsperre, App-Umschalter. Beim Zurückkommen setzt es die Ausgabe oft **nicht** von selbst
+fort. Für Wunderwald ist das kein Schönheitsfehler: Funkel liest die Aufgaben vor, und ein
+Vorschulkind, dem plötzlich niemand mehr die Aufgabe sagt, kann nicht weiterspielen.
+
+Zwei Netze gegen den Hänger:
+1. Ein `visibilitychange`-Listener ruft `speechSynthesis.resume()`, sobald
+   `document.visibilityState === 'visible'` ist.
+2. `sprich()` ruft vor jedem `speak()` zusätzlich `resume()`. Ohne das bliebe der Aufruf
+   wirkungslos, falls die Ausgabe noch pausiert ist.
+
+Beides steckt in `try/catch` — schlägt `resume()` fehl, läuft die App weiter, nur eben ohne Ton.
+Auf Browsern ohne Pausierung ist der Aufruf ein No-op.
+
+Das Verhalten bei `ttsSupported() === false` ändert sich nicht: Ist `speechSynthesis` gar nicht da
+oder fehlt ihm `speak()`, wird kein Listener registriert und kein `resume()` gerufen — geprüft von
+`src/audio/tts.test.ts`, das beide Zweige mit einem gestellten DOM durchspielt.

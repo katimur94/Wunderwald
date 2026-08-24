@@ -78,6 +78,35 @@ export function stopSpeaking() {
 }
 
 /**
+ * Weckt eine hängende Sprachausgabe.
+ *
+ * Safari auf iOS pausiert `speechSynthesis`, sobald die Seite in den
+ * Hintergrund geht (Tab-Wechsel, Bildschirmsperre, App-Umschalter) — und setzt
+ * sie beim Zurückkommen oft nicht von selbst fort. Danach bleibt die Ausgabe
+ * stumm, bis irgendwer `resume()` ruft. Auf allen anderen Browsern ist der
+ * Aufruf ein harmloser No-op, wenn nichts pausiert ist.
+ */
+export function resumeSpeaking() {
+  if (!ttsSupported()) return
+  try {
+    window.speechSynthesis.resume()
+  } catch {
+    /* Wenn der Browser das nicht mag, läuft die App ohne Ton weiter. */
+  }
+}
+
+// Beim Zurückkehren auf die Seite die Ausgabe wieder anwerfen.
+if (ttsSupported() && typeof document !== 'undefined') {
+  try {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') resumeSpeaking()
+    })
+  } catch {
+    /* Ohne Listener bleibt der resume()-Aufruf vor jedem speak() als Netz. */
+  }
+}
+
+/**
  * Spricht einen Text. Vorher wird IMMER gecancelt, damit sich nichts stapelt —
  * Kinder tippen schnell, und eine Warteschlange wäre nur verwirrend.
  */
@@ -89,6 +118,9 @@ export function sprich(text: string, opts: { rate?: number; onEnd?: () => void }
   }
   try {
     stopSpeaking()
+    // Zweites Netz gegen den iOS-Hänger: War die Ausgabe pausiert, bliebe der
+    // folgende speak()-Aufruf sonst wirkungslos.
+    resumeSpeaking()
     const utter = new SpeechSynthesisUtterance(text)
     utter.lang = 'de-DE'
     utter.rate = opts.rate ?? 0.9
