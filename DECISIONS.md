@@ -160,10 +160,28 @@ Ein PAT wäre ein langlebiges Geheimnis mit Administrationsrechten am Repo, nur 
 Schalter zu ersetzen. Für dieses Projekt ist der eine Klick unter Settings → Pages → Source:
 GitHub Actions das kleinere Übel; das Secret bleibt als Option dokumentiert.
 
-**Erledigt:** Der Schalter ist gesetzt (Settings → Pages → Source: GitHub Actions). Ab jetzt
-findet `configure-pages` die Seite vor, der Schritt wird von selbst grün, und jeder Push auf
-`main` veröffentlicht. Ein `PAGES_TOKEN` wird nicht gebraucht — der Weg bleibt nur für den Fall
-dokumentiert, dass das Projekt einmal in einem frischen Repo neu aufgesetzt wird.
+**Erledigt.** Nötig waren am Ende drei Handgriffe in der Weboberfläche — der erste war bekannt,
+die beiden anderen kosteten je einen fehlgeschlagenen Lauf, bis sie gefunden waren:
+
+1. **Settings → Pages → Source: „GitHub Actions".** Nicht „Deploy from a branch": In diesem Modus
+   veröffentlicht GitHub den Branch-Inhalt roh, also den Quellcode. Die Seite lieferte dann zwar
+   200, band aber `/src/main.tsx` ein — kein Browser führt TypeScript aus, das Ergebnis war eine
+   weiße Seite. Der gebaute Stand liegt in `dist/` und kommt ausschließlich über den Workflow dorthin.
+2. **Settings → General → Default branch: `main`.** Vorher war der Feature-Branch Standard, weil
+   der erste Push ihn angelegt hatte.
+3. **Settings → Environments → `github-pages` → Deployment branches and tags: „No restriction"**
+   (oder `main` erlauben). Beim Aktivieren von Pages legt GitHub diese Umgebung mit einer
+   Branch-Regel an, die den damaligen Default-Branch **fest** einträgt. Sie folgt einer späteren
+   Umstellung des Default-Branch nicht. Solange die Regel den alten Namen nannte, wurde der
+   deploy-Job nach zwei Sekunden abgewiesen — ohne einen einzigen ausgeführten Schritt und ohne
+   Log, weil ein Job, der nie startet, nichts schreibt.
+
+Diagnose-Merksatz für das nächste Mal: **build-Job grün, deploy-Job nach Sekunden rot mit null
+Schritten** heißt immer Umgebungs-Sperre, nie ein Fehler im Deploy selbst. Und **eine 200 auf der
+Pages-URL beweist nichts** — prüfen muss man, ob `assets/*.js` ausgeliefert wird.
+
+Ein `PAGES_TOKEN` wird nicht gebraucht; der Weg bleibt nur für ein frisch aufgesetztes Repo
+dokumentiert.
 
 
 ## D20 — Vendor-Chunks statt eines 494-kB-Bündels

@@ -83,12 +83,22 @@ Push auf `main` → GitHub Actions baut und deployt nach GitHub Pages
 GitHub Pages ist für dieses Repo aktiviert (Settings → Pages → Source: **GitHub Actions**) —
 für den laufenden Betrieb ist nichts weiter zu tun.
 
-**Beim Aufsetzen in einem frischen Repo** muss Pages einmalig eingeschaltet werden. Zwei Wege:
+**Beim Aufsetzen in einem frischen Repo** sind drei Einstellungen nötig:
 
-1. **Ein Klick:** Settings → Pages → Source: **GitHub Actions**.
-2. **Vollautomatisch:** ein Personal Access Token als Repo-Secret `PAGES_TOKEN` hinterlegen
-   (klassisch: Scope `repo`; fein granular: Administration + Pages, je schreibend). Dann aktiviert
-   `actions/configure-pages` die Seite beim ersten Lauf selbst.
+1. **Settings → Pages → Source: „GitHub Actions"** — nicht „Deploy from a branch". Letzteres
+   veröffentlicht den Quellcode statt des Builds: Die Seite antwortet dann mit 200, bleibt aber
+   weiß, weil sie `/src/main.tsx` einbindet.
+2. **Settings → General → Default branch: `main`.**
+3. **Settings → Environments → `github-pages` → Deployment branches and tags** — `main` erlauben
+   oder auf „No restriction" stellen. GitHub trägt hier beim Aktivieren von Pages den damaligen
+   Default-Branch fest ein; die Regel folgt einer späteren Umstellung nicht.
+
+Alternativ zu Punkt 1 lässt sich ein Personal Access Token als Repo-Secret `PAGES_TOKEN`
+hinterlegen (klassisch: Scope `repo`; fein granular: Administration + Pages, je schreibend) — dann
+aktiviert `actions/configure-pages` die Seite beim ersten Lauf selbst.
+
+> **Beim Prüfen:** Ein Status 200 auf der Pages-URL beweist noch nichts. Entscheidend ist, ob
+> `assets/*.js` und `sw.js` ausgeliefert werden — sonst liegt dort der Quellcode statt der App.
 
 Der eingebaute `GITHUB_TOKEN` kann das **nicht** — die REST-Route zum Anlegen einer Pages-Seite
 verlangt `Administration: write`, und diese Berechtigung lässt sich in einem Workflow gar nicht
