@@ -78,8 +78,19 @@ npm run acceptance   # Akzeptanzkriterien aus der Spezifikation, Abschnitt 15
 ## Deployment
 
 Push auf `main` → GitHub Actions baut und deployt nach GitHub Pages
-(`.github/workflows/deploy.yml`). In den Repo-Settings muss **Pages → Source: GitHub Actions**
-einmalig manuell gesetzt sein.
+(`.github/workflows/deploy.yml`).
+
+**Einmalig nötig:** GitHub Pages muss für das Repo aktiviert sein. Zwei Wege:
+
+1. **Ein Klick:** Settings → Pages → Source: **GitHub Actions**. Danach den Workflow erneut
+   starten (Actions → „Deploy Wunderwald" → Run workflow).
+2. **Vollautomatisch:** ein Personal Access Token als Repo-Secret `PAGES_TOKEN` hinterlegen
+   (klassisch: Scope `repo`; fein granular: Administration + Pages, je schreibend). Dann aktiviert
+   `actions/configure-pages` die Seite beim nächsten Lauf selbst.
+
+Der eingebaute `GITHUB_TOKEN` kann das **nicht** — die REST-Route zum Anlegen einer Pages-Seite
+verlangt `Administration: write`, und diese Berechtigung lässt sich in einem Workflow gar nicht
+anfordern. Details in `DECISIONS.md`, D19.
 
 ## Abnahme
 
@@ -88,7 +99,7 @@ Stand des letzten vollständigen Laufs (`npm test`, `npm run build`, Lighthouse,
 | # | Kriterium | Ergebnis |
 |---|---|---|
 | 15.1 | `npm run build` ohne Fehler, Deploy-Workflow grün | ✅ Build grün, Workflow läuft Tests + Build vor dem Deploy |
-| 15.2 | Lighthouse: installierbar, Performance ≥ 90 (Mobile) | ✅ Performance 96, Accessibility 100, Best Practices 100, SEO 100; Manifest + Service Worker aktiv |
+| 15.2 | Lighthouse: installierbar, Performance ≥ 90 (Mobile) | ✅ Performance 94–96 (Streuung über mehrere Läufe), Accessibility 100, Best Practices 100, SEO 100; Manifest + Service Worker aktiv |
 | 15.3 | Flugmodus: App startet, Spiel spielbar, Daten bleiben | ✅ geprüft im Browser mit abgeschaltetem Netz |
 | 15.4 | Frische Installation → Onboarding → alle 6 Spiele → Sterne → Wald → Neustart | ✅ alle sechs Spiele durchgespielt, Sterne vergeben, Objekt gepflanzt, nach Reload unverändert |
 | 15.5 | 360 px ohne horizontales Scrollen, Tablet quer nutzt den Platz | ✅ alle Screens passen; auf dem Tablet stehen die vier Portale nebeneinander |
@@ -98,7 +109,7 @@ Stand des letzten vollständigen Laufs (`npm test`, `npm run build`, Lighthouse,
 | 15.9 | Kein Request auf fremde Domains | ✅ Netzwerk-Mitschnitt über den kompletten Durchlauf: keiner |
 | 15.10 | Ton aus + Vorlesen aus → App voll nutzbar | ✅ Runde ohne Ton und ohne `speechSynthesis` beendet, Anweisung steht in der Sprechblase |
 
-Insgesamt **180 Unit-Tests** und **17 Browser-Prüfungen**.
+Insgesamt **189 Unit-Tests** und **17 Browser-Prüfungen**.
 
 `npm audit --omit=dev` meldet 0 Schwachstellen — die ausgelieferten Abhängigkeiten sind sauber.
 Die verbleibenden Meldungen betreffen ausschließlich Entwicklungswerkzeuge (Vite-Dev-Server,
