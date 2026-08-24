@@ -1,0 +1,76 @@
+.ww-finder__kopf {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.6vw, 24px);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ww-finder__zaehler {
+  padding: 2px var(--sp-3);
+  font-size: 0.85em;
+  background: var(--wald-flieder);
+  color: #fff;
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+.ww-finder__brett {
+  display: grid;
+  gap: var(--sp-2);
+  width: 100%;
+  max-width: 460px;
+}
+
+.ww-karte {
+  aspect-ratio: 3 / 4;
+  min-height: 64px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wald-moos);
+  border: 3px solid var(--wald-tinte);
+  border-radius: var(--r-s);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+  overflow: hidden;
+  transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.ww-karte:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wald-tinte); }
+
+.ww-karte--offen { background: var(--wald-papier); }
+
+.ww-karte--gefunden {
+  background: #DFF0D4;
+  box-shadow: 0 4px 0 var(--wald-blatt-dark), inset 0 0 0 3px var(--wald-blatt);
+}
+
+.ww-karte__inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ww-karte__vorne {
+  font-size: clamp(26px, 8vw, 40px);
+  line-height: 1;
+}
+
+.ww-karte--text .ww-karte__vorne {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 4.6vw, 24px);
+}
+
+.ww-karte__ruecken {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

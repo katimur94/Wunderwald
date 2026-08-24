@@ -1,0 +1,121 @@
+.ww-weber__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5vw, 26px);
+  text-align: center;
+}
+
+/* ---------- Perlenschnur ---------- */
+.ww-weber__schnur {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Die Kette bricht NIE um – sonst steht die Lücke plötzlich in Zeile zwei. */
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: var(--sp-4) var(--sp-2);
+  width: 100%;
+}
+
+/* Perlen und Lücke schrumpfen mit, damit sieben Stück auf ein 360-px-Handy passen. */
+.ww-weber__schnur .ww-bead,
+.ww-weber__luecke {
+  width: min(54px, 12.2vw) !important;
+  height: min(54px, 12.2vw) !important;
+}
+
+.ww-weber__faden {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 4px;
+  background: var(--wald-erde);
+  border-radius: 2px;
+}
+
+.ww-bead {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.ww-bead__inner { display: flex; align-items: center; justify-content: center; }
+
+.ww-weber__luecke {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  border: 4px dashed var(--wald-tinte);
+  border-radius: 50%;
+  background: var(--wald-creme);
+  animation: ww-pulse-ring 1.8s ease-out infinite;
+}
+
+/* ---------- Zahlenreihe ---------- */
+.ww-weber__zahlen {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+}
+
+.ww-weber__zahl {
+  min-width: 62px;
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 6.5vw, 38px);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-s);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-weber__zahl--luecke {
+  background: var(--wald-flieder);
+  color: #fff;
+  border-style: dashed;
+  animation: ww-pulse-ring 1.8s ease-out infinite;
+}
+
+/* ---------- 3×3-Matrix ---------- */
+.ww-weber__matrix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 8px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-card);
+}
+
+.ww-weber__zelle {
+  width: clamp(62px, 19vw, 84px);
+  height: clamp(62px, 19vw, 84px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wald-creme);
+  border: 2px solid rgba(46, 64, 52, 0.25);
+  border-radius: var(--r-s);
+}
+
+.ww-weber__zelle--luecke {
+  font-family: var(--font-display);
+  font-size: 34px;
+  color: #fff;
+  background: var(--wald-flieder);
+  border-color: var(--wald-tinte);
+  border-style: dashed;
+  border-width: 3px;
+}
+
+/* Die Auswahl-Perlen unter der Kette bleiben groß – das sind die Touch-Ziele. */
+.ww-choices--perle .ww-bead { width: 58px; height: 58px; }

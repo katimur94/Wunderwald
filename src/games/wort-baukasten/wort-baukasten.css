@@ -1,0 +1,152 @@
+.ww-bau__kopf {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  width: 100%;
+  justify-content: center;
+}
+
+.ww-bau__bild {
+  width: 104px;
+  height: 104px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 62px;
+  line-height: 1;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-bau__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.4vw, 24px);
+  line-height: 1.3;
+  max-width: 16ch;
+}
+
+.ww-bau__satz {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5vw, 28px);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ww-bau__satzluecke {
+  display: inline-block;
+  width: 84px;
+  border-bottom: 4px solid var(--wald-tinte);
+}
+
+/* ---------- Slots ---------- */
+.ww-bau__slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.ww-slot {
+  min-width: var(--drop-min);
+  min-height: var(--drop-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: rgba(251, 253, 248, 0.6);
+  border: 4px dashed var(--wald-moos);
+  border-radius: var(--r-m);
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) var(--ease-pop),
+    border-color var(--dur-fast) ease;
+}
+
+.ww-slot--hover {
+  background: rgba(246, 189, 65, 0.35);
+  border-color: var(--wald-sonne-dark);
+  transform: scale(1.06);
+}
+
+.ww-slot--voll { border-style: solid; border-color: var(--wald-tinte); background: transparent; }
+
+.ww-bau__slots--buchstaben .ww-slot { min-width: 72px; }
+.ww-bau__slots--satz .ww-slot { min-width: 160px; }
+
+.ww-bau__slots--fertig .ww-slot {
+  border-color: var(--wald-blatt);
+  box-shadow: 0 0 0 4px rgba(127, 176, 105, 0.35);
+}
+
+/* ---------- Bausteine ---------- */
+.ww-bau__vorrat {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  min-height: var(--drop-min);
+  width: 100%;
+  padding: var(--sp-3);
+  background: rgba(232, 241, 224, 0.7);
+  border: 3px dashed rgba(46, 64, 52, 0.3);
+  border-radius: var(--r-m);
+}
+
+.ww-stein {
+  min-width: 84px;
+  min-height: 76px;
+  padding: 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1;
+  color: var(--wald-tinte);
+  background: var(--wald-sonne);
+  border: var(--outline);
+  border-radius: var(--r-s);
+  box-shadow: 0 5px 0 var(--wald-sonne-dark);
+  touch-action: none;              /* sonst scrollt die Seite beim Ziehen */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ww-stein--gesetzt {
+  background: var(--wald-blatt);
+  box-shadow: 0 4px 0 var(--wald-blatt-dark);
+  min-width: 72px;
+  min-height: 68px;
+}
+
+.ww-stein--drag { opacity: 0.28; }
+
+.ww-stein--tipp { box-shadow: 0 5px 0 var(--wald-sonne-dark), 0 0 0 5px rgba(246, 189, 65, 0.5); }
+
+.ww-stein--fliegt {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  transform: rotate(-3deg) scale(1.06);
+  box-shadow: 0 10px 0 var(--wald-sonne-dark), 0 16px 26px rgba(46, 64, 52, 0.28);
+}
+
+.ww-bau__fertig {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 7vw, 40px);
+  color: var(--wald-moos);
+}
+
+@media (max-width: 380px) {
+  .ww-stein { min-width: 72px; min-height: 68px; font-size: 22px; }
+  .ww-slot { min-width: 78px; min-height: 78px; }
+  .ww-bau__slots--buchstaben .ww-slot { min-width: 60px; min-height: 68px; }
+  .ww-bau__bild { width: 84px; height: 84px; font-size: 48px; }
+}
