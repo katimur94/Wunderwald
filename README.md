@@ -80,13 +80,15 @@ npm run acceptance   # Akzeptanzkriterien aus der Spezifikation, Abschnitt 15
 Push auf `main` → GitHub Actions baut und deployt nach GitHub Pages
 (`.github/workflows/deploy.yml`).
 
-**Einmalig nötig:** GitHub Pages muss für das Repo aktiviert sein. Zwei Wege:
+GitHub Pages ist für dieses Repo aktiviert (Settings → Pages → Source: **GitHub Actions**) —
+für den laufenden Betrieb ist nichts weiter zu tun.
 
-1. **Ein Klick:** Settings → Pages → Source: **GitHub Actions**. Danach den Workflow erneut
-   starten (Actions → „Deploy Wunderwald" → Run workflow).
+**Beim Aufsetzen in einem frischen Repo** muss Pages einmalig eingeschaltet werden. Zwei Wege:
+
+1. **Ein Klick:** Settings → Pages → Source: **GitHub Actions**.
 2. **Vollautomatisch:** ein Personal Access Token als Repo-Secret `PAGES_TOKEN` hinterlegen
    (klassisch: Scope `repo`; fein granular: Administration + Pages, je schreibend). Dann aktiviert
-   `actions/configure-pages` die Seite beim nächsten Lauf selbst.
+   `actions/configure-pages` die Seite beim ersten Lauf selbst.
 
 Der eingebaute `GITHUB_TOKEN` kann das **nicht** — die REST-Route zum Anlegen einer Pages-Seite
 verlangt `Administration: write`, und diese Berechtigung lässt sich in einem Workflow gar nicht

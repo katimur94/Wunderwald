@@ -160,6 +160,11 @@ Ein PAT wäre ein langlebiges Geheimnis mit Administrationsrechten am Repo, nur 
 Schalter zu ersetzen. Für dieses Projekt ist der eine Klick unter Settings → Pages → Source:
 GitHub Actions das kleinere Übel; das Secret bleibt als Option dokumentiert.
 
+**Erledigt:** Der Schalter ist gesetzt (Settings → Pages → Source: GitHub Actions). Ab jetzt
+findet `configure-pages` die Seite vor, der Schritt wird von selbst grün, und jeder Push auf
+`main` veröffentlicht. Ein `PAGES_TOKEN` wird nicht gebraucht — der Weg bleibt nur für den Fall
+dokumentiert, dass das Projekt einmal in einem frischen Repo neu aufgesetzt wird.
+
 
 ## D20 — Vendor-Chunks statt eines 494-kB-Bündels
 Trotz Route-Splitting (D12) lag alles, was nicht lazy war, in einem einzigen `index-*.js` von
