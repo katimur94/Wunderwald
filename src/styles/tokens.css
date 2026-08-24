@@ -1,0 +1,140 @@
+/* ============================================================
+   WUNDERWALD – Design-Tokens
+   Look: liebevoll illustriertes Bilderbuch. Keine Standard-UI.
+   ============================================================ */
+
+/* ---------- Fonts (lokal im Repo, keine externen Requests) ---------- */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/fredoka-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/fredoka-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('../assets/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('../assets/fonts/nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* ---------- Farben ---------- */
+  --wald-tinte:   #2E4034;  /* Text, Outlines */
+  --wald-moos:    #2F6B4F;  /* Primär, Header, aktive Zustände */
+  --wald-blatt:   #7FB069;  /* Erfolg, Wachstum */
+  --wald-sonne:   #F6BD41;  /* Sterne, Belohnung, CTAs */
+  --wald-beere:   #E4634F;  /* Akzent, spielerische Highlights (NICHT für Fehler) */
+  --wald-bach:    #6FB5C9;  /* Info, Wasser, Logik-Welt */
+  --wald-flieder: #9A7FC9;  /* Logik-Akzente, Magie-Momente */
+  --wald-creme:   #F2F7EC;  /* Grundhintergrund */
+  --wald-papier:  #FBFDF8;  /* Kartenflächen */
+
+  /* Abgeleitete Töne */
+  --wald-tinte-soft: #2e40341f;
+  --wald-moos-dark:  #245640;
+  --wald-sonne-dark: #D99F22;
+  --wald-blatt-dark: #63914f;
+  --wald-erde:       #B98A5E;
+  --wald-erde-dark:  #8E6842;
+
+  /* Welt-Akzente */
+  --welt-zahlen:      var(--wald-sonne);
+  --welt-buchstaben:  var(--wald-blatt);
+  --welt-logik:       var(--wald-flieder);
+  --welt-wald:        var(--wald-beere);
+
+  /* ---------- Typografie ---------- */
+  --font-display: 'Fredoka', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  --font-text: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --fs-xs: 16px;
+  --fs-s: 18px;
+  --fs-base: 20px;   /* Mindestgröße auf Kinder-Screens */
+  --fs-m: 24px;
+  --fs-l: 30px;
+  --fs-xl: 38px;
+  --fs-2xl: 48px;
+  --fs-game: clamp(48px, 13vw, 96px);   /* Zahlen/Buchstaben im Spiel */
+
+  /* ---------- Radien & Formen ---------- */
+  --r-s: 16px;
+  --r-m: 24px;
+  --r-l: 32px;
+  --r-pill: 999px;
+
+  /* ---------- Outline (Bilderbuch-Kontur) ---------- */
+  --stroke: 3px;
+  --outline: var(--stroke) solid var(--wald-tinte);
+
+  /* ---------- Schatten (weich, gemalt – keine Tech-Schatten) ---------- */
+  --sh-flat: 0 3px 0 var(--wald-tinte);
+  --sh-soft: 0 6px 0 rgba(46, 64, 52, 0.18);
+  --sh-card: 0 4px 0 rgba(46, 64, 52, 0.22), 0 10px 24px rgba(46, 64, 52, 0.10);
+  --sh-lift: 0 8px 0 rgba(46, 64, 52, 0.22), 0 16px 30px rgba(46, 64, 52, 0.14);
+
+  /* ---------- Abstände ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;   /* Mindestabstand zwischen Touch-Zielen */
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* ---------- Touch ---------- */
+  --touch-min: 64px;    /* Kinderfinger */
+  --drop-min: 96px;     /* Drop-Zonen */
+
+  /* ---------- Layout ---------- */
+  --app-max: 900px;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+
+  /* ---------- Motion ---------- */
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 480ms;
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

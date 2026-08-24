@@ -1,0 +1,37 @@
+.ww-updatebar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--sp-3) + var(--safe-b));
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  max-width: calc(100% - 2 * var(--sp-3));
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-card);
+  font-size: var(--fs-xs);
+  animation: ww-pop var(--dur) var(--ease-pop);
+}
+
+.ww-updatebar__actions { display: flex; gap: var(--sp-2); }
+
+.ww-updatebar__btn {
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: #fff;
+  background: var(--wald-moos);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+.ww-updatebar__btn--ghost {
+  color: var(--wald-tinte);
+  background: transparent;
+  border-color: transparent;
+}

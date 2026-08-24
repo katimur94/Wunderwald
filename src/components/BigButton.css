@@ -1,0 +1,58 @@
+.ww-btn {
+  --btn-bg: var(--wald-moos);
+  --btn-fg: #fff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0 var(--sp-5);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-m);
+  line-height: 1.1;
+  color: var(--btn-fg);
+  background: var(--btn-bg);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 5px 0 var(--wald-tinte);
+  transform: translateY(0);
+  transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease, filter var(--dur-fast) ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ww-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--wald-tinte);
+}
+
+.ww-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: 0 2px 0 var(--wald-tinte);
+  transform: translateY(3px);
+}
+
+.ww-btn--full { width: 100%; }
+
+.ww-btn--m { min-height: var(--touch-min); font-size: var(--fs-base); padding: 0 var(--sp-4); border-radius: var(--r-s); }
+.ww-btn--l { min-height: 72px; font-size: var(--fs-m); }
+.ww-btn--xl { min-height: 88px; font-size: var(--fs-l); padding: 0 var(--sp-6); border-radius: var(--r-l); }
+
+.ww-btn--moos    { --btn-bg: var(--wald-moos);    --btn-fg: #fff; }
+.ww-btn--sonne   { --btn-bg: var(--wald-sonne);   --btn-fg: var(--wald-tinte); }
+.ww-btn--blatt   { --btn-bg: var(--wald-blatt);   --btn-fg: var(--wald-tinte); }
+.ww-btn--beere   { --btn-bg: var(--wald-beere);   --btn-fg: #fff; }
+.ww-btn--bach    { --btn-bg: var(--wald-bach);    --btn-fg: var(--wald-tinte); }
+.ww-btn--flieder { --btn-bg: var(--wald-flieder); --btn-fg: #fff; }
+.ww-btn--papier  { --btn-bg: var(--wald-papier);  --btn-fg: var(--wald-tinte); }
+
+.ww-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.3em;
+  line-height: 1;
+}

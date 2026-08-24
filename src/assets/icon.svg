@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F2F7EC"/>
+      <stop offset="100%" stop-color="#DDEBD4"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+
+  <!-- Hügel -->
+  <path d="M-20 400 Q 120 330 250 388 Q 390 448 532 372 L532 532 L-20 532 Z" fill="#7FB069" stroke="#2E4034" stroke-width="10" stroke-linejoin="round"/>
+
+  <!-- Großer Baum -->
+  <rect x="238" y="286" width="36" height="118" rx="14" fill="#B98A5E" stroke="#2E4034" stroke-width="10"/>
+  <circle cx="256" cy="216" r="104" fill="#2F6B4F" stroke="#2E4034" stroke-width="12"/>
+  <circle cx="178" cy="258" r="62" fill="#3C7E5D" stroke="#2E4034" stroke-width="12"/>
+  <circle cx="334" cy="258" r="62" fill="#3C7E5D" stroke="#2E4034" stroke-width="12"/>
+
+  <!-- Stern in der Krone -->
+  <path d="M256 150 l20 42 46 6 -34 32 9 46 -41-23 -41 23 9-46 -34-32 46-6 z"
+        fill="#F6BD41" stroke="#2E4034" stroke-width="10" stroke-linejoin="round"/>
+
+  <!-- Kleine Bäume -->
+  <rect x="86" y="366" width="20" height="52" rx="8" fill="#B98A5E" stroke="#2E4034" stroke-width="8"/>
+  <circle cx="96" cy="346" r="42" fill="#7FB069" stroke="#2E4034" stroke-width="9"/>
+  <rect x="408" y="374" width="20" height="48" rx="8" fill="#B98A5E" stroke="#2E4034" stroke-width="8"/>
+  <circle cx="418" cy="356" r="38" fill="#7FB069" stroke="#2E4034" stroke-width="9"/>
+
+  <!-- Pilz -->
+  <rect x="196" y="426" width="20" height="30" rx="8" fill="#FBFDF8" stroke="#2E4034" stroke-width="8"/>
+  <path d="M172 428 a34 26 0 0 1 68 0 z" fill="#E4634F" stroke="#2E4034" stroke-width="9" stroke-linejoin="round"/>
+</svg>
