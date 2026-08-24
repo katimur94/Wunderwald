@@ -1,0 +1,55 @@
+.ww-fang__bild {
+  width: clamp(120px, 34vw, 176px);
+  height: clamp(120px, 34vw, 176px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(72px, 22vw, 112px);
+  line-height: 1;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+}
+.ww-fang__bild:active { transform: translateY(3px) scale(0.98); }
+
+.ww-fang__lesewort {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 11vw, 72px);
+  line-height: 1;
+  letter-spacing: 2px;
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-fang__gross {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(80px, 26vw, 140px);
+  line-height: 1;
+  color: var(--wald-blatt-dark);
+}
+
+.ww-fang__luecke {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 10vw, 60px);
+  letter-spacing: 6px;
+  line-height: 1;
+}
+
+.ww-fang__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.6vw, 24px);
+  text-align: center;
+  line-height: 1.3;
+  max-width: 26ch;
+}
+
+/* Blätter im Buchstaben-Fang tragen große Buchstaben */
+.ww-choices--blatt .ww-choice { color: var(--wald-tinte); }

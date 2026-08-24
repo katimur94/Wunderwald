@@ -3,14 +3,18 @@
  * Import-Reihenfolge = Reihenfolge der Kacheln im Welt-Screen.
  */
 import { registerGame } from './registry'
-import { dummyGame } from './dummy/dummy'
+import { zahlenErnte } from './zahlen-ernte/zahlen-ernte'
+import { rechenBruecke } from './rechen-bruecke/rechen-bruecke'
+import { buchstabenFang } from './buchstaben-fang/buchstaben-fang'
 
 let done = false
 
 export function registerAllGames() {
   if (done) return
   done = true
-  registerGame(dummyGame)
+  registerGame(zahlenErnte)
+  registerGame(rechenBruecke)
+  registerGame(buchstabenFang)
 }
 
 registerAllGames()

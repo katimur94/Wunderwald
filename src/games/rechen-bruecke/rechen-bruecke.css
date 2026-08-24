@@ -1,0 +1,46 @@
+.ww-bruecke {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+}
+
+.ww-bruecke__svg {
+  width: 100%;
+  display: block;
+  border: var(--outline);
+  border-radius: var(--r-m);
+  overflow: hidden;
+  background: #DCEEF6;
+}
+
+.ww-bruecke__funkel {
+  position: absolute;
+  left: 6%;
+  bottom: 30%;
+}
+
+.ww-bruecke__term { margin: var(--sp-2) 0; }
+
+.ww-bruecke__punkte {
+  display: flex;
+  gap: var(--sp-5);
+  justify-content: center;
+}
+
+.ww-dots-group {
+  display: grid;
+  grid-template-columns: repeat(5, 14px);
+  gap: 5px;
+  justify-content: center;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--wald-papier);
+  border: 3px solid var(--wald-tinte);
+  border-radius: var(--r-s);
+}
+
+.ww-dots-group__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--wald-moos);
+}

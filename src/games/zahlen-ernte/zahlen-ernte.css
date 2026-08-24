@@ -1,0 +1,132 @@
+.ww-ernte__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5.2vw, 28px);
+  line-height: 1.25;
+  text-align: center;
+  max-width: 24ch;
+}
+
+.ww-ernte__scene {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ww-ernte__crown {
+  width: 100%;
+  height: 68px;
+  margin-bottom: -10px;
+}
+
+.ww-ernte__meadow {
+  width: 100%;
+  height: 42px;
+  margin-top: -26px;
+}
+
+.ww-ernte__fruits {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+}
+
+.ww-ernte__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+.ww-ernte__fruits--gruppiert .ww-ernte__row {
+  flex-wrap: nowrap;
+  padding: 3px var(--sp-2);
+  background: rgba(251, 253, 248, 0.7);
+  border: 2px dashed var(--wald-moos);
+  border-radius: var(--r-pill);
+}
+
+.ww-fruit {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  line-height: 1;
+  background: transparent;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  transition: transform var(--dur-fast) var(--ease-pop), border-color var(--dur-fast) ease;
+}
+.ww-fruit:active { transform: scale(0.9); }
+
+.ww-fruit--counted {
+  border-color: var(--wald-moos);
+  background: rgba(127, 176, 105, 0.28);
+}
+
+.ww-fruit--dim { opacity: 0.45; }
+
+.ww-ernte__trunk {
+  width: 38px;
+  height: 40px;
+  margin-top: -6px;
+  background: var(--wald-erde);
+  border: 3px solid var(--wald-tinte);
+  border-radius: 0 0 10px 10px;
+  border-top: 0;
+}
+
+/* Auf der Wiese sitzen die Tiere auf dem Boden, nicht in der Luft */
+.ww-ernte__scene--wiese .ww-ernte__fruits { padding-bottom: 0; }
+
+/* ---------- Vergleich ---------- */
+.ww-ernte__vergleich {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.ww-ernte__patch {
+  flex: 1;
+  min-height: 128px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--sp-3);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+.ww-ernte__patch .ww-fruit { width: 42px; height: 42px; font-size: 27px; }
+
+.ww-ernte__vs {
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  opacity: 0.7;
+  flex: none;
+}
+
+.ww-ernte__ziel {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-m);
+}
+
+@media (max-width: 380px) {
+  .ww-fruit { width: 44px; height: 44px; font-size: 29px; }
+  .ww-ernte__patch .ww-fruit { width: 34px; height: 34px; font-size: 22px; }
+}
