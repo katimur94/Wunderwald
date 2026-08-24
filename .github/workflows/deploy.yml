@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# `pages: write` deckt beides ab: das Aktivieren der Pages-Seite durch
+# configure-pages (enablement) und das Veröffentlichen durch deploy-pages.
+# `id-token: write` braucht deploy-pages für OIDC, `contents: read` der Checkout.
 permissions:
   contents: read
   pages: write
@@ -26,6 +29,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # Aktiviert GitHub Pages beim ersten Lauf selbst — dadurch ist kein
+      # manueller Schritt unter Settings → Pages mehr nötig.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
