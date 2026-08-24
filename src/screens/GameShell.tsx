@@ -6,9 +6,9 @@ import { mulberry32 } from '../games/rng'
 import type { AnswerReport, GameTask } from '../games/types'
 import { Funkel, type FunkelState } from '../world/Funkel'
 import { SpeechBubble } from '../world/SpeechBubble'
-import { hilfeFuer, leichter, lob, rundeFertig, trost, zeigeLoesung } from '../world/funkel-lines'
+import { hilfeFuer, leichter, lob, MUEDE, rundeFertig, trost, zeigeLoesung } from '../world/funkel-lines'
 import { sprich, stopSpeaking, wiederhole } from '../audio/tts'
-import { sfx, audio } from '../audio/AudioManager'
+import { sfx } from '../audio/AudioManager'
 import { applyAttempt, type Milestone } from '../learning/adaptivity'
 import { db } from '../db/db'
 import { getProgress } from '../db/children'
@@ -16,7 +16,7 @@ import { useApp, useActiveChild, useSettings } from '../store/useApp'
 import { BigButton } from '../components/BigButton'
 import { RewardScreen } from './RewardScreen'
 import { markQuestProgress } from '../learning/quests'
-import { closeSession, openSession } from '../learning/session'
+import { closeSession, isDailyLimitReached, openSession } from '../learning/session'
 import './GameShell.css'
 
 const DEFAULT_TASKS_PER_ROUND = 6
@@ -42,6 +42,7 @@ export function GameShell() {
   const [finished, setFinished] = useState(false)
   const [earned, setEarned] = useState(0)
   const [milestone, setMilestone] = useState<Milestone | null>(null)
+  const [limitErreicht, setLimitErreicht] = useState<boolean | null>(null)
 
   const startedAt = useRef(Date.now())
   const sessionId = useRef<number | null>(null)
@@ -49,14 +50,15 @@ export function GameShell() {
   const rng = useMemo(() => mulberry32((Date.now() ^ 0x9e3779b9) >>> 0), [])
   const correctCount = results.filter(Boolean).length
 
-  /* ---------- Ton- und Sprach-Einstellungen anwenden ---------- */
+  /* ---------- Tageslimit: gilt auch bei direktem Aufruf der Adresse ---------- */
   useEffect(() => {
-    audio.setEnabled(settings.soundOn)
-  }, [settings.soundOn])
+    if (!childId) return
+    void isDailyLimitReached(childId, settings.dailyLimitMin).then(setLimitErreicht)
+  }, [childId, settings.dailyLimitMin])
 
   /* ---------- Session öffnen / schließen ---------- */
   useEffect(() => {
-    if (!childId) return
+    if (!childId || limitErreicht !== false) return
     let active = true
     void openSession(childId).then((id) => {
       if (active) sessionId.current = id
@@ -67,7 +69,7 @@ export function GameShell() {
       if (sessionId.current !== null) void closeSession(sessionId.current, gamesPlayed.current)
       stopSpeaking()
     }
-  }, [childId])
+  }, [childId, limitErreicht])
 
   const say = useCallback(
     (text: string, state: FunkelState = 'spricht') => {
@@ -84,9 +86,9 @@ export function GameShell() {
 
   /* ---------- Startstufe laden ---------- */
   useEffect(() => {
-    if (!childId || !game) return
+    if (!childId || !game || limitErreicht !== false) return
     void getProgress(childId, game.worldId).then((p) => setDifficulty(p.level))
-  }, [childId, game])
+  }, [childId, game, limitErreicht])
 
   /* ---------- Neue Aufgabe ziehen ---------- */
   const nextTask = useCallback(
@@ -219,6 +221,23 @@ export function GameShell() {
       <main className="ww-page">
         <h1>Dieses Spiel gibt es nicht.</h1>
         <BigButton onClick={() => navigate(`/kind/${childId}`)}>Zur Karte</BigButton>
+      </main>
+    )
+  }
+
+  if (limitErreicht === null) return null
+
+  if (limitErreicht) {
+    return (
+      <main className="ww-page ww-limit">
+        <Funkel state="muede" size={150} outfitId={child?.companion.outfitId ?? null} />
+        <SpeechBubble text={MUEDE} side="top" />
+        <BigButton size="xl" tone="blatt" full onClick={() => navigate(`/kind/${childId}/wald`)}>
+          In meinen Wald
+        </BigButton>
+        <BigButton size="l" tone="papier" full onClick={() => navigate(`/kind/${childId}`)}>
+          Zur Karte
+        </BigButton>
       </main>
     )
   }

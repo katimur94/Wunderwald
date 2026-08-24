@@ -20,19 +20,38 @@ export function isTtsEnabled() {
   return enabled
 }
 
+/**
+ * Es reicht NICHT, `'speechSynthesis' in window` zu prüfen: Manche Browser und
+ * Datenschutz-Erweiterungen legen die Eigenschaft an, liefern aber `undefined`
+ * oder ein Objekt ohne `speak`. Deshalb wird auf die Methode selbst geprüft —
+ * sonst stirbt die App schon beim Laden dieses Moduls.
+ */
 export function ttsSupported(): boolean {
-  return typeof window !== 'undefined' && 'speechSynthesis' in window
+  try {
+    return typeof window !== 'undefined' && typeof window.speechSynthesis?.speak === 'function'
+  } catch {
+    return false
+  }
 }
 
 function loadVoices() {
   if (!ttsSupported()) return
-  voices = window.speechSynthesis.getVoices()
-  voicesLoaded = voices.length > 0
+  try {
+    voices = window.speechSynthesis.getVoices() ?? []
+    voicesLoaded = voices.length > 0
+  } catch {
+    voices = []
+    voicesLoaded = false
+  }
 }
 
 if (ttsSupported()) {
   loadVoices()
-  window.speechSynthesis.onvoiceschanged = loadVoices
+  try {
+    window.speechSynthesis.onvoiceschanged = loadVoices
+  } catch {
+    /* Manche Browser erlauben das Setzen nicht – Stimmen werden dann lazy geladen. */
+  }
 }
 
 /** Deutsche Stimme bevorzugen, dabei lokale Stimmen zuerst. */

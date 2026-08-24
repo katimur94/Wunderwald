@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/generate-icons.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "acceptance": "node scripts/acceptance.mjs"
   },
   "dependencies": {
     "dexie": "^4.0.11",

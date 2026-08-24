@@ -38,7 +38,20 @@ export interface ErnteData {
 
 export type ErnteTask = GameTask<ErnteData>
 
-const OBST = ['🍎', '🍐', '🍊', '🍋', '🍒', '🍑']
+/** Früchte mit Namen, damit Funkel sie beim Vorlesen benennen kann. */
+const OBST_SORTEN = [
+  { emoji: '🍎', mehrzahl: 'Äpfel' },
+  { emoji: '🍐', mehrzahl: 'Birnen' },
+  { emoji: '🍊', mehrzahl: 'Orangen' },
+  { emoji: '🍋', mehrzahl: 'Zitronen' },
+  { emoji: '🍒', mehrzahl: 'Kirschen' },
+  { emoji: '🍑', mehrzahl: 'Pfirsiche' },
+]
+const OBST = OBST_SORTEN.map((o) => o.emoji)
+
+function nameVon(emoji: string): string {
+  return OBST_SORTEN.find((o) => o.emoji === emoji)?.mehrzahl ?? 'Früchte'
+}
 const TIERE = [
   { emoji: '🐦', ein: 'ein Vogel', mehrz: 'Vögel', sitzt: 'sitzen', kommt: 'fliegen' },
   { emoji: '🐸', ein: 'ein Frosch', mehrz: 'Frösche', sitzt: 'sitzen', kommt: 'hüpfen' },
@@ -63,6 +76,7 @@ export function generateTask(difficulty: number, rng: Rng): ErnteTask {
     const max = lvl === 1 ? 4 : lvl === 2 ? 6 : 10
     const n = randInt(rng, 1, max)
     const frucht = pick(rng, OBST)
+    const name = nameVon(frucht)
     return {
       data: {
         mode: 'zaehlen',
@@ -71,7 +85,7 @@ export function generateTask(difficulty: number, rng: Rng): ErnteTask {
         options: shuffle(rng, [n, ...numberDistractors(rng, n, 2, 1, max + 2)]),
       },
       answer: n,
-      speak: 'Wie viele Früchte siehst du?',
+      speak: `Wie viele ${name} siehst du?`,
     }
   }
 
@@ -81,16 +95,17 @@ export function generateTask(difficulty: number, rng: Rng): ErnteTask {
     const nA = randInt(rng, 2, 8)
     const nB = randInt(rng, 2, 8)
     const fruits = shuffle(rng, [...repeat(a, nA), ...repeat(b, nB)])
+    const name = nameVon(a)
     return {
       data: {
         mode: 'zaehlenMix',
         fruits,
         askFor: a,
-        frage: `Wie viele ${a} siehst du?`,
+        frage: `Wie viele ${a} ${name} siehst du?`,
         options: shuffle(rng, [nA, ...numberDistractors(rng, nA, 2, 1, 14)]),
       },
       answer: nA,
-      speak: 'Zähle nur eine Sorte. Wie viele von der Frucht oben in der Frage siehst du?',
+      speak: `Zähle nur die ${name}. Wie viele ${name} siehst du?`,
     }
   }
 
@@ -127,7 +142,7 @@ export function generateTask(difficulty: number, rng: Rng): ErnteTask {
         options: shuffle(rng, [n, ...numberDistractors(rng, n, 2, 5, 25)]),
       },
       answer: n,
-      speak: 'Zähle in Fünferreihen. Wie viele sind es zusammen?',
+      speak: `Zähle in Fünferreihen. Wie viele ${nameVon(frucht)} sind es zusammen?`,
     }
   }
 
@@ -147,7 +162,7 @@ export function generateTask(difficulty: number, rng: Rng): ErnteTask {
         options: shuffle(rng, [fehlen, ...numberDistractors(rng, fehlen, 2, 1, ziel)]),
       },
       answer: fehlen,
-      speak: `Hier sind ${n} Früchte. Wie viele fehlen bis ${ziel}?`,
+      speak: `Hier sind ${n} ${nameVon(frucht)}. Wie viele fehlen bis ${ziel}?`,
     }
   }
 

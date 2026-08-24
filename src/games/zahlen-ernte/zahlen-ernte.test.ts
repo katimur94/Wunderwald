@@ -101,3 +101,24 @@ describe('Zahlen-Ernte – Generator', () => {
     expect(seen.size).toBeGreaterThan(4)
   })
 })
+
+describe('Zahlen-Ernte – Vorlesetexte', () => {
+  it('benennt die Frucht, statt „die Frucht oben in der Frage“ zu sagen', () => {
+    for (const lvl of [1, 2, 3, 4, 6, 7, 8]) {
+      for (let i = 0; i < 60; i++) {
+        const t = generateTask(lvl, mulberry32(i))
+        expect(t.speak, `Stufe ${lvl}`).not.toMatch(/oben in der Frage|dieser Sorte/)
+        // Der Vorlesetext nennt eine konkrete Fruchtsorte oder eine Zahl
+        expect(t.speak.length, `Stufe ${lvl}`).toBeGreaterThan(15)
+      }
+    }
+  })
+
+  it('nennt auf Stufe 4 die gesuchte Sorte im Vorlesetext', () => {
+    const SORTEN = ['Äpfel', 'Birnen', 'Orangen', 'Zitronen', 'Kirschen', 'Pfirsiche']
+    for (let i = 0; i < 100; i++) {
+      const t = generateTask(4, mulberry32(i))
+      expect(SORTEN.some((s) => t.speak.includes(s)), t.speak).toBe(true)
+    }
+  })
+})

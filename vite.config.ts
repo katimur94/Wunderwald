@@ -11,7 +11,15 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      /*
+       * 'prompt' statt 'autoUpdate': Bei 'autoUpdate' lädt der generierte
+       * Registrierungs-Code die Seite selbsttätig neu, sobald ein neuer Service
+       * Worker aktiviert ist — auch mitten in einer Spielrunde. Abschnitt 6.2 der
+       * Spezifikation verlangt aber genau das Gegenteil: ein dezenter Balken, und
+       * zwar nur auf ruhigen Screens. Deshalb Prompt-Modus plus eigener
+       * UpdateBar (src/components/UpdateBar.tsx). Siehe DECISIONS.md, D17.
+       */
+      registerType: 'prompt',
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: manifestJson as Partial<ManifestOptions>,
       workbox: {

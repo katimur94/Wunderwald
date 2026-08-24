@@ -52,3 +52,50 @@ gelöst wurde), damit die Fehlerquoten im Elternbereich vergleichbar bleiben.
 Die Sätze entstehen aus Satzschablonen plus generierten Zahlen und Tieren, damit Aufgaben nicht
 abgespult wirken. Vorgelesen wird der komplette Satz, angezeigt werden die Tiere zusätzlich als
 Emoji — Nichtleser können mitzählen.
+
+## D11 — Zoom bleibt erlaubt
+Ursprünglich stand `maximum-scale=1.0, user-scalable=no` im Viewport-Meta, um versehentliches
+Zoomen durch Kinderfinger zu verhindern. Lighthouse bemängelt das zu Recht: Zoom zu sperren ist
+ein echtes Barrierefreiheits-Problem, und im Elternbereich stehen längere Texte. Stattdessen
+verhindert `touch-action: manipulation` das Doppeltipp-Zoomen — der eigentliche Auslöser beim
+Spielen. Danach: Lighthouse-Accessibility 100.
+
+## D12 — Route-Splitting statt eines großen Bündels
+Spiele, „Mein Wald“, Elternbereich und die Datenschutz-Seite werden per `React.lazy` nachgeladen.
+Der erste Start muss nur Onboarding, Kind-Auswahl und Weltkarte laden. Alle Teile liegen trotzdem
+im Workbox-Precache, sind also offline verfügbar.
+
+## D13 — Ton und Vorlesen werden zentral gesetzt
+`audio.setEnabled()` und `setTtsEnabled()` laufen einmal in `App.tsx` gegen die Familien-
+Einstellungen. Vorher fragte jeder Screen einzeln ab — Aufrufe tief in den Spielen (`sprich(wort)`)
+hätten die Einstellung umgangen.
+
+## D14 — `ttsSupported()` prüft die Methode, nicht den Schlüssel
+`'speechSynthesis' in window` ist zu schwach: Manche Browser und Datenschutz-Erweiterungen legen
+die Eigenschaft an, liefern aber `undefined`. Der Modul-Code lief dann beim Import in einen
+TypeError und die ganze App startete nicht mehr. Geprüft wird jetzt
+`typeof window.speechSynthesis?.speak === 'function'`, und die Stimmenabfrage liegt in try/catch.
+Gefunden hat das der Akzeptanztest zu Kriterium 15.10.
+
+## D15 — Framer Motion respektiert „Bewegung reduzieren“ global
+`tokens.css` deckt nur CSS-Animationen ab. Die Dauerschleifen von Framer Motion (Funkels Blinzeln,
+schwebende Blätter, laufender Fuchs) liefen weiter. `<MotionConfig reducedMotion="user">` in
+`App.tsx` schaltet sie systemweit ab; Ein- und Ausblenden bleibt erhalten.
+
+## D16 — Browser-Werkzeuge sind keine devDependencies
+`playwright` und `lighthouse` stehen bewusst NICHT in der `package.json`. Sonst würde `npm ci`
+im Deploy-Workflow bei jedem Push Browser nachladen. `npm run smoke` und `npm run acceptance`
+setzen eine lokale Installation voraus (`npm i -D playwright`) — beschrieben im README.
+
+## D17 — `registerType: 'prompt'` statt `'autoUpdate'`
+Abschnitt 5.1 der Spezifikation nennt `registerType: 'autoUpdate'`, Abschnitt 6.2 verlangt einen
+Balken „Neue Version – neu laden“, der **nur** auf ruhigen Screens erscheint und **nie** mitten im
+Spiel. Beides zusammen geht nicht: Im `autoUpdate`-Modus erzeugt `vite-plugin-pwa` den Code
+`wb.addEventListener('activated', e => (e.isUpdate || e.isExternal) && location.reload())` — die
+Seite lädt sich also von selbst neu, notfalls mitten in einer Aufgabe. Zusätzlich ruft der
+Modus `onNeedRefresh` nie auf, der Balken wäre also toter Code gewesen.
+
+Da die Verhaltensvorgabe (6.2) das eigentliche Ziel beschreibt und die Config-Zeile (5.1) nur das
+Mittel, gewinnt 6.2: `registerType: 'prompt'` plus eigener `UpdateBar`. Ergebnis: Ein Update wird
+angeboten, sobald das Kind auf der Kind-Auswahl, im Onboarding oder im Elternbereich ist —
+und niemals während einer Runde.

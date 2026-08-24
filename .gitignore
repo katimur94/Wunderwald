@@ -7,3 +7,6 @@ dist-ssr
 coverage
 .vite
 dev-dist
+
+# TypeScript-Inkrementaldaten
+*.tsbuildinfo

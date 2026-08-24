@@ -51,10 +51,25 @@ freundliche Meilensteine.
 ```bash
 npm install
 npm run dev      # http://localhost:5173/Wunderwald/
-npm test         # Unit-Tests (Adaptivität + alle Aufgaben-Generatoren)
+npm test         # Unit-Tests (Adaptivität, Generatoren, Backup, Hinweise …)
 npm run build    # Typecheck + Produktions-Build nach dist/
 npm run preview  # dist/ lokal servieren (PWA-Test)
 npm run icons    # public/icons/*.png aus src/assets/icon.svg neu rendern
+```
+
+Im Entwicklungsmodus gibt es zwei Werkstatt-Seiten (im Produktions-Build nicht enthalten):
+`#/dev/spiele` zeigt jedes Spiel auf jeder Stufe, `#/dev/funkel` alle Zustände des Fuchses.
+
+### Browser-Tests
+
+`playwright` ist absichtlich keine devDependency, damit `npm ci` im Deploy nichts nachlädt.
+Für die Browser-Läufe einmalig installieren:
+
+```bash
+npm i -D playwright && npx playwright install chromium
+npm run build && npx vite preview --port 4173 &
+npm run smoke        # kompletter Durchlauf, prüft auch: keine externen Requests
+npm run acceptance   # Akzeptanzkriterien aus der Spezifikation, Abschnitt 15
 ```
 
 > **Repo-Name und `base` müssen zusammenpassen.** Das Repo heißt `Wunderwald`, deshalb steht in
@@ -65,6 +80,25 @@ npm run icons    # public/icons/*.png aus src/assets/icon.svg neu rendern
 Push auf `main` → GitHub Actions baut und deployt nach GitHub Pages
 (`.github/workflows/deploy.yml`). In den Repo-Settings muss **Pages → Source: GitHub Actions**
 einmalig manuell gesetzt sein.
+
+## Abnahme
+
+Stand des letzten vollständigen Laufs (`npm test`, `npm run build`, Lighthouse, `npm run acceptance`):
+
+| # | Kriterium | Ergebnis |
+|---|---|---|
+| 15.1 | `npm run build` ohne Fehler, Deploy-Workflow grün | ✅ Build grün, Workflow läuft Tests + Build vor dem Deploy |
+| 15.2 | Lighthouse: installierbar, Performance ≥ 90 (Mobile) | ✅ Performance 96, Accessibility 100, Best Practices 100, SEO 100; Manifest + Service Worker aktiv |
+| 15.3 | Flugmodus: App startet, Spiel spielbar, Daten bleiben | ✅ geprüft im Browser mit abgeschaltetem Netz |
+| 15.4 | Frische Installation → Onboarding → alle 6 Spiele → Sterne → Wald → Neustart | ✅ alle sechs Spiele durchgespielt, Sterne vergeben, Objekt gepflanzt, nach Reload unverändert |
+| 15.5 | 360 px ohne horizontales Scrollen, Tablet quer nutzt den Platz | ✅ alle Screens passen; auf dem Tablet stehen die vier Portale nebeneinander |
+| 15.6 | Export erzeugt Datei, Import stellt Zustand her | ✅ Export → frische Instanz → Import → identischer Zustand |
+| 15.7 | Unit-Tests für `adaptivity.ts` | ✅ 23 Tests (Auf-/Abstieg, Grenzen 1 und 10, Hilfe-Fälle) |
+| 15.8 | Generator-Tests: je Stufe 100 Aufgaben, Lösung genau einmal enthalten | ✅ alle sechs Spiele, zusätzlich fachliche Prüfungen je Stufe |
+| 15.9 | Kein Request auf fremde Domains | ✅ Netzwerk-Mitschnitt über den kompletten Durchlauf: keiner |
+| 15.10 | Ton aus + Vorlesen aus → App voll nutzbar | ✅ Runde ohne Ton und ohne `speechSynthesis` beendet, Anweisung steht in der Sprechblase |
+
+Insgesamt **180 Unit-Tests** und **17 Browser-Prüfungen**.
 
 ## Lizenzen
 

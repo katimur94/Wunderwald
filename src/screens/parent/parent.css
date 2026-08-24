@@ -1,0 +1,207 @@
+.ww-parent { max-width: 680px; font-family: var(--font-text); }
+.ww-parent--gate { max-width: 480px; }
+
+.ww-parent__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.ww-parent__head h1 { flex: 1; margin: 0; font-size: var(--fs-l); }
+
+.ww-parent__lock {
+  min-height: 48px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  background: var(--wald-papier);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+.ww-parent__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+
+/* ---------- Hinweiskarte ---------- */
+.ww-notice {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: #FFF3D6;
+  border: 3px solid var(--wald-sonne-dark);
+  border-radius: var(--r-m);
+}
+.ww-notice > span { font-size: 30px; line-height: 1.1; }
+.ww-notice p { margin: var(--sp-2) 0 var(--sp-3); }
+
+/* ---------- Kind-Karten ---------- */
+.ww-kidcards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+
+.ww-kidcard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  text-align: left;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+}
+
+.ww-kidcard__top { display: flex; align-items: center; gap: var(--sp-3); }
+.ww-kidcard__meta { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ww-kidcard__meta strong { font-family: var(--font-display); font-size: var(--fs-m); }
+.ww-kidcard__pfeil { font-size: 30px; opacity: 0.4; }
+
+/* ---------- Stufen ---------- */
+.ww-levels { margin: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.ww-levels__row {
+  padding-left: var(--sp-3);
+  border-left: 5px solid var(--wald-moos);
+}
+.ww-levels__row--zahlen { border-color: var(--welt-zahlen); }
+.ww-levels__row--buchstaben { border-color: var(--welt-buchstaben); }
+.ww-levels__row--logik { border-color: var(--welt-logik); }
+
+.ww-levels dt {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  opacity: 0.72;
+}
+.ww-levels__stufe { font-size: 12px; opacity: 0.75; }
+.ww-levels dd { margin: 2px 0 0; font-size: var(--fs-xs); line-height: 1.4; }
+.ww-levels dd strong { font-family: var(--font-display); font-size: var(--fs-s); }
+
+/* ---------- Trend ---------- */
+.ww-trend {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  height: 120px;
+  padding: var(--sp-3) 0 0;
+}
+.ww-trend__bar {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.ww-trend__fill {
+  width: 100%;
+  min-height: 4px;
+  background: var(--wald-blatt);
+  border: 2px solid var(--wald-tinte);
+  border-radius: 6px 6px 0 0;
+}
+.ww-trend__label { font-size: 12px; opacity: 0.6; }
+
+/* ---------- Hinweise ---------- */
+.ww-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.ww-insight {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-s);
+  background: var(--wald-creme);
+  border-left: 5px solid var(--wald-bach);
+}
+.ww-insight--lob { border-color: var(--wald-blatt); }
+.ww-insight--tipp { border-color: var(--wald-sonne); }
+.ww-insight--hinweis { border-color: var(--wald-bach); }
+.ww-insight__icon { font-size: 22px; line-height: 1.2; }
+.ww-insight strong { font-family: var(--font-display); font-size: var(--fs-s); }
+.ww-insight p { margin: 2px 0 0; }
+
+/* ---------- Spiel-Statistik ---------- */
+.ww-gamestats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ww-gamestats li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 2px dotted rgba(46, 64, 52, 0.18);
+  font-size: var(--fs-xs);
+}
+.ww-gamestats li:last-child { border-bottom: 0; }
+.ww-gamestats__name { font-family: var(--font-display); }
+
+/* ---------- Schalter ---------- */
+.ww-toggle { display: flex; flex-direction: column; gap: var(--sp-2); }
+.ww-toggle__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--touch-min);
+  cursor: pointer;
+}
+.ww-toggle__label { flex: 1; font-family: var(--font-display); font-size: var(--fs-s); }
+.ww-toggle__input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.ww-toggle__switch {
+  position: relative;
+  width: 68px;
+  height: 38px;
+  flex: none;
+  background: #D6DED0;
+  border: 3px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+  transition: background var(--dur) ease;
+}
+.ww-toggle__switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: var(--wald-papier);
+  border: 2px solid var(--wald-tinte);
+  border-radius: 50%;
+  transition: transform var(--dur) var(--ease-pop);
+}
+.ww-toggle__input:checked + .ww-toggle__switch { background: var(--wald-blatt); }
+.ww-toggle__input:checked + .ww-toggle__switch::after { transform: translateX(30px); }
+.ww-toggle__input:focus-visible + .ww-toggle__switch { outline: 4px solid var(--wald-bach); outline-offset: 3px; }
+
+/* ---------- Chips ---------- */
+.ww-chips { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+.ww-chip {
+  min-height: var(--touch-min);
+  min-width: 76px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-flat);
+}
+.ww-chip--on { background: var(--wald-moos); color: #fff; }
+
+/* ---------- Rückmeldungen ---------- */
+.ww-erfolg {
+  margin: 0;
+  padding: var(--sp-3);
+  font-size: var(--fs-xs);
+  background: #DFF0D4;
+  border: 2px solid var(--wald-blatt-dark);
+  border-radius: var(--r-s);
+}
+
+.ww-import {
+  padding: var(--sp-4);
+  background: var(--wald-creme);
+  border: 3px dashed var(--wald-moos);
+  border-radius: var(--r-m);
+}
+
+.ww-danger { border-color: var(--wald-beere); }
+.ww-danger h2 { color: #A83B2B; }

@@ -112,3 +112,12 @@
   .ww-gameshell__funkel .ww-funkel { width: 64px !important; height: 64px !important; }
   .ww-gameshell__stage { padding: var(--sp-3); }
 }
+
+/* ---------- Tageslimit erreicht ---------- */
+.ww-limit {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--sp-5);
+  max-width: 460px;
+}
