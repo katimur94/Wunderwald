@@ -1,0 +1,114 @@
+.ww-gameshell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  --welt: var(--wald-moos);
+  background:
+    radial-gradient(120% 60% at 50% 0%, #FFFFFF00 0%, #E6F0DE 100%),
+    var(--wald-creme);
+}
+
+.ww-gameshell[data-world='zahlen']     { --welt: var(--welt-zahlen); }
+.ww-gameshell[data-world='buchstaben'] { --welt: var(--welt-buchstaben); }
+.ww-gameshell[data-world='logik']      { --welt: var(--welt-logik); }
+
+/* ---------- Kopfleiste ---------- */
+.ww-gameshell__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-3) var(--sp-3);
+  background: var(--welt);
+  border-bottom: var(--outline);
+}
+
+.ww-gameshell__title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-m);
+  text-align: center;
+  color: var(--wald-tinte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ww-iconbtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-m);
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: 50%;
+  box-shadow: 0 3px 0 var(--wald-tinte);
+}
+.ww-iconbtn:active { transform: translateY(2px); box-shadow: none; }
+.ww-iconbtn--help { background: var(--wald-sonne); font-size: var(--fs-l); }
+
+.ww-dots {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: none;
+}
+.ww-dots__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--wald-tinte);
+  background: var(--wald-papier);
+}
+.ww-dots__dot--ok { background: var(--wald-moos); }
+.ww-dots__dot--miss { background: var(--wald-erde); }
+
+/* ---------- Spielfläche ---------- */
+.ww-gameshell__stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4) var(--sp-3);
+  min-height: 0;
+}
+
+.ww-gameshell__task {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+/* ---------- Funkel-Ecke ---------- */
+.ww-gameshell__funkel {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-3) calc(var(--sp-3) + var(--safe-b));
+  background: #E1EDD8;
+  border-top: var(--outline);
+  min-height: 116px;
+}
+.ww-gameshell__funkel .ww-bubble { flex: 1; min-width: 0; }
+
+@media (min-width: 720px) {
+  .ww-gameshell__stage { padding: var(--sp-6); }
+  .ww-gameshell__funkel { padding-left: var(--sp-6); padding-right: var(--sp-6); }
+}
+
+/* Landscape auf kleinen Geräten: Funkel-Ecke schrumpfen */
+@media (orientation: landscape) and (max-height: 520px) {
+  .ww-gameshell__funkel { min-height: 84px; padding-top: var(--sp-2); padding-bottom: var(--sp-2); }
+  .ww-gameshell__funkel .ww-funkel { width: 64px !important; height: 64px !important; }
+  .ww-gameshell__stage { padding: var(--sp-3); }
+}

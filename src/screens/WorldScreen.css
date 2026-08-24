@@ -1,0 +1,72 @@
+.ww-world {
+  --welt: var(--wald-moos);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  width: 100%;
+  max-width: var(--app-max);
+  margin: 0 auto;
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-4) calc(var(--sp-6) + var(--safe-b));
+}
+
+.ww-world--zahlen     { --welt: var(--welt-zahlen); }
+.ww-world--buchstaben { --welt: var(--welt-buchstaben); }
+.ww-world--logik      { --welt: var(--welt-logik); }
+
+.ww-world__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.ww-world__top h1 {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-l);
+  text-align: center;
+}
+
+.ww-world__title-line { margin: 0; font-size: var(--fs-xs); line-height: 1.45; text-align: center; }
+
+.ww-world__games {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .ww-world__games { grid-template-columns: 1fr 1fr; }
+}
+
+.ww-gametile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 132px;
+  padding: var(--sp-4);
+  text-align: left;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-left: 12px solid var(--welt);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+  transition: transform var(--dur) var(--ease-pop);
+}
+.ww-gametile:active { transform: translateY(3px) scale(0.995); }
+
+.ww-gametile__icon {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ww-gametile__icon svg { width: 100%; height: 100%; }
+
+.ww-gametile__text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ww-gametile__title { font-family: var(--font-display); font-size: var(--fs-m); }
+.ww-gametile__sub { font-size: var(--fs-xs); opacity: 0.75; line-height: 1.3; }

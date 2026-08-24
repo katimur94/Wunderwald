@@ -1,0 +1,58 @@
+.ww-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-4);
+  width: 100%;
+}
+
+.ww-choice {
+  min-width: 92px;
+  min-height: 92px;
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 9vw, 52px);
+  line-height: 1;
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 5px 0 var(--wald-tinte);
+  transition: box-shadow var(--dur-fast) ease;
+}
+.ww-choice:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--wald-tinte); }
+
+.ww-choice--hi {
+  background: var(--wald-sonne);
+  box-shadow: 0 5px 0 var(--wald-tinte), 0 0 0 6px rgba(246, 189, 65, 0.4);
+}
+
+/* Steine in der Rechen-Brücke */
+.ww-choices--stein .ww-choice {
+  background: #D9DED2;
+  border-radius: 40% 45% 42% 38% / 45% 40% 44% 42%;
+  box-shadow: 0 5px 0 #8E9587;
+}
+
+/* Blätter im Buchstaben-Fang */
+.ww-choices--blatt .ww-choice {
+  background: var(--wald-blatt);
+  border-radius: 60% 12% 60% 12%;
+  box-shadow: 0 5px 0 var(--wald-blatt-dark);
+}
+
+/* Perlen im Muster-Weber */
+.ww-choices--perle .ww-choice {
+  min-width: 96px;
+  min-height: 96px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+@media (max-width: 380px) {
+  .ww-choice { min-width: 78px; min-height: 78px; font-size: 32px; }
+  .ww-choices { gap: var(--sp-3); }
+}

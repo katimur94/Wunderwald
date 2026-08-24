@@ -1,0 +1,20 @@
+.ww-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.ww-confetti__bit {
+  position: absolute;
+  top: 0;
+  border-radius: 2px;
+  border: 1.5px solid rgba(46, 64, 52, 0.35);
+}
+
+/* prefers-reduced-motion: ruhiger Schimmer statt Flug */
+.ww-confetti--calm {
+  background: radial-gradient(60% 40% at 50% 0%, rgba(246, 189, 65, 0.35), transparent 70%);
+  animation: ww-fade-in 400ms ease;
+}

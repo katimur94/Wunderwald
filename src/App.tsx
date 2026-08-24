@@ -9,6 +9,7 @@ import { GameShell } from './screens/GameShell'
 import { MyForest } from './screens/MyForest'
 import { ParentArea } from './screens/parent/ParentArea'
 import { Privacy } from './screens/Privacy'
+import { FunkelPreview } from './dev/FunkelPreview'
 import { useApp } from './store/useApp'
 import { Splash } from './components/Splash'
 
@@ -89,6 +90,7 @@ function Shell() {
         />
         <Route path="/eltern/*" element={<ParentArea />} />
         <Route path="/datenschutz" element={<Privacy />} />
+        {import.meta.env.DEV && <Route path="/dev/funkel" element={<FunkelPreview />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <UpdateBar />

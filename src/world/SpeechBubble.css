@@ -1,0 +1,59 @@
+.ww-bubble {
+  position: relative;
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  max-width: 46ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  line-height: 1.35;
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-bubble--compact { font-size: var(--fs-xs); padding: var(--sp-2) var(--sp-3); }
+
+/* Schnabel */
+.ww-bubble::before,
+.ww-bubble::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.ww-bubble--right::before {
+  left: -16px; top: 26px;
+  border-width: 10px 16px 10px 0;
+  border-color: transparent var(--wald-tinte) transparent transparent;
+}
+.ww-bubble--right::after {
+  left: -11px; top: 26px;
+  border-width: 10px 16px 10px 0;
+  border-color: transparent var(--wald-papier) transparent transparent;
+}
+
+.ww-bubble--left::before {
+  right: -16px; top: 26px;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent var(--wald-tinte);
+}
+.ww-bubble--left::after {
+  right: -11px; top: 26px;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent var(--wald-papier);
+}
+
+.ww-bubble--top::before {
+  left: 28px; bottom: -16px;
+  border-width: 16px 10px 0 10px;
+  border-color: var(--wald-tinte) transparent transparent transparent;
+}
+.ww-bubble--top::after {
+  left: 28px; bottom: -11px;
+  border-width: 16px 10px 0 10px;
+  border-color: var(--wald-papier) transparent transparent transparent;
+}

@@ -1,0 +1,64 @@
+.ww-path { position: relative; padding: var(--sp-3) 0 0; }
+
+.ww-path__line {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 26px;
+  height: 8px;
+  background: #DCE7D2;
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.ww-path__fill {
+  height: 100%;
+  background: var(--welt, var(--wald-moos));
+  transition: width var(--dur-slow) var(--ease-pop);
+}
+
+.ww-path__stones {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.ww-path__stone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ww-path__mark {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: #B9C9AE;
+  background: var(--wald-papier);
+  border: 3px solid var(--wald-tinte);
+  border-radius: 50%;
+}
+.ww-path__stone--on .ww-path__mark {
+  color: var(--wald-tinte);
+  background: var(--wald-sonne);
+  box-shadow: 0 0 0 4px rgba(246, 189, 65, 0.28);
+}
+
+.ww-path__label {
+  font-size: 11px;
+  font-family: var(--font-display);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.1;
+}
+.ww-path__stone--on .ww-path__label { opacity: 1; }

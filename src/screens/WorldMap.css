@@ -1,0 +1,138 @@
+.ww-map {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--wald-creme);
+  overflow-x: hidden;
+}
+
+/* ---------- Kopf ---------- */
+.ww-map__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-4) var(--sp-3);
+}
+
+.ww-map__kid {
+  min-height: 48px;
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-flat);
+}
+.ww-map__kidname { display: block; }
+
+/* ---------- Szene ---------- */
+.ww-map__scene {
+  position: relative;
+  margin: 0 var(--sp-3);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  box-shadow: var(--sh-card);
+  min-height: 300px;
+  flex: 1;
+}
+
+.ww-map__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ww-map__portals {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-areas:
+    'a b'
+    'c d';
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+/* ---------- Tagesabenteuer ---------- */
+.ww-quests {
+  margin: var(--sp-4) var(--sp-3) 0;
+  padding: var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-quests__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-base);
+}
+
+.ww-quests__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.ww-quest {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+.ww-quest__mark { font-size: 22px; width: 26px; flex: none; }
+.ww-quest--done { opacity: 0.62; text-decoration: line-through; }
+
+.ww-quests__claim {
+  margin-top: var(--sp-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  color: var(--wald-tinte);
+  background: var(--wald-sonne);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+}
+
+/* ---------- Funkel-Ecke ---------- */
+.ww-map__funkel {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-3) calc(var(--sp-4) + var(--safe-b));
+  min-height: 120px;
+}
+.ww-map__funkel .ww-bubble { flex: 1; min-width: 0; }
+
+.ww-map__funkelbtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  flex: none;
+  border-radius: 50%;
+}
+
+/* ---------- Größere Displays ---------- */
+@media (min-width: 720px) {
+  .ww-map__scene, .ww-quests, .ww-map__top, .ww-map__funkel {
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ww-map__portals {
+    grid-template-areas: 'a b c d';
+    grid-template-columns: repeat(4, 1fr);
+    padding: var(--sp-6) var(--sp-5);
+    align-items: end;
+  }
+  .ww-map__scene { min-height: 340px; }
+}
