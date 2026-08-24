@@ -5,9 +5,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# `pages: write` deckt beides ab: das Aktivieren der Pages-Seite durch
-# configure-pages (enablement) und das Veröffentlichen durch deploy-pages.
-# `id-token: write` braucht deploy-pages für OIDC, `contents: read` der Checkout.
+# `pages: write` erlaubt das Veröffentlichen, `id-token: write` liefert
+# deploy-pages den OIDC-Token, `contents: read` den Checkout.
+#
+# Zum ANLEGEN einer Pages-Seite reicht das NICHT: die REST-Route
+# POST /repos/{owner}/{repo}/pages verlangt zusätzlich `Administration: write`,
+# und diese Berechtigung lässt sich in einem Workflow gar nicht anfordern —
+# `administration` steht in der Liste der Workflow-Berechtigungen nicht drin.
+# Deshalb kann der eingebaute GITHUB_TOKEN Pages nicht aktivieren; dafür braucht
+# es ein PAT im Secret PAGES_TOKEN (siehe Schritt „configure-pages" unten).
 permissions:
   contents: read
   pages: write
@@ -29,11 +35,15 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      # Aktiviert GitHub Pages beim ersten Lauf selbst — dadurch ist kein
-      # manueller Schritt unter Settings → Pages mehr nötig.
+      # Aktiviert GitHub Pages selbst, WENN ein PAT im Secret PAGES_TOKEN liegt
+      # (klassisch: Scope `repo`; fein granular: Administration + Pages, je
+      # schreibend). Ohne PAT scheitert nur dieser Schritt — der Lauf geht
+      # weiter, und sobald Pages einmal an ist, wird er von selbst grün.
       - uses: actions/configure-pages@v5
+        continue-on-error: true
         with:
           enablement: true
+          token: ${{ secrets.PAGES_TOKEN || github.token }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -117,19 +117,46 @@ Bewusst **nicht** gehoben:
 
 Beides ist beim nächsten größeren Aufräumen fällig, blockiert aber nichts.
 
-## D19 — Der Deploy aktiviert GitHub Pages selbst
+## D19 — Pages-Aktivierung im Workflow: geht nur mit PAT
 Die Seite lieferte 404, weil zwei Dinge fehlten: Pages war im Repo nie aktiviert
 (`has_pages: false`), und den Branch `main`, auf den `deploy.yml` hört, gab es gar nicht — der
 erste Push hatte `claude/wunderwald-spec-2bcuvg` angelegt, und GitHub machte diesen Branch zum
 Standard. Der Deploy-Workflow ist also nie gelaufen.
 
-Behoben durch zwei Schritte:
-1. `actions/configure-pages@v5` mit `enablement: true` im build-Job, direkt vor dem Upload. Der
-   Schritt legt die Pages-Seite über die API selbst an, wenn es sie noch nicht gibt. Der manuelle
-   Weg über Settings → Pages → Source: GitHub Actions entfällt damit.
-2. `main` angelegt und gepusht, damit der Trigger `push: branches: [main]` überhaupt greift.
+`main` ist jetzt angelegt und gepusht, damit der Trigger `push: branches: [main]` überhaupt greift.
 
-Die vorhandenen Berechtigungen reichen dafür aus: `pages: write` deckt sowohl das Anlegen der
-Seite durch `configure-pages` als auch das Veröffentlichen durch `deploy-pages` ab,
-`id-token: write` ist für den OIDC-Token von `deploy-pages` nötig, `contents: read` für den
-Checkout. Ein Personal Access Token braucht es nicht.
+Der zweite Teil ließ sich **nicht** wie geplant lösen. `actions/configure-pages@v5` mit
+`enablement: true` scheiterte im Lauf reproduzierbar:
+
+```
+Get Pages site failed.    Error: Not Found
+Create Pages site failed. Error: Resource not accessible by integration
+```
+
+Ursache ist keine vergessene Zeile im `permissions`-Block, sondern eine Grenze der API: Die Route
+`POST /repos/{owner}/{repo}/pages` verlangt neben `Pages: write` auch `Administration: write` —
+und `administration` gibt es in den Workflow-Berechtigungen überhaupt nicht (verfügbar sind
+`actions`, `attestations`, `checks`, `contents`, `deployments`, `discussions`, `id-token`,
+`issues`, `models`, `packages`, `pages`, `pull-requests`, `repository-projects`,
+`security-events`, `statuses`). Der eingebaute `GITHUB_TOKEN` kann eine Pages-Seite deshalb
+grundsätzlich nicht anlegen, egal wie der Block aussieht.
+
+Umgesetzt ist daher die Variante, die in allen drei Zuständen funktioniert:
+
+```yaml
+- uses: actions/configure-pages@v5
+  continue-on-error: true
+  with:
+    enablement: true
+    token: ${{ secrets.PAGES_TOKEN || github.token }}
+```
+
+- **Mit** einem PAT im Secret `PAGES_TOKEN` aktiviert der Workflow Pages tatsächlich selbst —
+  dann ist kein Klick in den Settings nötig, so wie ursprünglich gewünscht.
+- **Ohne** PAT scheitert nur dieser eine Schritt, der Lauf geht weiter. Sobald Pages einmal
+  eingeschaltet ist, findet `configure-pages` die Seite und der Schritt wird von selbst grün.
+
+Ein PAT wäre ein langlebiges Geheimnis mit Administrationsrechten am Repo, nur um einen einmaligen
+Schalter zu ersetzen. Für dieses Projekt ist der eine Klick unter Settings → Pages → Source:
+GitHub Actions das kleinere Übel; das Secret bleibt als Option dokumentiert.
+
