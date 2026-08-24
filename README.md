@@ -100,6 +100,10 @@ Stand des letzten vollständigen Laufs (`npm test`, `npm run build`, Lighthouse,
 
 Insgesamt **180 Unit-Tests** und **17 Browser-Prüfungen**.
 
+`npm audit --omit=dev` meldet 0 Schwachstellen — die ausgelieferten Abhängigkeiten sind sauber.
+Die verbleibenden Meldungen betreffen ausschließlich Entwicklungswerkzeuge (Vite-Dev-Server,
+Vitest-UI), die weder in der CI noch in Produktion laufen. Details in `DECISIONS.md`, D18.
+
 ## Lizenzen
 
 Code: siehe Repo. Schriften **Fredoka** und **Nunito** stehen unter der

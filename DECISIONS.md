@@ -99,3 +99,20 @@ Da die Verhaltensvorgabe (6.2) das eigentliche Ziel beschreibt und die Config-Ze
 Mittel, gewinnt 6.2: `registerType: 'prompt'` plus eigener `UpdateBar`. Ergebnis: Ein Update wird
 angeboten, sobald das Kind auf der Kind-Auswahl, im Onboarding oder im Elternbereich ist —
 und niemals während einer Runde.
+
+## D18 — Abhängigkeiten: Laufzeit sauber, Werkzeuge bewusst auf altem Stand
+`npm audit --omit=dev` meldet **0 Schwachstellen** — was an die Kinder ausgeliefert wird, ist frei
+von bekannten Meldungen. Dafür wurde React Router von 6 auf 7.18.2 gehoben (Open-Redirect über
+Backslashes in `<Link>`/`useNavigate`, GHSA-wrjc-x8rr-h8h6). Ausnutzbar wäre das hier ohnehin nicht,
+weil Wunderwald ausschließlich fest verdrahtete interne Pfade navigiert — aber eine bekannte
+Schwachstelle in einer Kinder-App stehen zu lassen, ist keine gute Idee. `sharp` (nur für das
+Icon-Skript) wurde auf 0.35.3 gehoben (libvips-CVEs).
+
+Bewusst **nicht** gehoben:
+- **vite / esbuild**: Die Meldungen betreffen ausschließlich den Entwicklungs-Server. Der läuft
+  weder in der CI noch in Produktion. Ein Sprung von Vite 5 auf 8 würde `vite-plugin-pwa` 0.21
+  mitreißen — das Risiko steht in keinem Verhältnis.
+- **vitest**: Die kritische Meldung greift nur, wenn der Vitest-UI-Server lauscht
+  (`vitest --ui`). Das Projekt startet ihn nie.
+
+Beides ist beim nächsten größeren Aufräumen fällig, blockiert aber nichts.
