@@ -1,0 +1,94 @@
+.ww-onboarding { max-width: 620px; }
+
+.ww-onboarding__hero {
+  font-size: 56px;
+  text-align: center;
+  letter-spacing: 6px;
+  line-height: 1;
+}
+
+.ww-steps {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ww-steps__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--wald-tinte);
+  background: var(--wald-papier);
+}
+.ww-steps__dot--on { background: var(--wald-moos); }
+
+.ww-privacy {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: #E8F1E0;
+  border: 3px dashed var(--wald-moos);
+  border-radius: var(--r-m);
+}
+.ww-privacy__icon { font-size: 28px; line-height: 1.2; }
+.ww-privacy p { margin: var(--sp-2) 0 0; }
+
+.ww-phrase {
+  margin: 0;
+  padding: var(--sp-5) var(--sp-4);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 7vw, 34px);
+  letter-spacing: 1px;
+  color: var(--wald-moos);
+  background: var(--wald-creme);
+  border: 3px dashed var(--wald-moos);
+  border-radius: var(--r-m);
+  word-spacing: 8px;
+}
+
+.ww-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--touch-min);
+  font-size: var(--fs-s);
+  cursor: pointer;
+}
+.ww-check input {
+  width: 30px;
+  height: 30px;
+  accent-color: var(--wald-moos);
+  flex: none;
+}
+
+.ww-avatars { border: 0; padding: 0; margin: 0; }
+.ww-avatars__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.ww-avatars__pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 118px;
+  padding: var(--sp-3) var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  background: var(--wald-papier);
+  border: 3px solid transparent;
+  border-radius: var(--r-m);
+  transition: transform var(--dur-fast) var(--ease-pop), border-color var(--dur-fast) ease;
+}
+.ww-avatars__pick--on {
+  border-color: var(--wald-tinte);
+  background: var(--wald-creme);
+  transform: scale(1.04);
+  box-shadow: var(--sh-flat);
+}

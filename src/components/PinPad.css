@@ -1,0 +1,38 @@
+.ww-pinpad { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
+
+.ww-pinpad__label { margin: 0; font-family: var(--font-display); font-size: var(--fs-m); text-align: center; }
+
+.ww-pinpad__dots { display: flex; gap: var(--sp-3); }
+
+.ww-pinpad__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--wald-tinte);
+  background: transparent;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) var(--ease-pop);
+}
+.ww-pinpad__dot--on { background: var(--wald-moos); transform: scale(1.14); }
+
+.ww-pinpad__keys {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 96px));
+  gap: var(--sp-3);
+  justify-content: center;
+}
+
+.ww-pinpad__key {
+  min-height: 72px;
+  font-family: var(--font-display);
+  font-size: var(--fs-l);
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+  transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.ww-pinpad__key:active:not(:disabled),
+.ww-pinpad__key--pressed { transform: translateY(3px); box-shadow: 0 1px 0 var(--wald-tinte); }
+.ww-pinpad__key:disabled { opacity: 0.45; }
+.ww-pinpad__key--del { font-size: var(--fs-m); background: var(--wald-creme); }

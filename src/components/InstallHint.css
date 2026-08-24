@@ -1,0 +1,21 @@
+.ww-installhint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: #E8F1E0;
+  border: 3px dashed var(--wald-moos);
+  border-radius: var(--r-m);
+}
+.ww-installhint__body { flex: 1; }
+.ww-installhint__body p { margin: var(--sp-2) 0 0; }
+.ww-installhint__close {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  font-size: var(--fs-s);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--wald-tinte);
+}

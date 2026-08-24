@@ -1,0 +1,89 @@
+.ww-kidselect__head { text-align: center; }
+.ww-kidselect__head h1 { margin-bottom: var(--sp-1); }
+
+.ww-kidselect__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ww-kidtile {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+  transition: transform var(--dur) var(--ease-pop), box-shadow var(--dur) ease;
+}
+.ww-kidtile:active { transform: translateY(3px) scale(0.99); box-shadow: var(--sh-flat); }
+
+.ww-kidtile__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-m);
+}
+
+.ww-kidtile--add {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--wald-creme),
+    var(--wald-creme) 12px,
+    #E8F1E0 12px,
+    #E8F1E0 24px
+  );
+  border-style: dashed;
+}
+.ww-kidtile__plus {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--wald-moos);
+  font-family: var(--font-display);
+}
+
+.ww-kidselect__foot { display: flex; justify-content: flex-end; margin-top: auto; }
+
+.ww-gear {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  font-size: 28px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: 50%;
+  box-shadow: var(--sh-flat);
+  opacity: 0.72;
+}
+.ww-gear:active { transform: translateY(2px); box-shadow: none; }
+
+/* ---------- Modal ---------- */
+.ww-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  background: rgba(46, 64, 52, 0.55);
+  animation: ww-fade-in var(--dur) ease;
+  overflow-y: auto;
+}
+
+.ww-modal__box {
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2 * var(--sp-4));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  animation: ww-pop var(--dur) var(--ease-pop);
+}

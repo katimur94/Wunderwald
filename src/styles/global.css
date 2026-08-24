@@ -148,3 +148,20 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .ww-wiggle, .ww-pop, .ww-float { animation: ww-fade-in 1ms linear; }
 }
+
+/* ---------- Textlink-Button ---------- */
+.ww-linkbtn {
+  min-height: 48px;
+  padding: 0 var(--sp-2);
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  color: var(--wald-moos);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Listen ---------- */
+.ww-list { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--sp-2); }
+.ww-list li { line-height: 1.5; }
