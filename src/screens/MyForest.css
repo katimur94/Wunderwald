@@ -1,0 +1,240 @@
+.ww-forest {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--wald-creme);
+  overflow-x: hidden;
+}
+
+.ww-forest__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-4) var(--sp-3);
+}
+.ww-forest__top h1 { flex: 1; margin: 0; font-size: var(--fs-l); text-align: center; }
+
+/* ---------- Szene ---------- */
+.ww-forest__scene {
+  position: relative;
+  flex: 1;
+  min-height: 320px;
+  margin: 0 var(--sp-3);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  box-shadow: var(--sh-card);
+}
+
+.ww-forest__bg { position: absolute; inset: 0; overflow: hidden; }
+.ww-forest__terrain { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Sonne und Wolken bleiben rund, egal wie hoch die Szene ist. */
+.ww-forest__sonne {
+  position: absolute;
+  top: 4%;
+  right: 7%;
+  width: clamp(38px, 13%, 66px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--wald-sonne);
+  box-shadow: 0 0 0 8px rgba(246, 189, 65, 0.24);
+}
+
+.ww-forest__wolke {
+  position: absolute;
+  height: 16px;
+  border-radius: var(--r-pill);
+  background: var(--wald-papier);
+  opacity: 0.92;
+}
+.ww-forest__wolke::before,
+.ww-forest__wolke::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  border-radius: 50%;
+  background: inherit;
+}
+.ww-forest__wolke--a { top: 7%; left: 8%; width: 62px; }
+.ww-forest__wolke--a::before { left: 10px; width: 26px; height: 26px; }
+.ww-forest__wolke--a::after { left: 30px; width: 20px; height: 20px; }
+.ww-forest__wolke--b { top: 15%; left: 44%; width: 46px; }
+.ww-forest__wolke--b::before { left: 8px; width: 20px; height: 20px; }
+.ww-forest__wolke--b::after { left: 22px; width: 15px; height: 15px; }
+
+.ww-forest__grid {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, 1fr): die Reihen teilen sich die Höhe, statt das Gitter zu sprengen */
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+  gap: 2px;
+  overflow: hidden;
+  /* Oben bleibt Himmel frei, unten der Streifen, auf dem Funkel läuft. */
+  padding: clamp(38px, 22%, 104px) var(--sp-2) clamp(52px, 15%, 74px);
+}
+
+.ww-slotcell {
+  --reihe: 0;
+  --jitter: 0px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  border: 3px solid transparent;
+  border-radius: var(--r-s);
+  /* Reihe 0 steht hinten und ist kleiner, die vorderste Reihe am größten */
+  font-size: calc(clamp(22px, 7vw, 36px) * (0.76 + var(--reihe) * 0.05));
+  line-height: 1;
+  transform: translateX(var(--jitter));
+}
+
+/*
+ * Tiefenstaffelung je Reihe. Über nth-child statt Inline-Style, weil die
+ * Spaltenzahl je nach Bildschirm 4 oder 6 ist.
+ */
+.ww-slotcell:nth-child(-n + 4) { --reihe: 0; }
+.ww-slotcell:nth-child(n + 5):nth-child(-n + 8) { --reihe: 1; }
+.ww-slotcell:nth-child(n + 9):nth-child(-n + 12) { --reihe: 2; }
+.ww-slotcell:nth-child(n + 13):nth-child(-n + 16) { --reihe: 3; }
+.ww-slotcell:nth-child(n + 17):nth-child(-n + 20) { --reihe: 4; }
+.ww-slotcell:nth-child(n + 21) { --reihe: 5; }
+
+/* Leichter Versatz, damit der Wald gewachsen und nicht gerastert wirkt. */
+.ww-slotcell:nth-child(4n + 1) { --jitter: -5px; }
+.ww-slotcell:nth-child(4n + 2) { --jitter: 4px; }
+.ww-slotcell:nth-child(4n + 3) { --jitter: -3px; }
+.ww-slotcell:nth-child(4n + 4) { --jitter: 6px; }
+.ww-slotcell:disabled { cursor: default; }
+
+/* Beim Pflanzen pulsieren die freien Plätze */
+.ww-forest__scene--pflanzen .ww-slotcell--frei {
+  border-color: var(--wald-sonne);
+  background: rgba(246, 189, 65, 0.22);
+  animation: ww-pulse-ring 1.6s ease-out infinite;
+  cursor: pointer;
+}
+
+.ww-planted {
+  display: block;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 3px 2px rgba(46, 64, 52, 0.22));
+}
+
+.ww-forest__funkel {
+  position: absolute;
+  left: 3%;
+  bottom: 2px;
+  pointer-events: none;
+}
+.ww-forest__funkelbtn { background: none; border: 0; padding: 0; pointer-events: auto; }
+
+/* ---------- Sprechblase ---------- */
+.ww-forest__bubble {
+  padding: var(--sp-4) var(--sp-4) 0;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+}
+.ww-forest__bubble .ww-bubble { max-width: 100%; }
+
+/* ---------- Fußleiste ---------- */
+.ww-forest__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + var(--safe-b));
+  flex-wrap: wrap;
+}
+
+.ww-forest__zaehler,
+.ww-forest__hinweis {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  opacity: 0.8;
+}
+.ww-forest__hinweis { font-size: var(--fs-base); opacity: 1; }
+
+.ww-forest__level {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  padding: 4px var(--sp-3);
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+/* ---------- Shop-Inhalte (die Leiste selbst steht in Sheet.css) ---------- */
+
+.ww-shop__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--sp-3);
+}
+
+.ww-shopitem {
+  width: 100%;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--wald-creme);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+.ww-shopitem:active { transform: translateY(2px); box-shadow: none; }
+
+.ww-shopitem--teuer { opacity: 0.5; }
+.ww-shopitem--an {
+  background: var(--wald-sonne);
+  box-shadow: var(--sh-flat), 0 0 0 4px rgba(246, 189, 65, 0.45);
+}
+
+.ww-shopitem__bild { font-size: 40px; line-height: 1; }
+.ww-shopitem__name { font-family: var(--font-display); font-size: var(--fs-xs); }
+.ww-shopitem__preis {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  padding: 1px var(--sp-2);
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+.ww-shop__list--outfits .ww-shopitem { min-height: 106px; }
+.ww-shop__mehr { margin: var(--sp-4) 0 0; text-align: center; }
+
+@media (min-width: 720px) {
+  .ww-forest__scene, .ww-forest__top, .ww-forest__foot, .ww-forest__bubble {
+    width: 100%;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ww-forest__grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding-top: clamp(38px, 20%, 96px);
+    padding-bottom: clamp(56px, 16%, 80px);
+  }
+  /* Sechs Spalten = vier Reihen: Tiefenstaffelung neu verteilen */
+  .ww-slotcell:nth-child(-n + 6) { --reihe: 0; }
+  .ww-slotcell:nth-child(n + 7):nth-child(-n + 12) { --reihe: 1.7; }
+  .ww-slotcell:nth-child(n + 13):nth-child(-n + 18) { --reihe: 3.4; }
+  .ww-slotcell:nth-child(n + 19) { --reihe: 5; }
+}
