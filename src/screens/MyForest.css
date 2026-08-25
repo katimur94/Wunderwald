@@ -1,14 +1,10 @@
+/*
+ * Leisten stehen, die Szene dazwischen teilt sich den Rest.
+ * Hoehe und Ueberlauf kommen aus `.ww-vollbild` (global.css).
+ */
 .ww-forest {
   position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  /* Leisten stehen, die Szene dazwischen teilt sich den Rest. */
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
   background: var(--wald-creme);
-  overflow: hidden;
 }
 
 .ww-forest__top {
@@ -243,4 +239,183 @@
   .ww-slotcell:nth-child(n + 7):nth-child(-n + 12) { --reihe: 1.7; }
   .ww-slotcell:nth-child(n + 13):nth-child(-n + 18) { --reihe: 3.4; }
   .ww-slotcell:nth-child(n + 19) { --reihe: 5; }
+}
+
+/* ================================================================== */
+/* Phase 8: Zonen, Aktionen, Kiste, Tagesstimmung                      */
+/* ================================================================== */
+
+/* ---------- Zonen-Streifen ---------- */
+/*
+ * Der Wald waechst, der Bildschirm nicht. Passt er nicht mehr, wird er
+ * scrollbar statt zusammengedrueckt: ein Platz bleibt immer gross genug
+ * zum Antippen (--touch-min), sonst trifft ein Kinderfinger kein Reh mehr.
+ */
+.ww-forest__zonen {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-2) 60px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ww-zone {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+/* Die Wiese ist der Hauptbereich und bekommt mehr Platz. */
+.ww-zone--wiese { flex: 2.4; }
+
+/*
+ * Jeder Bereich traegt seinen eigenen Farbstreifen. Weil die Zonen scrollen
+ * koennen, das gemalte Gelaende dahinter aber steht, waere sonst nicht mehr
+ * zu erkennen, wo der Huegel aufhoert und der Bach anfaengt.
+ */
+.ww-zone { border-radius: var(--r-m); }
+.ww-zone--huegel { background: linear-gradient(180deg, rgba(150, 186, 152, 0.55), rgba(175, 209, 153, 0.18)); }
+.ww-zone--wiese { background: rgba(207, 230, 184, 0.34); }
+.ww-zone--bach { background: linear-gradient(180deg, rgba(159, 208, 223, 0.20), rgba(159, 208, 223, 0.62)); }
+
+/*
+ * Spalten richten sich nach der Breite der Szene — quer passen mehr
+ * nebeneinander, hochkant weniger. Die Zeilenhoehe hat einen festen Boden.
+ */
+.ww-zone__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  grid-auto-rows: minmax(var(--touch-min), 1fr);
+  gap: 2px;
+}
+
+/* ---------- Aktionsblase am Objekt ---------- */
+.ww-aktionen {
+  position: absolute;
+  left: 50%;
+  bottom: 62px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-card);
+  max-width: calc(100% - var(--sp-4));
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ww-aktionen__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+}
+
+.ww-aktionen button {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-tinte);
+  background: var(--wald-creme);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+.ww-aktionen__zu { background: transparent !important; border-color: transparent !important; }
+
+/* ---------- Werkzeuge in der Fußleiste ---------- */
+.ww-kanne,
+.ww-bildbtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: none;
+  font-size: 28px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+}
+.ww-kanne:active,
+.ww-bildbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wald-tinte); }
+.ww-kanne--leer { opacity: 0.42; }
+
+/* ---------- Kiste / Tabs ---------- */
+.ww-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+.ww-tab {
+  flex: 1;
+  min-height: 52px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-tinte);
+  background: var(--wald-creme);
+  border: var(--outline);
+  border-radius: var(--r-m);
+}
+.ww-tab--an { background: var(--wald-moos); color: #fff; }
+.ww-tab__zahl {
+  display: inline-block;
+  min-width: 22px;
+  margin-left: 4px;
+  padding: 0 5px;
+  font-size: 12px;
+  background: var(--wald-sonne);
+  color: var(--wald-tinte);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+.ww-shopitem__preis--frei { background: var(--wald-blatt); }
+
+/* ---------- Aktive Auswahl auf einem Objekt ---------- */
+.ww-slotcell--aktiv {
+  border-color: var(--wald-moos);
+  background: rgba(47, 107, 79, 0.16);
+}
+
+/* ---------- Tagesstimmung ---------- */
+.ww-forest__schleier {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background var(--dur-slow) ease;
+}
+.ww-forest__schleier--morgen { background: linear-gradient(180deg, rgba(255, 214, 140, 0.36), rgba(255, 236, 190, 0.12)); }
+.ww-forest__schleier--tag    { background: transparent; }
+.ww-forest__schleier--abend  { background: linear-gradient(180deg, rgba(255, 150, 70, 0.32), rgba(255, 190, 120, 0.18)); }
+.ww-forest__schleier--nacht  { background: linear-gradient(180deg, rgba(24, 38, 84, 0.52), rgba(30, 48, 96, 0.42)); }
+
+.ww-forest__sonne--abend { background: #F08A3C; box-shadow: 0 0 0 10px rgba(240, 138, 60, 0.26); }
+.ww-forest__sonne--nacht { background: #EFF3E4; box-shadow: 0 0 0 8px rgba(239, 243, 228, 0.2); }
+.ww-forest__sonne--morgen { background: #FFD98A; }
+
+/* Nachts leuchten die Laternen */
+.ww-planted--leuchtet {
+  filter: drop-shadow(0 0 10px rgba(255, 214, 120, 0.95)) drop-shadow(0 3px 2px rgba(46, 64, 52, 0.22));
+}
+
+/* Glühwürmchen */
+.ww-gluehen { position: absolute; inset: 0; pointer-events: none; }
+.ww-gluehen__punkt {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #FFF3A8;
+  box-shadow: 0 0 8px 3px rgba(255, 243, 168, 0.75);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keine schwebenden Partikel, nur ein ruhiger Schimmer */
+  .ww-gluehen { display: none; }
 }

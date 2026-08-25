@@ -71,19 +71,38 @@ npm run build && npx vite preview --port 4173 &
 npm run smoke        # kompletter Durchlauf, prüft auch: keine externen Requests
 npm run acceptance   # Akzeptanzkriterien aus der Spezifikation, Abschnitt 15
 npm run layout-guard # Viewport-Wächter (siehe unten)
+npm run forest-check # Wald in allen Ausbaustufen: Kiste, Gießen, Bild
 ```
 
 ### Layout-Wächter
 
 `npm run layout-guard` fährt fünf echte Gerätegrößen ab — 360×560, 360×640, 390×780, 768×1024 und
-quer 740×360 — und prüft auf jedem Screen, ob sichtbarer Spielinhalt unter die Kopfleiste oder das
-Funkel-Panel rutscht und ob irgendwo horizontal gescrollt werden muss. Durchlaufen werden
-Weltkarte, alle Welten, **jedes Spiel auf niedriger und hoher Stufe**, Mein Wald und der
-Elternbereich; Screenshots landen unter `/tmp/wunderwald-layout` (oder `$SHOTS`).
+quer 740×360 — und prüft auf jedem Screen vier Dinge:
+
+1. Kein sichtbarer Spielinhalt rutscht unter die Kopfleiste oder das Funkel-Panel.
+2. Nirgends muss horizontal gescrollt werden.
+3. Ein Vollbild-Schirm ist genau so hoch wie der Viewport — keine feste Leiste steht unterhalb
+   des Bildrands.
+4. Ein belegter Waldplatz bleibt groß genug zum Antippen.
+
+Gemessen wird dabei das **sichtbare** Rechteck: erst mit allen schneidenden Vorfahren und dem
+Viewport verschnitten, denn was im Scrollbereich weggeschnitten ist, überlappt nichts.
+
+Durchlaufen werden Weltkarte, alle Welten, **jedes Spiel auf niedriger und hoher Stufe**, Mein
+Wald in zwei Ausbaustufen (14 und 38 Dinge), Shop, Kiste und der Elternbereich; Screenshots landen
+unter `/tmp/wunderwald-layout` (oder `$SHOTS`).
 
 Das ist das Netz gegen genau die Klasse von Fehlern, die auf einem Desktop-Browser nie auffällt:
-Auf 360×560 ist zwischen den Leisten kaum Platz, und ein zentrierter Flex-Container schneidet bei
-Überlauf oben ab, statt zu scrollen.
+Auf 360×560 ist zwischen den Leisten kaum Platz, ein zentrierter Flex-Container schneidet bei
+Überlauf oben ab statt zu scrollen — und ein `height: 100dvh` nützt nichts, solange derselbe
+Kasten `flex: 1` trägt (siehe `DECISIONS.md`, D33).
+
+### Wald-Prüfung
+
+`npm run forest-check` öffnet den Wald in allen Ausbaustufen (ein Bereich, zwei, alle drei) und zu
+vier Tageszeiten und prüft die Handgriffe, die nur im echten Browser sichtbar werden: Aktionsblase
+am Objekt, Einlagern in die Kiste, Gießen (und dass es am selben Tag kein zweites Mal geht) und
+das gespeicherte PNG.
 
 > **Repo-Name und `base` müssen zusammenpassen.** Das Repo heißt `Wunderwald`, deshalb steht in
 > `vite.config.ts` `base: '/Wunderwald/'`. Wird das Repo umbenannt, muss dieser Wert mit.

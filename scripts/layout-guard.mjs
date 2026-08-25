@@ -1,9 +1,12 @@
 /**
  * Viewport-Wächter.
  *
- * Prüft auf einer Matrix echter Gerätegrößen, dass auf KEINEM Screen
- * Spielinhalt unter die Kopfleiste oder das Funkel-Panel rutscht und dass
- * nirgends horizontal gescrollt werden muss.
+ * Prüft auf einer Matrix echter Gerätegrößen dreierlei:
+ *  1. Kein Spielinhalt rutscht unter die Kopfleiste oder das Funkel-Panel.
+ *  2. Nirgends muss horizontal gescrollt werden.
+ *  3. Ein Vollbild-Schirm ist genau so hoch wie der Viewport — seine festen
+ *     Leisten stehen also nie unterhalb der Falz.
+ *  4. Waldplaetze bleiben gross genug zum Antippen.
  *
  * Voraussetzung (bewusst keine devDependency):
  *   npm i -D playwright
@@ -51,17 +54,38 @@ async function pruefeUeberlappung(page) {
     const barR = bar?.getBoundingClientRect()
     const panelR = panel?.getBoundingClientRect()
 
+    /*
+     * Was das Kind sieht, ist nicht das Rechteck des Elements, sondern dessen
+     * Schnitt mit allen scrollenden oder schneidenden Vorfahren. Ohne diesen
+     * Schnitt meldet die Messung Inhalt als "unter der Leiste", der in
+     * Wahrheit im Scrollbereich weggeschnitten ist.
+     */
+    const sichtbar = (el) => {
+      const r = el.getBoundingClientRect()
+      let top = r.top, bottom = r.bottom, left = r.left, right = r.right
+      for (let p = el.parentElement; p; p = p.parentElement) {
+        const cs = getComputedStyle(p)
+        if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue
+        const pr = p.getBoundingClientRect()
+        top = Math.max(top, pr.top); bottom = Math.min(bottom, pr.bottom)
+        left = Math.max(left, pr.left); right = Math.min(right, pr.right)
+      }
+      top = Math.max(top, 0); left = Math.max(left, 0)
+      bottom = Math.min(bottom, window.innerHeight); right = Math.min(right, window.innerWidth)
+      return { top, bottom, left, right, width: right - left, height: bottom - top }
+    }
+
     // Alle sichtbaren Blattelemente der Stage einsammeln
     const kandidaten = [...stage.querySelectorAll('*')].filter((el) => {
       if (el.children.length > 0) return false
-      const r = el.getBoundingClientRect()
-      if (r.width < 2 || r.height < 2) return false
       const cs = getComputedStyle(el)
-      return cs.visibility !== 'hidden' && cs.display !== 'none' && cs.opacity !== '0'
+      if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') return false
+      const r = sichtbar(el)
+      return r.width >= 2 && r.height >= 2
     })
 
     for (const el of kandidaten) {
-      const r = el.getBoundingClientRect()
+      const r = sichtbar(el)
       const wer = el.className?.baseVal ?? el.className ?? el.tagName
       if (barR && r.top < barR.bottom - 1 && r.bottom > barR.top) {
         probleme.push(`"${String(wer).slice(0, 40)}" liegt ${Math.round(barR.bottom - r.top)}px unter der Kopfleiste`)
@@ -74,6 +98,59 @@ async function pruefeUeberlappung(page) {
   })
 }
 
+/**
+ * Zweite Kernmessung: Ein Vollbild-Schirm ist genau so hoch wie der Viewport.
+ * Ist er hoeher, steht seine Fussleiste unterhalb der Falz — auf dem Geraet
+ * heisst das: Giesskanne und Kamera sind schlicht nicht erreichbar. Genau so
+ * ist der Fehler im vollen Wald aufgefallen, den die Ueberlappungsmessung
+ * nicht sehen konnte.
+ */
+async function pruefeVollbild(page) {
+  return page.evaluate(() => {
+    const probleme = []
+    const schirm = document.querySelector('.ww-vollbild')
+    if (!schirm) return probleme
+
+    const vh = window.innerHeight
+    const r = schirm.getBoundingClientRect()
+    if (Math.round(r.height) > vh + 1) {
+      probleme.push(`Vollbild-Schirm ${Math.round(r.height)}px hoch bei ${vh}px Viewport`)
+    }
+    if (document.documentElement.scrollHeight > vh + 1) {
+      probleme.push(`Seite scrollt vertikal (${document.documentElement.scrollHeight} > ${vh})`)
+    }
+    // Jede feste Leiste muss vollstaendig sichtbar sein.
+    for (const sel of ['.ww-gameshell__bar', '.ww-gameshell__funkel', '.ww-forest__top', '.ww-forest__foot']) {
+      const el = schirm.querySelector(sel)
+      if (!el) continue
+      const b = el.getBoundingClientRect()
+      if (b.bottom > vh + 1) probleme.push(`"${sel}" endet ${Math.round(b.bottom - vh)}px unter dem Bildrand`)
+      if (b.top < -1) probleme.push(`"${sel}" beginnt ${Math.round(-b.top)}px ueber dem Bildrand`)
+    }
+    return [...new Set(probleme)].slice(0, 4)
+  })
+}
+
+/**
+ * Dritte Messung: Waldplaetze bleiben antippbar. Wird der Wald groesser als
+ * der Bildschirm, darf er scrollen — aber nicht so zusammenschrumpfen, dass
+ * ein Kinderfinger das Reh nicht mehr trifft.
+ */
+async function pruefeTippziele(page) {
+  return page.evaluate(() => {
+    const probleme = []
+    const min = 40
+    for (const el of document.querySelectorAll('.ww-slotcell--voll')) {
+      const r = el.getBoundingClientRect()
+      if (r.width < 1 && r.height < 1) continue
+      if (r.width < min || r.height < min) {
+        probleme.push(`Waldplatz nur ${Math.round(r.width)}x${Math.round(r.height)}px (min ${min})`)
+      }
+    }
+    return [...new Set(probleme)].slice(0, 2)
+  })
+}
+
 async function pruefeScreen(page, viewport, screen, hash, warten = 1400) {
   await page.evaluate((h) => { location.hash = h }, hash)
   await page.waitForTimeout(warten)
@@ -82,6 +159,8 @@ async function pruefeScreen(page, viewport, screen, hash, warten = 1400) {
   if (sw > iw + 1) melde(viewport, screen, `horizontales Scrollen (${sw} > ${iw})`)
 
   for (const p of await pruefeUeberlappung(page)) melde(viewport, screen, p)
+  for (const p of await pruefeVollbild(page)) melde(viewport, screen, p)
+  for (const p of await pruefeTippziele(page)) melde(viewport, screen, p)
 
   await page.screenshot({ path: `${OUT}/${viewport}-${screen.replace(/\W+/g, '-')}.png` })
 }
@@ -105,15 +184,34 @@ async function seed(page) {
       recoveryHash: '', recoverySalt: '', createdAt: 1,
       settings: { ttsOn: false, soundOn: false, dailyLimitMin: 0, pinFails: 0, pinLockedUntil: 0, lastBackupAt: Date.now(), installHintDismissed: true },
     })
-    const forest = Array.from({ length: 14 }, (_, i) => ({
-      slot: i, objectId: ['baum', 'blume', 'busch', 'tanne', 'pilzhaus', 'hase'][i % 6],
-      placedAt: 1, growthDays: 4, lastGrowthDay: '2020-01-01',
-    }))
+    const pflanze = (slot, objectId) => ({
+      slot, objectId, placedAt: 1, growthDays: 4, lastGrowthDay: '2020-01-01',
+    })
+    // Kleiner Wald: Lichtung plus gerade freigeschaltetes Bachufer.
+    const waldKlein = Array.from({ length: 14 }, (_, i) =>
+      pflanze(i, ['baum', 'blume', 'busch', 'tanne', 'pilzhaus', 'hase'][i % 6]))
+
+    // Grosser Wald: alle drei Bereiche offen und fast voll - der Stresstest fuers Layout.
+    const wiese = ['baum', 'blume', 'busch', 'tanne', 'pilzhaus', 'hase', 'bank', 'lagerfeuer',
+      'laterne', 'sonnenblume', 'erdbeerbeet', 'vogelhaus', 'schaukel', 'bienenstock', 'igel',
+      'reh', 'teich', 'schmetterlinge', 'regenbogen', 'baum', 'blume', 'busch', 'tanne', 'bank']
+    const bach = ['seerose', 'teich', 'bruecke', 'ente', 'seerose', 'teich', 'bruecke', 'ente']
+    const huegel = ['tanne', 'fuchsbau', 'eule', 'baum', 'blume', 'hase']
+    const waldGross = [
+      ...wiese.map((o, i) => pflanze(i, o)),
+      ...bach.map((o, i) => pflanze(24 + i, o)),
+      ...huegel.map((o, i) => pflanze(32 + i, o)),
+    ]
+
     for (const [id, name, level] of [['klein', 'Mia', 4], ['gross', 'Ben', 9]]) {
+      const gross = id === 'gross'
       tx.objectStore('children').put({
-        id, nickname: name, avatarId: 'hase', birthYear: 2019, createdAt: id === 'klein' ? 1 : 2,
+        id, nickname: name, avatarId: 'hase', birthYear: 2019, createdAt: gross ? 2 : 1,
         stars: 60, starsTotal: 260, companion: { level: 5, xp: 0, outfitId: 'hut', ownedOutfits: [] },
-        forest, milestones: ['forest-10'], toured: true,
+        forest: gross ? waldGross : waldKlein,
+        inventory: gross ? [{ objectId: 'baum', growthDays: 4 }, { objectId: 'ente', growthDays: 0 }] : [],
+        milestones: gross ? ['forest-10', 'forest-25', 'set-wasser'] : ['forest-10'],
+        forestDays: gross ? 12 : 3, lastVisitDay: '2020-01-01', toured: true,
       })
       for (const w of ['zahlen', 'buchstaben', 'logik']) {
         tx.objectStore('progress').put({ childId: id, worldId: w, level, xp: 0, streak: 0, failStreak: 0, recentTimes: [] })
@@ -144,7 +242,23 @@ for (const vp of VIEWPORTS) {
       await pruefeScreen(page, vp.name, `${g}-${kind}`, `#/kind/${kind}/spiel/${g}`, 1800)
     }
   }
-  await pruefeScreen(page, vp.name, 'mein-wald', '#/kind/klein/wald', 1800)
+  // Wald in beiden Ausbaustufen: eine Zone und alle drei Zonen fast voll.
+  await pruefeScreen(page, vp.name, 'mein-wald-klein', '#/kind/klein/wald', 1800)
+  await pruefeScreen(page, vp.name, 'mein-wald-gross', '#/kind/gross/wald', 2200)
+  // Shop mit beiden Reitern - das laengste scrollbare Blatt der App.
+  await page.getByRole('button', { name: /Pflanzen/ }).first().click().catch(() => {})
+  await page.waitForTimeout(900)
+  await pruefeScreen(page, vp.name, 'wald-shop-kaufen', '#/kind/gross/wald', 700)
+  await page.getByRole('tab', { name: /Kiste/ }).click().catch(() => {})
+  await page.waitForTimeout(600)
+  await pruefeScreen(page, vp.name, 'wald-shop-kiste', '#/kind/gross/wald', 600)
+  await page.getByRole('button', { name: /Schlie\u00dfen|Zur\u00fcck|Fertig/ }).first().click().catch(() => {})
+  await page.waitForTimeout(700)
+
+  // Aktionsblase an einem Objekt: sie darf nicht aus dem Bild laufen.
+  await page.locator('.ww-slotcell--voll').first().click().catch(() => {})
+  await page.waitForTimeout(700)
+  await pruefeScreen(page, vp.name, 'wald-aktionsblase', '#/kind/gross/wald', 600)
 
   // Elternbereich (hinter PIN)
   await page.evaluate(() => { location.hash = '#/eltern' })

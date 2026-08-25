@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { db, DEFAULT_SETTINGS } from './db'
+import { db, DEFAULT_SETTINGS, SCHEMA_VERSION } from './db'
 import { createChild } from './children'
 import { backupFilename, BackupError, buildBackup, daysSince, importBackup, validateBackup } from './backup'
 import type { Family } from './types'
@@ -43,7 +43,9 @@ describe('Sicherung erstellen', () => {
     await seed()
     const backup = await buildBackup()
     expect(backup.app).toBe('wunderwald')
-    expect(backup.schemaVersion).toBe(1)
+    // Gegen die Konstante pruefen, nicht gegen eine Zahl — sonst bricht der
+    // Test bei jeder Schema-Erweiterung, obwohl nichts kaputt ist.
+    expect(backup.schemaVersion).toBe(SCHEMA_VERSION)
     expect(backup.data.family).toHaveLength(1)
     expect(backup.data.children).toHaveLength(1)
     expect(backup.data.progress).toHaveLength(3) // drei Welten

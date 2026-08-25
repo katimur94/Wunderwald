@@ -302,3 +302,111 @@ Durchlaufen werden Weltkarte, alle drei Welten, **jedes Spiel auf niedriger und 
 (zwei Kinder werden dafür angelegt, eines auf Stufe 4, eines auf Stufe 9), Mein Wald und der
 Elternbereich. Wie `smoke.mjs` braucht das Skript eine lokale Playwright-Installation und läuft
 deshalb nicht in der CI.
+
+## D27 — Schema 2: neue Felder mit Vorgabe statt Fallunterscheidung im Code
+Der lebendige Wald braucht vier neue Felder am Kind: `inventory` (die Kiste), `lastWatered`,
+`forestDays` und `lastVisitDay`. Dexie bekommt dafür `version(2)` mit einem `upgrade`, das jedes
+vorhandene Kind einmalig auf sinnvolle Vorgaben setzt.
+
+Die Alternative wäre gewesen, die Felder optional zu lassen und überall im Code `?? []` bzw.
+`?? 0` zu schreiben. Das hält jede alte Kombination für immer am Leben — und man merkt erst beim
+Absturz, welche Stelle man vergessen hat. Nach der Migration darf der Code davon ausgehen, dass
+die Felder da sind. Ein eigener Test (`migration.test.ts`) legt einen Wald im alten Format an,
+öffnet die Datenbank in Version 2 und prüft, dass nichts verloren geht und die Vorgaben stehen.
+
+Der Sicherungs-Export trägt die Schema-Nummer mit; der Test vergleicht sie gegen die Konstante
+`SCHEMA_VERSION`, damit er die nächste Migration überlebt, statt bei jeder Version zu brechen.
+
+## D28 — Bereiche sind Slot-Bereiche, keine eigenen Gitter
+Bachufer und Hügel könnten je ein eigenes Gitter mit eigener Zählung bekommen. Stattdessen ist
+der Wald **eine** durchnummerierte Fläche: Wiese 0–23, Bach 24–31, Hügel 32–39. `zoneOfSlot`
+rechnet aus der Nummer den Bereich aus.
+
+Das kostet nichts und spart viel: Ein gepflanztes Objekt bleibt einfach `{ slot, objectId }`, die
+alten Wälder passen unverändert weiter, und Umräumen zwischen Bereichen ist eine Zuweisung statt
+eines Umzugs zwischen Datenstrukturen. Welche Objekte wo stehen dürfen, entscheidet `zonen` am
+Objekt (Seerose nur an den Bach, Fuchsbau nur auf den Hügel, Laterne überall) — geprüft in
+`darfInZone`, angewendet in `freeSlots`, damit gar nicht erst ein unmöglicher Platz angeboten wird.
+
+Freigeschaltet wird nach Anzahl der Objekte (Bach ab 12, Hügel ab 20), gefeiert genau einmal:
+`neuerBereich` gibt den Bereich nur zurück, solange die Marke `bereich-<zone>` fehlt.
+
+## D29 — Set-Boni laufen über die vorhandene Meilenstein-Mechanik
+Drei Sammlungen bringen ein Geschenk: drei Wasser-Dinge locken die Ente, ein Vogelhaus neben zwei
+Bäumen den Vogel, fünf verschiedene Pflanzen die Schmetterlinge. Technisch ist das kein zweites
+System, sondern derselbe Weg wie bei den Sternen-Meilensteinen: Die Prüfung hängt in
+`pendingGift`, die Marke landet in `milestones`, das Geschenk kommt geschenkt in den Wald.
+
+Ein Bonus wird damit garantiert nur einmal vergeben, auch wenn das Kind das auslösende Objekt
+wieder einlagert und neu setzt — und der Elternbereich zeigt Set-Boni ohne Zusatzcode mit an.
+
+## D30 — Gießen ist eine Tagesfrage, kein Pflegedruck
+Einmal am Tag darf gegossen werden; das bringt jeder jungen Pflanze einen Wachstumstag. Umgesetzt
+als Vergleich von `lastWatered` mit dem heutigen `dayKey` — kein Timer, keine Erinnerung, keine
+Benachrichtigung.
+
+Bewusst fehlt die Gegenrichtung: Nicht-Gießen schadet nie. Pflanzen welken nicht, nichts geht
+kaputt, nichts läuft ab. Ein Kind, das eine Woche nicht da war, findet seinen Wald genau so
+wieder, wie es ihn verlassen hat. Ein Spiel für Vierjährige darf kein schlechtes Gewissen bauen.
+Ist heute schon gegossen, wird die Kanne blass und Funkel sagt, dass es morgen wieder geht —
+statt eines gesperrten Knopfes ohne Erklärung.
+
+## D31 — Tiere wandern beim Betreten, nicht im Hintergrund
+Höchstens ein Tier wechselt pro Besuch den Platz, und zwar mit 30 % Wahrscheinlichkeit beim Laden
+des Waldes. Kein Intervall, kein Timer, keine Animation, die im Hintergrund weiterläuft.
+
+Ein Wald, in dem sich ständig etwas bewegt, zieht die Aufmerksamkeit vom Spiel ab und lässt das
+Gerät nie zur Ruhe kommen. So ist der Effekt trotzdem da, wo er wirkt: Beim Wiederkommen ist etwas
+anders — „das Reh ist umgezogen“ — und dazwischen ist Ruhe. Angetippte Tiere antworten mit ihrem
+Klang (`bird`, `hop`, `rustle`, alle synthetisiert wie alle anderen) und einem Waldbuch-Fakt.
+
+## D32 — Das Waldbild wird gezeichnet, nicht abfotografiert
+„Mein Wald als Bild“ malt die Szene auf ein Canvas und lädt sie als PNG herunter — Himmelverlauf
+nach Tageszeit, Gelände, Objekte als Emoji über `fillText`.
+
+Der naheliegende Weg wäre gewesen, das DOM als SVG zu serialisieren und daraus ein Bild zu machen.
+Das bringt aber die ganze Seite mit: externe Schriftverweise, `foreignObject`-Eigenheiten je
+Browser, und ein Ergebnis, das je nach Bildschirmgröße anders aussieht. Gezeichnet ist das Bild in
+jedem Browser gleich groß (1200×800) und hängt an keinem einzigen Layoutdetail.
+
+Das Bild entsteht im Gerät und wird als Datei gespeichert — kein Upload, kein Teilen-Dialog, kein
+Server. Es ist der einzige Weg, auf dem etwas aus dem Wunderwald herauskommt, und er führt in den
+Download-Ordner des eigenen Geräts.
+
+## D33 — `.ww-vollbild`: `flex: none` ist der Kern, nicht `height`
+Der erweiterte Wald hat einen Fehler ans Licht gebracht, den der Wächter aus Phase 7 nicht sehen
+konnte. `.ww-forest` und `.ww-gameshell` trugen `height: 100dvh` — aber zugleich `flex: 1`. In
+einem Spalten-Flexbereich ist `height` dann nur die Ausgangsgröße: Ein Kind mit großer
+Mindesthöhe drückt den Schirm darüber hinaus. Bei 38 Objekten war der Wald 670 px hoch auf einem
+560 px hohen Bildschirm — Gießkanne, Kamera und Pflanzen-Knopf standen **110 px unterhalb der
+Falz** und waren schlicht nicht erreichbar. Quer waren es 355 px.
+
+Neu gibt es eine gemeinsame Grundform `.ww-vollbild` mit `flex: none` plus `height`/`max-height:
+100dvh`. Damit gilt die Höhe, und der Überlauf wird innen gelöst, wo er hingehört. Beide
+Vollbild-Schirme benutzen sie.
+
+Innen löst ihn der Wald so: Passt er nicht mehr, **scrollt** der Zonen-Streifen, statt sich
+zusammenzudrücken. Die Zeilenhöhe hat mit `--touch-min` einen festen Boden, die Spaltenzahl
+richtet sich über `auto-fill` nach der Breite (hochkant vier, quer mehr). Ein Platz bleibt so
+immer groß genug zum Antippen — vorher schrumpften die Felder unter 44 px, und ein Kinderfinger
+trifft dann kein Reh mehr.
+
+Weil die Streifen scrollen können, das gemalte Gelände dahinter aber steht, trägt jeder Bereich
+jetzt seinen eigenen Farbstreifen. Und die Reihenfolge ist nicht mehr die umgekehrte
+Freischalt-Reihenfolge (die legte den Bach über die Wiese), sondern eine Landschaft von oben nach
+unten: Hügel, Wiese, Bach — dieselbe Reihenfolge, die auch das exportierte Bild zeichnet.
+
+## D34 — Der Wächter misst jetzt sichtbare Rechtecke, nicht rohe
+Damit D33 nicht wiederkommt, prüft `layout-guard.mjs` zwei Dinge mehr: Ein Vollbild-Schirm ist
+genau so hoch wie der Viewport (und keine feste Leiste endet unterhalb des Bildrands), und ein
+belegter Waldplatz bleibt mindestens 40 px groß. Beide Messungen wurden gegengeprüft, indem der
+alte Fehler künstlich wieder eingebaut wurde — sie schlagen an, mit genau den 110 px.
+
+Dabei fiel ein Messfehler in der Überlappungsprüfung selbst auf: Sie las rohe
+`getBoundingClientRect()`-Werte und meldete damit Inhalt als „unter der Leiste“, der in Wahrheit
+im Scrollbereich weggeschnitten ist. Jetzt wird jedes Rechteck erst mit allen schneidenden
+Vorfahren und dem Viewport verschnitten. Das ist die schärfere Messung — sie war es, die den
+Wald-Fehler überhaupt sichtbar gemacht hat.
+
+Der Wächter fährt außerdem beide Ausbaustufen ab: ein Wald mit 14 Dingen und einer mit 38 über
+alle drei Bereiche, dazu Shop, Kiste und die Aktionsblase am Objekt.

@@ -98,6 +98,27 @@ button { cursor: pointer; }
    Zentriert wird ausschliesslich ueber `margin: auto` des inneren
    Wrappers — `align-items: center` schneidet bei Ueberlauf oben ab.
    ------------------------------------------------------------------ */
+/*
+ * Vollbild-Schirm: genau der sichtbare Viewport, nie mehr.
+ *
+ * `flex: none` ist hier kein Detail, sondern der Kern: als `flex: 1` waere
+ * `height` nur die Ausgangsgroesse, und ein Kind mit grosser Mindesthoehe
+ * (etwa ein voller Wald) druckt den Schirm ueber den Bildrand hinaus — die
+ * Fussleiste steht dann unerreichbar unterhalb der Falz. Mit `flex: none`
+ * gilt die Hoehe, und der Ueberlauf wird innen geloest.
+ */
+.ww-vollbild {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .ww-fixedbar { flex: none; }
 
 .ww-scrollarea {

@@ -136,3 +136,18 @@
   }
   .ww-map__scene { min-height: 340px; }
 }
+
+/* ---------- Waldtage ---------- */
+.ww-map__kopfrechts { display: flex; align-items: center; gap: var(--sp-2); }
+
+.ww-waldtage {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  background: var(--wald-papier);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}

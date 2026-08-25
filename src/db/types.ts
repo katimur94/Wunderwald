@@ -39,6 +39,12 @@ export interface ForestItem {
   lastGrowthDay: string
 }
 
+/** Eingelagertes Objekt: bleibt besessen, behält sein Wachstumsstadium. */
+export interface InventoryItem {
+  objectId: string
+  growthDays: number
+}
+
 export interface Companion {
   level: number
   xp: number
@@ -63,6 +69,17 @@ export interface Child {
   milestones?: string[]
   /** true, wenn die Mini-Tour auf der Weltkarte schon lief */
   toured?: boolean
+
+  /* ---------- ab Schema-Version 2 ---------- */
+
+  /** Kiste: eingelagerte Objekte, kosten beim Zurückholen nichts */
+  inventory?: InventoryItem[]
+  /** Tag, an dem zuletzt gegossen wurde (dayKey) */
+  lastWatered?: string
+  /** An wie vielen verschiedenen Tagen das Kind im Wunderwald war */
+  forestDays?: number
+  /** Tag des letzten Besuchs (dayKey) */
+  lastVisitDay?: string
 }
 
 export interface Progress {

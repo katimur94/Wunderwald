@@ -1,16 +1,5 @@
+/* Hoehe, Ueberlauf und Richtung kommen aus `.ww-vollbild` (global.css). */
 .ww-gameshell {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  /*
-   * Feste Hoehe im sichtbaren Viewport: Kopfleiste und Funkel-Panel stehen,
-   * nur die Stage dazwischen scrollt. 100vh als Fallback, 100dvh folgt der
-   * ein- und ausfahrenden Browserleiste.
-   */
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
   --welt: var(--wald-moos);
   background:
     radial-gradient(120% 60% at 50% 0%, #FFFFFF00 0%, #E6F0DE 100%),

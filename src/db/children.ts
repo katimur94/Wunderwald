@@ -28,6 +28,10 @@ export async function createChild(input: NewChildInput): Promise<Child> {
     forest: [],
     milestones: [],
     toured: false,
+    inventory: [],
+    lastWatered: '',
+    forestDays: 0,
+    lastVisitDay: '',
   }
   const level = startLevelForBirthYear(input.birthYear)
   const progress: Progress[] = WORLD_IDS.map((worldId: WorldId) => ({

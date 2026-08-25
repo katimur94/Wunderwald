@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ANSICHT_VON_OBEN,
+  BEREICHE,
+  aktuelleTageszeit,
+  ausKiste,
+  besucheHeute,
   companionLevel,
+  darfGiessen,
+  inKiste,
+  istGiessbar,
+  neuerBereich,
+  offeneBereiche,
+  tageszeitVon,
+  istDunkel,
+  verfuegbareSlots,
+  verschiebe,
+  wandereTier,
+  WIESE_SLOTS,
+  zoneOfSlot,
   emojiOf,
   FOREST_GIFTS,
   FOREST_OBJECTS,
@@ -131,8 +148,9 @@ describe('Wachstum', () => {
 })
 
 describe('Plätze im Wald', () => {
-  it('hat 24 Plätze', () => {
-    expect(GRID_SLOTS).toBe(24)
+  it('startet mit 24 Plätzen auf der Lichtung', () => {
+    // Bach und Huegel kommen erst mit 12 bzw. 20 Objekten dazu (siehe Bereiche).
+    expect(WIESE_SLOTS).toBe(24)
     expect(freeSlots([])).toHaveLength(24)
   })
 
@@ -190,5 +208,234 @@ describe('Funkels Level und Outfits', () => {
     expect(unlockedOutfits(0)).toHaveLength(0)
     expect(unlockedOutfits(50).map((o) => o.id)).toEqual(['halstuch'])
     expect(unlockedOutfits(400).length).toBeGreaterThanOrEqual(6)
+  })
+})
+
+/* ================================================================== */
+/* Phase 8                                                              */
+/* ================================================================== */
+
+describe('Bereiche', () => {
+  it('startet mit der Lichtung und schaltet Bach und Hügel nach', () => {
+    expect(offeneBereiche(0).map((b) => b.zone)).toEqual(['wiese'])
+    expect(offeneBereiche(11).map((b) => b.zone)).toEqual(['wiese'])
+    expect(offeneBereiche(12).map((b) => b.zone)).toEqual(['wiese', 'bach'])
+    expect(offeneBereiche(20).map((b) => b.zone)).toEqual(['wiese', 'bach', 'huegel'])
+  })
+
+  it('hat 24 Plätze auf der Wiese und 40 insgesamt', () => {
+    expect(WIESE_SLOTS).toBe(24)
+    expect(GRID_SLOTS).toBe(40)
+    expect(verfuegbareSlots(0)).toHaveLength(24)
+    expect(verfuegbareSlots(20)).toHaveLength(40)
+  })
+
+  it('ordnet jeden Slot genau einer Zone zu', () => {
+    expect(zoneOfSlot(0)).toBe('wiese')
+    expect(zoneOfSlot(23)).toBe('wiese')
+    expect(zoneOfSlot(24)).toBe('bach')
+    expect(zoneOfSlot(31)).toBe('bach')
+    expect(zoneOfSlot(32)).toBe('huegel')
+    expect(zoneOfSlot(39)).toBe('huegel')
+  })
+
+  it('feiert jeden neuen Bereich genau einmal', () => {
+    expect(neuerBereich(11, [])).toBeNull()
+    expect(neuerBereich(12, [])?.zone).toBe('bach')
+    // schon gefeiert -> nicht noch einmal
+    expect(neuerBereich(12, ['bereich-bach'])).toBeNull()
+    expect(neuerBereich(20, ['bereich-bach'])?.zone).toBe('huegel')
+    expect(neuerBereich(20, ['bereich-bach', 'bereich-huegel'])).toBeNull()
+  })
+
+  it('bietet nur Plätze an, auf denen das Objekt stehen darf', () => {
+    const wald: ForestItem[] = Array.from({ length: 20 }, (_, i) => item('blume', 0, i))
+    // Seerose gehoert an den Bach
+    const fuerSeerose = freeSlots(wald, 'seerose')
+    expect(fuerSeerose.length).toBeGreaterThan(0)
+    fuerSeerose.forEach((s) => expect(zoneOfSlot(s)).toBe('bach'))
+    // Fuchsbau nur auf den Huegel
+    freeSlots(wald, 'fuchsbau').forEach((s) => expect(zoneOfSlot(s)).toBe('huegel'))
+    // Laterne darf ueberall
+    expect(new Set(freeSlots(wald, 'laterne').map(zoneOfSlot)).size).toBeGreaterThan(1)
+  })
+
+  it('zeigt die Streifen von oben nach unten als Landschaft', () => {
+    // Nicht die umgekehrte Freischalt-Reihenfolge: die legt den Bach ueber die Wiese.
+    expect(ANSICHT_VON_OBEN).toEqual(['huegel', 'wiese', 'bach'])
+    // Jede Zone kommt genau einmal vor, keine fehlt und keine doppelt.
+    expect([...ANSICHT_VON_OBEN].sort()).toEqual(BEREICHE.map((b) => b.zone).sort())
+  })
+
+  it('gibt vor der Freischaltung keine Bach-Plätze aus', () => {
+    const klein: ForestItem[] = Array.from({ length: 5 }, (_, i) => item('blume', 0, i))
+    expect(freeSlots(klein, 'seerose')).toEqual([])
+  })
+})
+
+describe('Set-Boni', () => {
+  function mitObjekten(ids: string[], milestones: string[] = []): Child {
+    return child({ forest: ids.map((id, i) => item(id, 0, i)), milestones })
+  }
+
+  it('drei Wasser-Objekte holen die Ente', () => {
+    expect(pendingGift(mitObjekten(['teich', 'seerose', 'bruecke']))?.objectId).toBe('ente')
+    expect(pendingGift(mitObjekten(['teich', 'seerose']))).toBeNull()
+  })
+
+  it('Vogelhaus mit zwei Bäumen holt den Vogel', () => {
+    expect(pendingGift(mitObjekten(['vogelhaus', 'baum', 'tanne']))?.id).toBe('set-vogel')
+    expect(pendingGift(mitObjekten(['vogelhaus', 'baum']))).toBeNull()
+  })
+
+  it('fünf verschiedene Pflanzen holen die Schmetterlinge', () => {
+    const fuenf = ['blume', 'busch', 'sonnenblume', 'erdbeerbeet', 'seerose']
+    expect(pendingGift(mitObjekten(fuenf))?.id).toBe('set-schmetterlinge')
+    // fuenf Mal dieselbe Pflanze zaehlt nicht
+    expect(pendingGift(mitObjekten(['blume', 'blume', 'blume', 'blume', 'blume']))).toBeNull()
+  })
+
+  it('gibt jedes Set nur einmal', () => {
+    const c = mitObjekten(['teich', 'seerose', 'bruecke'], ['set-wasser'])
+    expect(pendingGift(c)?.id).not.toBe('set-wasser')
+  })
+})
+
+describe('Gießen', () => {
+  it('geht genau einmal pro Tag', () => {
+    const c = child({ lastWatered: '' })
+    expect(darfGiessen(c, '2026-05-01')).toBe(true)
+    expect(darfGiessen({ ...c, lastWatered: '2026-05-01' }, '2026-05-01')).toBe(false)
+    expect(darfGiessen({ ...c, lastWatered: '2026-05-01' }, '2026-05-02')).toBe(true)
+  })
+
+  it('nur wachsende Pflanzen lassen sich gießen', () => {
+    expect(istGiessbar(item('baum', 0))).toBe(true)
+    expect(istGiessbar(item('baum', 4))).toBe(false)   // schon im letzten Stadium
+    expect(istGiessbar(item('hase', 0))).toBe(false)   // waechst nie
+    expect(istGiessbar(item('bank', 0))).toBe(false)
+  })
+})
+
+describe('Tagesstimmung', () => {
+  it('teilt den Tag in vier Stimmungen', () => {
+    expect(tageszeitVon(7)).toBe('morgen')
+    expect(tageszeitVon(9)).toBe('morgen')
+    expect(tageszeitVon(10)).toBe('tag')
+    expect(tageszeitVon(16)).toBe('tag')
+    expect(tageszeitVon(17)).toBe('abend')
+    expect(tageszeitVon(20)).toBe('abend')
+    expect(tageszeitVon(21)).toBe('nacht')
+    expect(tageszeitVon(3)).toBe('nacht')
+  })
+
+  it('deckt alle 24 Stunden ab', () => {
+    for (let h = 0; h < 24; h++) {
+      expect(['morgen', 'tag', 'abend', 'nacht']).toContain(tageszeitVon(h))
+    }
+  })
+
+  it('nutzt ein übergebenes Datum, nicht die echte Uhr', () => {
+    expect(aktuelleTageszeit(new Date(2026, 4, 1, 22, 0))).toBe('nacht')
+    expect(aktuelleTageszeit(new Date(2026, 4, 1, 8, 0))).toBe('morgen')
+  })
+
+  it('abends und nachts leuchten die Laternen', () => {
+    expect(istDunkel('abend')).toBe(true)
+    expect(istDunkel('nacht')).toBe(true)
+    expect(istDunkel('tag')).toBe(false)
+  })
+})
+
+describe('Kiste', () => {
+  it('lagert ein und behält das Wachstumsstadium', () => {
+    const wald = [item('baum', 4, 3)]
+    const { forest, inventory } = inKiste(wald, [], 3)
+    expect(forest).toHaveLength(0)
+    expect(inventory).toEqual([{ objectId: 'baum', growthDays: 4 }])
+  })
+
+  it('holt kostenlos zurück, mit demselben Stadium', () => {
+    const { forest } = ausKiste([], [{ objectId: 'baum', growthDays: 4 }], 0, 7, '2026-05-01')
+    expect(forest).toHaveLength(1)
+    expect(forest[0].slot).toBe(7)
+    expect(forest[0].growthDays).toBe(4)
+    expect(stageOf(forest[0])).toBe(2)
+  })
+
+  it('Ein- und Auslagern verliert nichts', () => {
+    const start = [item('baum', 4, 3)]
+    const a = inKiste(start, [], 3)
+    const b = ausKiste(a.forest, a.inventory, 0, 9, '2026-05-01')
+    expect(b.inventory).toHaveLength(0)
+    expect(stageOf(b.forest[0])).toBe(stageOf(start[0]))
+  })
+
+  it('verschiebt kostenlos auf einen freien Platz', () => {
+    const wald = [item('baum', 2, 3), item('blume', 0, 5)]
+    const neu = verschiebe(wald, 3, 8)
+    expect(neu.find((f) => f.objectId === 'baum')?.slot).toBe(8)
+    expect(neu.find((f) => f.objectId === 'baum')?.growthDays).toBe(2)
+  })
+
+  it('verschiebt nicht auf einen belegten Platz', () => {
+    const wald = [item('baum', 2, 3), item('blume', 0, 5)]
+    expect(verschiebe(wald, 3, 5)).toEqual(wald)
+  })
+})
+
+describe('Tiere wandern', () => {
+  const wald: ForestItem[] = [
+    item('hase', 0, 0), item('blume', 0, 1),
+    ...Array.from({ length: 20 }, (_, i) => item('busch', 0, i + 2)),
+  ]
+
+  it('wandert nur manchmal', () => {
+    expect(wandereTier(wald, () => 0.9)).toBeNull()
+    expect(wandereTier(wald, () => 0.1)).not.toBeNull()
+  })
+
+  it('bewegt nur Tiere, nie Pflanzen', () => {
+    const r = wandereTier(wald, () => 0.1)!
+    expect(r.vonSlot).toBe(0)
+    expect(r.forest.find((f) => f.objectId === 'hase')?.slot).toBe(r.nachSlot)
+  })
+
+  it('bleibt in der eigenen Zone', () => {
+    for (let i = 0; i < 40; i++) {
+      let n = 0
+      const r = wandereTier(wald, () => { n++; return n === 1 ? 0.1 : (i % 10) / 10 })
+      if (r) expect(zoneOfSlot(r.nachSlot)).toBe(zoneOfSlot(r.vonSlot))
+    }
+  })
+
+  it('tut nichts, wenn es keine Tiere gibt', () => {
+    expect(wandereTier([item('blume', 0, 0)], () => 0.1)).toBeNull()
+  })
+
+  it('tut nichts, wenn alles belegt ist', () => {
+    const voll = Array.from({ length: 24 }, (_, i) => item(i === 0 ? 'hase' : 'busch', 0, i))
+    expect(wandereTier(voll, () => 0.1)).toBeNull()
+  })
+})
+
+describe('Waldtage', () => {
+  it('zählt jeden neuen Tag genau einmal', () => {
+    const c = child({ forestDays: 3, lastVisitDay: '2026-05-01' })
+    expect(besucheHeute(c, '2026-05-01')).toBeNull()
+    const w = besucheHeute(c, '2026-05-02')!
+    expect(w.forestDays).toBe(4)
+    expect(w.lastVisitDay).toBe('2026-05-02')
+  })
+
+  it('gibt alle fünf Waldtage Bonus-Sterne', () => {
+    expect(besucheHeute(child({ forestDays: 4, lastVisitDay: 'x' }), 'y')!.bonus).toBe(5)
+    expect(besucheHeute(child({ forestDays: 3, lastVisitDay: 'x' }), 'y')!.bonus).toBe(0)
+    expect(besucheHeute(child({ forestDays: 9, lastVisitDay: 'x' }), 'y')!.bonus).toBe(5)
+  })
+
+  it('reißt nie ab — auch nach langer Pause zählt einfach weiter', () => {
+    const nachPause = besucheHeute(child({ forestDays: 12, lastVisitDay: '2026-01-01' }), '2026-09-09')!
+    expect(nachPause.forestDays).toBe(13)
   })
 })

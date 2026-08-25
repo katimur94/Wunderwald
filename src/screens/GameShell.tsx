@@ -280,7 +280,7 @@ export function GameShell() {
   const Component = game.Component
 
   return (
-    <main className="ww-gameshell" data-world={game.worldId}>
+    <main className="ww-vollbild ww-gameshell" data-world={game.worldId}>
       <header className="ww-gameshell__bar">
         <button
           type="button"

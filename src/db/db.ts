@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type { Attempt, Child, Family, FamilySettings, Progress, Session, WorldId } from './types'
 
 export const DB_NAME = 'wunderwald'
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export class WunderwaldDB extends Dexie {
   family!: Table<Family, string>
@@ -20,6 +20,31 @@ export class WunderwaldDB extends Dexie {
       attempts: '++id, childId, gameId, ts',
       sessions: '++id, childId, startedAt',
     })
+
+    /*
+     * Version 2 fügt der Kind-Tabelle nur Felder hinzu — die Indizes bleiben
+     * gleich. Bestehende Kinder bekommen die Felder mit sinnvollen Vorgaben,
+     * damit alter Bestand ohne Sonderfälle weiterläuft.
+     */
+    this.version(2)
+      .stores({
+        family: 'id',
+        children: 'id, createdAt',
+        progress: '[childId+worldId], childId',
+        attempts: '++id, childId, gameId, ts',
+        sessions: '++id, childId, startedAt',
+      })
+      .upgrade((tx) =>
+        tx
+          .table('children')
+          .toCollection()
+          .modify((kind: Record<string, unknown>) => {
+            if (!Array.isArray(kind.inventory)) kind.inventory = []
+            if (typeof kind.lastWatered !== 'string') kind.lastWatered = ''
+            if (typeof kind.forestDays !== 'number') kind.forestDays = 0
+            if (typeof kind.lastVisitDay !== 'string') kind.lastVisitDay = ''
+          }),
+      )
   }
 }
 

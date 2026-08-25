@@ -12,6 +12,7 @@ import { useActiveChild, useApp, useSettings } from '../store/useApp'
 import { claimQuestBonus, questsForDay, QUEST_BONUS_STARS } from '../learning/quests'
 import { dayKey, isDailyLimitReached } from '../learning/session'
 import { updateChild } from '../db/children'
+import { besucheHeute } from '../world/forest-objects'
 import { WorldPortal } from '../world/WorldPortal'
 import './WorldMap.css'
 
@@ -35,6 +36,33 @@ export function WorldMap() {
   useEffect(() => {
     audio.setEnabled(settings.soundOn)
   }, [settings.soundOn])
+
+  /* ---------- Waldtage: jeder neue Tag zählt einmal, ohne Druck ---------- */
+  useEffect(() => {
+    if (!child) return
+    const waldtag = besucheHeute(child, dayKey())
+    if (!waldtag) return
+    let abgebrochen = false
+    void (async () => {
+      await updateChild(child.id, {
+        forestDays: waldtag.forestDays,
+        lastVisitDay: waldtag.lastVisitDay,
+        ...(waldtag.bonus > 0
+          ? { stars: child.stars + waldtag.bonus, starsTotal: child.starsTotal + waldtag.bonus }
+          : {}),
+      })
+      if (abgebrochen) return
+      await refreshChildren()
+      if (waldtag.bonus > 0) {
+        sfx('fanfare')
+        setCelebrate(true)
+        say(`Das ist dein ${waldtag.forestDays}. Waldtag! Dafür gibt es ${waldtag.bonus} Sterne.`, 'jubelt')
+        setTimeout(() => setCelebrate(false), 2600)
+      }
+    })()
+    return () => { abgebrochen = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [child?.id])
 
   /* ---------- Tageslimit prüfen ---------- */
   useEffect(() => {
@@ -111,7 +139,17 @@ export function WorldMap() {
         <button type="button" className="ww-map__kid" onClick={() => navigate('/kinder')}>
           <span className="ww-map__kidname">{child.nickname}</span>
         </button>
-        <StarCounter stars={child.stars} />
+        <span className="ww-map__kopfrechts">
+          {(child.forestDays ?? 0) > 0 && (
+            <span className="ww-waldtage" title="Waldtage">
+              <span aria-hidden="true">🗓️</span>
+              <span className="ww-sr">An </span>
+              {child.forestDays}
+              <span className="ww-sr"> Tagen im Wunderwald gewesen</span>
+            </span>
+          )}
+          <StarCounter stars={child.stars} />
+        </span>
       </header>
 
       <section className="ww-map__scene" aria-label="Waldlichtung mit vier Zielen">

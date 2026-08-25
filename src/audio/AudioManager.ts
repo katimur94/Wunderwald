@@ -6,7 +6,12 @@
  * Nutzer-Interaktion erzeugt bzw. fortgesetzt werden.
  */
 
-export type SoundId = 'click' | 'success' | 'failSoft' | 'fanfare' | 'plant' | 'star' | 'pop'
+export type SoundId =
+  | 'click' | 'success' | 'failSoft' | 'fanfare' | 'plant' | 'star' | 'pop'
+  /* Tierstimmen im Wald */
+  | 'bird' | 'hop' | 'rustle'
+  /* Silben klatschen */
+  | 'drum'
 
 class AudioManager {
   private ctx: AudioContext | null = null
@@ -145,6 +150,30 @@ class AudioManager {
 
       case 'pop':
         this.tone(440, t, 0.07, 'sine', 0.5, 880)
+        break
+
+      // Vogel: schnelles Dreiton-Arpeggio nach oben
+      case 'bird':
+        this.tone(1320, t, 0.06, 'sine', 0.4, 1600)
+        this.tone(1600, t + 0.05, 0.06, 'sine', 0.4, 1980)
+        this.tone(1980, t + 0.1, 0.09, 'sine', 0.45, 2200)
+        break
+
+      // Hüpfen: zwei kurze Plopps
+      case 'hop':
+        this.tone(320, t, 0.07, 'sine', 0.5, 620)
+        this.tone(380, t + 0.12, 0.07, 'sine', 0.45, 720)
+        break
+
+      // Rascheln im Laub
+      case 'rustle':
+        this.noise(t, 0.26, 0.22, 3200)
+        break
+
+      // Trommel fürs Silbenklatschen
+      case 'drum':
+        this.tone(120, t, 0.12, 'sine', 0.7, 70)
+        this.noise(t, 0.06, 0.18, 900)
         break
     }
   }

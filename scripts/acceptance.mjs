@@ -342,7 +342,7 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
 
   const inhalt = JSON.parse(await (await import('node:fs/promises')).readFile(pfad, 'utf8'))
   pruefe('15.6b', 'Sicherung enthält Schema-Version und alle Tabellen',
-    inhalt.schemaVersion === 1 && inhalt.data.children.length === 1 && Array.isArray(inhalt.data.progress),
+    typeof inhalt.schemaVersion === 'number' && inhalt.data.children.length === 1 && Array.isArray(inhalt.data.progress),
     `Version ${inhalt.schemaVersion}, ${inhalt.data.children.length} Kind, ${inhalt.data.progress.length} Fortschritte`)
 
   // Frische Instanz: neuer Context, Import
