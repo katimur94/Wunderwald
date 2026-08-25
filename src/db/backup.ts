@@ -111,8 +111,37 @@ export interface ImportSummary {
  * `merge`:   Kinder per id zusammenführen, bei Konflikt gewinnt der neuere Datensatz.
  *            Attempts/Sessions werden angehängt (Duplikate über Zeitstempel gefiltert).
  */
+/**
+ * Bringt ein Kind aus einer aelteren Sicherung auf die heutige Form.
+ *
+ * Die Dexie-Migration greift nur beim Versionswechsel einer bestehenden
+ * Datenbank — ein importierter Datensatz laeuft daran vorbei. Ohne diese
+ * Stelle kaeme ein Kind aus Schema 1 ohne Kiste und ohne Gieß-Tagebuch in
+ * eine App, die beides voraussetzt.
+ */
+export function normalisiereKind(kind: Child): Child {
+  const alt = kind as Child & { lastWatered?: string }
+  const tage = Array.isArray(kind.wateredDays)
+    ? kind.wateredDays
+    : alt.lastWatered
+      ? [alt.lastWatered]
+      : []
+  const sauber: Child = {
+    ...kind,
+    forest: Array.isArray(kind.forest) ? kind.forest : [],
+    milestones: Array.isArray(kind.milestones) ? kind.milestones : [],
+    inventory: Array.isArray(kind.inventory) ? kind.inventory : [],
+    wateredDays: tage,
+    forestDays: typeof kind.forestDays === 'number' ? kind.forestDays : 0,
+    lastVisitDay: typeof kind.lastVisitDay === 'string' ? kind.lastVisitDay : '',
+  }
+  delete (sauber as { lastWatered?: string }).lastWatered
+  return sauber
+}
+
 export async function importBackup(backup: BackupFile, mode: ImportMode): Promise<ImportSummary> {
-  const { family, children, progress, attempts, sessions } = backup.data
+  const { family, progress, attempts, sessions } = backup.data
+  const children = backup.data.children.map(normalisiereKind)
 
   await db.transaction(
     'rw',

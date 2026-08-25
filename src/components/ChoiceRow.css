@@ -56,3 +56,19 @@
   .ww-choice { min-width: 78px; min-height: 78px; font-size: 32px; }
   .ww-choices { gap: var(--sp-3); }
 }
+
+/*
+ * Kurze Schirme: Die Antwortknoepfe stehen ganz unten. Bleiben sie so gross
+ * wie auf einem grossen Handy, rutschen sie unter die Falz — und ein Spiel
+ * ohne sichtbare Antwortknoepfe sieht fuer ein Kind aus wie kaputt.
+ * 72 px sind immer noch deutlich mehr als die 44 px Mindestgroesse.
+ */
+@media (max-height: 700px) {
+  .ww-choices { gap: var(--sp-3); }
+  .ww-choice {
+    min-width: 76px;
+    min-height: 72px;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: clamp(26px, 7vw, 38px);
+  }
+}

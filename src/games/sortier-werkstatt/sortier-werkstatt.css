@@ -1,0 +1,183 @@
+.ww-sortier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.ww-sortier__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(17px, 4.4vw, 24px);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ---------- Körbe ---------- */
+.ww-sortier__koerbe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+}
+
+.ww-korb {
+  flex: 1 1 0;
+  min-width: 92px;
+  max-width: 180px;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-2);
+  background: #E8D3B0;
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 6px 0 #B98A5E;
+}
+
+.ww-korb__deckel {
+  font-size: 34px;
+  line-height: 1.1;
+  transition: transform 160ms ease;
+}
+
+.ww-korb__name {
+  font-family: var(--font-display);
+  /* Nie unter 16px: die Aufschrift muss lesbar bleiben. */
+  font-size: max(16px, var(--fs-xs));
+  text-align: center;
+  line-height: 1.15;
+}
+
+.ww-korb__inhalt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.ww-korb__ding { font-size: 22px; line-height: 1; }
+
+.ww-korb--tisch { background: #F3E9D6; box-shadow: 0 6px 0 #CBB693; }
+
+.ww-korb--bereit { outline: 4px dashed var(--wald-sonne); outline-offset: 3px; }
+.ww-korb--hover { background: #F6E4BF; outline: 4px solid var(--wald-moos); outline-offset: 3px; }
+.ww-korb--tipp { background: #D8ECC9; }
+
+/* Falscher Korb: der Deckel klappt kurz zu. */
+.ww-korb--zu .ww-korb__deckel { transform: scaleY(0.35) translateY(8px); }
+
+/* ---------- Das Ding, das gerade dran ist ---------- */
+.ww-sortier__band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 132px;
+  justify-content: center;
+}
+
+.ww-sortding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 104px;
+  min-height: 104px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 6px 0 var(--wald-tinte);
+  /* Kinderfinger: beim Ziehen darf die Seite nicht mitscrollen. */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.ww-sortding__bild { font-size: 48px; line-height: 1; }
+.ww-sortding__name { font-family: var(--font-display); font-size: max(16px, var(--fs-xs)); }
+
+.ww-sortding--drag { opacity: 0.28; }
+
+.ww-sortding--fliegt {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+  /* Bewegt wird ausschliesslich ueber transform — nie ueber left/top. */
+  will-change: transform;
+  box-shadow: 0 10px 0 var(--wald-tinte), 0 16px 26px rgba(46, 64, 52, 0.28);
+}
+
+.ww-sortding--gewaehlt { outline: 4px solid var(--wald-bach); outline-offset: 3px; }
+
+.ww-sortier__hinweis {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.6vw, 24px);
+}
+
+.ww-sortier__zaehler {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-moos);
+}
+
+/* ---------- Deckel raten ---------- */
+.ww-sortier__deckel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-deckel {
+  min-width: 96px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--sp-2);
+  background: #B98A5E;
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 6px 0 #8C6743;
+}
+
+.ww-deckel__bild { font-size: 34px; line-height: 1; }
+.ww-deckel__name { font-family: var(--font-display); font-size: max(16px, var(--fs-xs)); color: #fff; }
+.ww-deckel--tipp { background: var(--wald-moos); }
+
+/* Kurze Schirme: Koerbe und Foerderband ruecken zusammen. */
+@media (max-height: 700px) {
+  .ww-sortier { gap: var(--sp-2); }
+  .ww-korb { min-height: 104px; }
+  .ww-korb__deckel { font-size: 28px; }
+  .ww-korb__ding { font-size: 18px; }
+  .ww-sortier__band { min-height: 104px; }
+  .ww-sortding { min-width: 88px; min-height: 88px; padding: var(--sp-2); }
+  .ww-sortding__bild { font-size: 38px; }
+  .ww-deckel { min-width: 80px; min-height: 80px; }
+}
+
+@media (max-height: 600px) {
+  .ww-sortier__band { min-height: 92px; }
+  .ww-korb { min-height: 96px; }
+}

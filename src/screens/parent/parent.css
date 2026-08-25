@@ -205,3 +205,32 @@
 
 .ww-danger { border-color: var(--wald-beere); }
 .ww-danger h2 { color: #A83B2B; }
+
+/* ---------- Wochenzahlen neben dem Balkendiagramm ---------- */
+.ww-wochenzahlen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-wochenzahlen li {
+  flex: 1 1 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-2);
+  text-align: center;
+  background: var(--wald-creme);
+  border: 2px solid rgba(46, 64, 52, 0.16);
+  border-radius: var(--r-m);
+}
+
+.ww-wochenzahlen__zahl {
+  font-family: var(--font-display);
+  font-size: var(--fs-l);
+  line-height: 1.1;
+}

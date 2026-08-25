@@ -155,6 +155,117 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
       continue
     }
 
+    // Zahlen-Waage: Tipp-Tipp — Gewicht antippen, dann die rechte Schale.
+    // Erst wird die Schale gefuellt, dann geprueft: Bei zwei oder drei
+    // noetigen Gewichten waere ein Zwischencheck immer falsch, und die
+    // Runde kaeme nie voran. Nach zwei Fehlversuchen zeigt Funkel das
+    // naechste richtige Gewicht — ab dann folgt der Treiber dem Hinweis.
+    if (await p.locator('.ww-waage').count()) {
+      const schale = p.locator('.ww-waage__schale--rechts')
+      const pruefen = p.getByRole('button', { name: /Pr\u00fcfen/ })
+      const inSchale = () => p.locator('.ww-waage__schale--rechts .ww-gewicht').count()
+      for (let runde = 0; runde < 6; runde++) {
+        for (let i = 0; i < 4; i++) {
+          const vorher = await inSchale()
+          const quelle = (await p.locator('.ww-gewicht--tipp').count())
+            ? '.ww-gewicht--tipp'
+            : '.ww-waage__vorrat .ww-gewicht'
+          if (!(await p.locator(quelle).count())) break
+          await p.locator(quelle).first().click({ force: true }).catch(() => {})
+          await schale.click({ force: true }).catch(() => {})
+          await p.waitForTimeout(190)
+          if ((await inSchale()) === vorher) break // die Schale nimmt nichts mehr
+        }
+        if (await pruefen.isEnabled().catch(() => false)) {
+          await pruefen.click({ force: true }).catch(() => {})
+          await p.waitForTimeout(620)
+        }
+        if (await p.locator('.ww-reward').count()) break
+        if (!(await p.locator('.ww-waage').count())) break
+      }
+      continue
+    }
+
+    // Reim-Boot: Trommel klopfen oder Kisten antippen.
+    if (await p.locator('.ww-boot').count()) {
+      if (await p.locator('.ww-trommel').count()) {
+        const klopfe = async (n) => {
+          for (let k = 0; k < n; k++) {
+            await p.locator('.ww-trommel').click({ force: true }).catch(() => {})
+            await p.waitForTimeout(70)
+          }
+          await p.getByRole('button', { name: 'Fertig' }).click({ force: true }).catch(() => {})
+          await p.waitForTimeout(600)
+          await p.getByRole('button', { name: 'Nochmal' }).click({ force: true }).catch(() => {})
+          await p.waitForTimeout(120)
+        }
+        // Zweimal raten, dann zeigt Funkel die Silben — die zaehlt der Treiber ab.
+        await klopfe(1)
+        if (await p.locator('.ww-trommel').count()) await klopfe(2)
+        const tipp = await p.locator('.ww-boot__tipp').innerText().catch(() => '')
+        if (tipp) await klopfe(tipp.split('–').length)
+      } else {
+        const anzahl = await p.locator('.ww-kiste').count()
+        const stand = () => p.locator('.ww-boot__frage').innerText().catch(() => '')
+        const vorher = await stand()
+        // Erst raten, dann dem Hinweis folgen (beide Reihenfolgen probieren).
+        for (const paar of [[0, 1], [1, 2], [0, 2]]) {
+          if (paar[0] >= anzahl || paar[1] >= anzahl) continue
+          await p.locator('.ww-kiste').nth(paar[0]).click({ force: true }).catch(() => {})
+          await p.waitForTimeout(130)
+          await p.locator('.ww-kiste').nth(paar[1]).click({ force: true }).catch(() => {})
+          await p.waitForTimeout(380)
+          if ((await stand()) !== vorher || (await p.locator('.ww-reward').count())) break
+        }
+        if ((await p.locator('.ww-kiste--tipp').count()) > 0) {
+          const tipps = await p.locator('.ww-kiste--tipp').count()
+          for (const reihe of [[0, 1], [1, 0]]) {
+            for (const t of reihe.slice(0, tipps)) {
+              await p.locator('.ww-kiste--tipp').nth(t).click({ force: true }).catch(() => {})
+              await p.waitForTimeout(150)
+            }
+            await p.waitForTimeout(320)
+            if ((await stand()) !== vorher) break
+          }
+        }
+      }
+      continue
+    }
+
+    // Sortier-Werkstatt: Ding antippen, dann Koerbe der Reihe nach probieren
+    if (await p.locator('.ww-sortier').count()) {
+      for (let n = 0; n < 20; n++) {
+        if (await p.locator('.ww-reward').count()) break
+        if (await p.locator('.ww-deckel').count()) {
+          const deckel = await p.locator('.ww-deckel').count()
+          for (let k = 0; k < deckel; k++) {
+            await p.locator('.ww-deckel').nth(k).click({ force: true }).catch(() => {})
+            await p.waitForTimeout(420)
+            if (!(await p.locator('.ww-deckel').count())) break
+          }
+          continue
+        }
+        if (!(await p.locator('.ww-sortding').count())) break
+        const name = await p.locator('.ww-sortding__name').first().innerText().catch(() => '')
+        const koerbe = await p.locator('.ww-korb').count()
+        let weiter = false
+        for (let k = 0; k < koerbe && !weiter; k++) {
+          // Wenn Funkel den Korb schon zeigt, gleich dorthin.
+          const ziel = (await p.locator('.ww-korb--tipp').count())
+            ? p.locator('.ww-korb--tipp').first()
+            : p.locator('.ww-korb').nth(k)
+          await p.locator('.ww-sortding').first().click({ force: true }).catch(() => {})
+          await p.waitForTimeout(110)
+          await ziel.click({ force: true }).catch(() => {})
+          await p.waitForTimeout(300)
+          const jetzt = await p.locator('.ww-sortding__name').first().innerText().catch(() => '')
+          weiter = jetzt !== name
+        }
+        if (!weiter) break
+      }
+      continue
+    }
+
     // Auswahl-Spiele: Optionen durchprobieren
     const optionen = await p.locator('.ww-choice').count()
     if (optionen === 0) { await p.waitForTimeout(500); continue }
@@ -188,7 +299,12 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
   const { childId } = await onboarding(p)
   pruefe('15.4a', 'Onboarding legt Familie und Kind an', (await dbLesen(p, 'children')).length === 1)
 
-  const SPIELE = ['zahlen-ernte', 'rechen-bruecke', 'buchstaben-fang', 'wort-baukasten', 'muster-weber', 'paar-finder']
+  const SPIELE = [
+    'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage',
+    'buchstaben-fang', 'wort-baukasten', 'reim-boot',
+    'muster-weber', 'paar-finder', 'sortier-werkstatt',
+    'mix-zahlen', 'mix-buchstaben', 'mix-logik',
+  ]
   const gespielt = []
   for (const g of SPIELE) {
     if (g === 'paar-finder') {
@@ -211,13 +327,25 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
       await p.waitForTimeout(900)
     }
   }
-  pruefe('15.4b', 'Alle 6 Spiele einmal durchspielbar', gespielt.every((g) => !g.includes('nicht')), gespielt.join(', '))
+  pruefe('15.4b', 'Alle Spiele und Mix-Runden einmal durchspielbar', gespielt.every((g) => !g.includes('nicht')), gespielt.join(', '))
 
   const kindNachSpielen = (await dbLesen(p, 'children'))[0]
   pruefe('15.4c', 'Sterne wurden vergeben', kindNachSpielen.stars > 0, `${kindNachSpielen.stars} ⭐ Guthaben, ${kindNachSpielen.starsTotal} ⭐ insgesamt`)
 
   const versuche = await dbLesen(p, 'attempts')
   pruefe('15.4d', 'Versuche werden protokolliert', versuche.length > 0, `${versuche.length} Einträge`)
+
+  // Die Mix-Runde bucht auf das Spiel, aus dem die Aufgabe stammt — sonst
+  // wuesste die Adaptivitaet nicht, woran das Kind wirklich geuebt hat.
+  const ausMix = versuche.filter((v) => String(v.gameId).startsWith('mix-'))
+  pruefe(
+    '15.4g',
+    'Mix-Runden buchen auf das gezogene Spiel',
+    ausMix.length === 0,
+    ausMix.length === 0
+      ? `${new Set(versuche.map((v) => v.gameId)).size} verschiedene Spiele protokolliert`
+      : `${ausMix.length} Versuche auf mix-* gebucht`,
+  )
 
   // Objekt im Wald pflanzen
   await p.evaluate((id) => { location.hash = `#/kind/${id}/wald` }, childId)

@@ -167,3 +167,18 @@
   .ww-bau__slots--buchstaben .ww-slot { min-width: 60px; min-height: 68px; }
   .ww-bau__bild { width: 84px; height: 84px; font-size: 48px; }
 }
+
+/* Kurze Schirme: Bild, Faecher und Vorrat ruecken zusammen. */
+@media (max-height: 700px) {
+  .ww-bau__bild { width: 76px; height: 76px; font-size: 44px; }
+  .ww-bau__frage { font-size: clamp(16px, 4.2vw, 20px); }
+  .ww-bau__satz { font-size: clamp(17px, 4.4vw, 22px); }
+  .ww-slot { min-width: 52px; min-height: 56px; }
+  .ww-stein { min-width: 52px; min-height: 56px; font-size: clamp(20px, 5.4vw, 28px); }
+}
+
+@media (max-height: 600px) {
+  .ww-bau__bild { width: 62px; height: 62px; font-size: 36px; }
+  .ww-slot { min-width: 46px; min-height: 48px; }
+  .ww-stein { min-width: 46px; min-height: 48px; font-size: clamp(18px, 5vw, 24px); }
+}

@@ -29,7 +29,7 @@ export async function createChild(input: NewChildInput): Promise<Child> {
     milestones: [],
     toured: false,
     inventory: [],
-    lastWatered: '',
+    wateredDays: [],
     forestDays: 0,
     lastVisitDay: '',
   }

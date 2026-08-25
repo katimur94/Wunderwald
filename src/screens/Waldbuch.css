@@ -1,0 +1,145 @@
+/* Hoehe und Ueberlauf kommen aus `.ww-vollbild` (global.css). */
+.ww-buch {
+  position: relative;
+  background:
+    repeating-linear-gradient(180deg, #F7EEDC 0 34px, #F2E6D0 34px 68px),
+    var(--wald-creme);
+}
+
+.ww-buch__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-4) var(--sp-3);
+}
+.ww-buch__top h1 { flex: 1; margin: 0; font-size: var(--fs-l); text-align: center; }
+
+.ww-buch__zaehler {
+  flex: none;
+  margin: 0;
+  padding: 0 var(--sp-4) var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-moos);
+  text-align: center;
+}
+
+/* Nur das Regal scrollt — die Kopfleiste steht. */
+.ww-buch__regal {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0 var(--sp-4) calc(var(--sp-6) + var(--safe-b));
+  list-style: none;
+}
+
+.ww-buchkarte {
+  width: 100%;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-card);
+}
+
+.ww-buchkarte__bild { font-size: 46px; line-height: 1; }
+
+.ww-buchkarte__name {
+  font-family: var(--font-display);
+  /* Nie unter 16px — der Name ist der Sammel-Anreiz. */
+  font-size: max(16px, var(--fs-xs));
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* Noch nicht gefunden: Schattenriss statt Bild, ohne Zaehlerdruck. */
+.ww-buchkarte--leer {
+  background: rgba(255, 255, 255, 0.45);
+  border-style: dashed;
+  box-shadow: none;
+}
+.ww-buchkarte--leer .ww-buchkarte__bild { opacity: 0.35; }
+.ww-buchkarte--leer .ww-buchkarte__name { color: var(--wald-moos); opacity: 0.7; }
+
+/* ---------- Doppelseite ---------- */
+.ww-buch__hintergrund {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  background: rgba(46, 64, 52, 0.45);
+}
+
+.ww-doppelseite {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+}
+
+/* Die Falz in der Mitte — nur, wenn beide Seiten nebeneinander passen. */
+.ww-doppelseite__links {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+.ww-doppelseite__links h2 { margin: 0; font-size: var(--fs-l); }
+.ww-doppelseite__bild { font-size: 86px; line-height: 1; }
+
+.ww-doppelseite__rechts {
+  flex: 1 1 240px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  justify-content: center;
+  border-left: 3px dashed rgba(46, 64, 52, 0.25);
+  padding-left: var(--sp-4);
+}
+
+@media (max-width: 520px) {
+  .ww-doppelseite__rechts { border-left: none; border-top: 3px dashed rgba(46, 64, 52, 0.25); padding-left: 0; padding-top: var(--sp-3); }
+}
+
+.ww-doppelseite__fakten {
+  margin: 0;
+  padding-left: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-s);
+  line-height: 1.45;
+}
+
+.ww-doppelseite__knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

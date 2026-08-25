@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import Dexie from 'dexie'
-import { WunderwaldDB } from './db'
+import { SCHEMA_VERSION, WunderwaldDB } from './db'
 
 /**
  * Bestehende Kinder stammen aus Schema-Version 1 und kennen weder Kiste noch
@@ -40,7 +40,7 @@ describe('Dexie-Migration von Version 1 auf 2', () => {
 
     const neu = new WunderwaldDB(name)
     await neu.open()
-    expect(neu.verno).toBe(2)
+    expect(neu.verno).toBe(SCHEMA_VERSION)
 
     const kind = await neu.children.get('alt-1')
     expect(kind).toBeTruthy()
@@ -52,9 +52,11 @@ describe('Dexie-Migration von Version 1 auf 2', () => {
     expect(kind!.milestones).toEqual(['forest-10'])
     // Neues ist mit sinnvollen Vorgaben da
     expect(kind!.inventory).toEqual([])
-    expect(kind!.lastWatered).toBe('')
     expect(kind!.forestDays).toBe(0)
     expect(kind!.lastVisitDay).toBe('')
+    // Aus dem einzelnen Gießtag ist ein (hier leeres) Tagebuch geworden
+    expect(kind!.wateredDays).toEqual([])
+    expect('lastWatered' in kind!).toBe(false)
     neu.close()
   })
 
@@ -67,10 +69,10 @@ describe('Dexie-Migration von Version 1 auf 2', () => {
     neu.close()
   })
 
-  it('eine frische Datenbank startet direkt auf Version 2', async () => {
+  it('eine frische Datenbank startet direkt auf der aktuellen Version', async () => {
     const db = new WunderwaldDB(`ww-frisch-${Math.floor(Math.random() * 1e9)}`)
     await db.open()
-    expect(db.verno).toBe(2)
+    expect(db.verno).toBe(SCHEMA_VERSION)
     db.close()
   })
 })

@@ -17,6 +17,7 @@ import { setTtsEnabled } from './audio/tts'
  */
 const GameShell = lazy(() => import('./screens/GameShell').then((m) => ({ default: m.GameShell })))
 const MyForest = lazy(() => import('./screens/MyForest').then((m) => ({ default: m.MyForest })))
+const Waldbuch = lazy(() => import('./screens/Waldbuch').then((m) => ({ default: m.Waldbuch })))
 const ParentArea = lazy(() =>
   import('./screens/parent/ParentArea').then((m) => ({ default: m.ParentArea })),
 )
@@ -120,6 +121,14 @@ function Shell() {
           element={
             <ChildRoute>
               <MyForest />
+            </ChildRoute>
+          }
+        />
+        <Route
+          path="/kind/:childId/waldbuch"
+          element={
+            <ChildRoute>
+              <Waldbuch />
             </ChildRoute>
           }
         />

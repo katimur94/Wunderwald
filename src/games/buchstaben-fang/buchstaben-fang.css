@@ -53,3 +53,18 @@
 
 /* Blätter im Buchstaben-Fang tragen große Buchstaben */
 .ww-choices--blatt .ww-choice { color: var(--wald-tinte); }
+
+/* Kurze Schirme: das Bild wird kleiner, die Antwortknoepfe bleiben sichtbar. */
+@media (max-height: 700px) {
+  .ww-fang__bild { width: clamp(84px, 24vw, 120px); height: clamp(84px, 24vw, 120px); }
+  .ww-fang__bild > * { font-size: clamp(50px, 15vw, 74px); }
+  .ww-fang__gross { font-size: clamp(56px, 18vw, 96px); }
+  .ww-fang__lesewort { font-size: clamp(28px, 8vw, 46px); }
+  .ww-fang__frage { font-size: clamp(16px, 4.2vw, 20px); }
+}
+
+@media (max-height: 600px) {
+  .ww-fang__bild { width: 72px; height: 72px; }
+  .ww-fang__bild > * { font-size: 44px; }
+  .ww-fang__gross { font-size: clamp(46px, 15vw, 72px); }
+}

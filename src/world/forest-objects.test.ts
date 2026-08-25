@@ -7,6 +7,9 @@ import {
   besucheHeute,
   companionLevel,
   darfGiessen,
+  giesstageSeit,
+  GIESS_TAGEBUCH,
+  merkeGiesstag,
   inKiste,
   istGiessbar,
   neuerBereich,
@@ -303,10 +306,41 @@ describe('Set-Boni', () => {
 
 describe('Gießen', () => {
   it('geht genau einmal pro Tag', () => {
-    const c = child({ lastWatered: '' })
+    const c = child({ wateredDays: [] })
     expect(darfGiessen(c, '2026-05-01')).toBe(true)
-    expect(darfGiessen({ ...c, lastWatered: '2026-05-01' }, '2026-05-01')).toBe(false)
-    expect(darfGiessen({ ...c, lastWatered: '2026-05-01' }, '2026-05-02')).toBe(true)
+    expect(darfGiessen({ ...c, wateredDays: ['2026-05-01'] }, '2026-05-01')).toBe(false)
+    expect(darfGiessen({ ...c, wateredDays: ['2026-05-01'] }, '2026-05-02')).toBe(true)
+  })
+
+  it('kommt auch ohne Tagebuch zurecht', () => {
+    // Ein Kind aus der Zeit vor dem Gießen hat das Feld noch gar nicht.
+    expect(darfGiessen(child({}), '2026-05-01')).toBe(true)
+  })
+
+  it('schreibt jeden Gießtag genau einmal ins Tagebuch', () => {
+    let tage = merkeGiesstag(undefined, '2026-05-01')
+    expect(tage).toEqual(['2026-05-01'])
+    tage = merkeGiesstag(tage, '2026-05-01')
+    expect(tage).toEqual(['2026-05-01'])
+    tage = merkeGiesstag(tage, '2026-05-02')
+    expect(tage).toEqual(['2026-05-01', '2026-05-02'])
+  })
+
+  it('hebt höchstens zwei Wochen auf', () => {
+    let tage: string[] = []
+    for (let i = 1; i <= 40; i++) {
+      tage = merkeGiesstag(tage, `2026-05-${String(i).padStart(2, '0')}`)
+    }
+    expect(tage).toHaveLength(GIESS_TAGEBUCH)
+    expect(tage[tage.length - 1]).toBe('2026-05-40')
+  })
+
+  it('zählt die Gießtage seit einem Stichtag', () => {
+    const c = child({ wateredDays: ['2026-04-28', '2026-05-01', '2026-05-03', '2026-05-04'] })
+    expect(giesstageSeit(c, '2026-05-01')).toBe(3)
+    expect(giesstageSeit(c, '2026-04-01')).toBe(4)
+    expect(giesstageSeit(c, '2026-06-01')).toBe(0)
+    expect(giesstageSeit(child({}), '2026-01-01')).toBe(0)
   })
 
   it('nur wachsende Pflanzen lassen sich gießen', () => {

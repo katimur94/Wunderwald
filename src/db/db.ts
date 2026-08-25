@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type { Attempt, Child, Family, FamilySettings, Progress, Session, WorldId } from './types'
 
 export const DB_NAME = 'wunderwald'
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 export class WunderwaldDB extends Dexie {
   family!: Table<Family, string>
@@ -43,6 +43,33 @@ export class WunderwaldDB extends Dexie {
             if (typeof kind.lastWatered !== 'string') kind.lastWatered = ''
             if (typeof kind.forestDays !== 'number') kind.forestDays = 0
             if (typeof kind.lastVisitDay !== 'string') kind.lastVisitDay = ''
+          }),
+      )
+
+    /*
+     * Version 3 macht aus dem einzelnen Gießtag ein kurzes Tagebuch. Der
+     * Elternbereich zeigt die Gießtage der Woche, und dafür reicht ein
+     * einzelnes Datum nicht. Das alte Feld wandert in die Liste und geht
+     * danach weg — zwei Quellen fürs selbe wären eine zu viel.
+     */
+    this.version(3)
+      .stores({
+        family: 'id',
+        children: 'id, createdAt',
+        progress: '[childId+worldId], childId',
+        attempts: '++id, childId, gameId, ts',
+        sessions: '++id, childId, startedAt',
+      })
+      .upgrade((tx) =>
+        tx
+          .table('children')
+          .toCollection()
+          .modify((kind: Record<string, unknown>) => {
+            if (!Array.isArray(kind.wateredDays)) {
+              const alt = typeof kind.lastWatered === 'string' ? kind.lastWatered : ''
+              kind.wateredDays = alt ? [alt] : []
+            }
+            delete kind.lastWatered
           }),
       )
   }

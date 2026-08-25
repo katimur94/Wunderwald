@@ -419,3 +419,16 @@
   /* Keine schwebenden Partikel, nur ein ruhiger Schimmer */
   .ww-gluehen { display: none; }
 }
+
+/* ---------- Knopf zum Waldbuch ---------- */
+.ww-buchbtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: none;
+  font-size: 28px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+}
+.ww-buchbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wald-tinte); }

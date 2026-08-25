@@ -51,6 +51,12 @@ export function GameShell() {
   const [milestone, setMilestone] = useState<Milestone | null>(null)
   const [limitErreicht, setLimitErreicht] = useState<boolean | null>(null)
 
+  /*
+   * Die laufende Aufgabe zusaetzlich in einer Ref. `handleDone` pflegt sein
+   * Dependency-Array von Hand; ohne die Ref laese es eine veraltete Aufgabe
+   * und buchte die Mix-Runde auf sich selbst statt auf das gezogene Spiel.
+   */
+  const taskRef = useRef<GameTask | null>(null)
   const startedAt = useRef(Date.now())
   const sessionId = useRef<number | null>(null)
   const gamesPlayed = useRef(0)
@@ -94,6 +100,7 @@ export function GameShell() {
   /* ---------- Spielwechsel: alles zurücksetzen ---------- */
   useEffect(() => {
     setTask(null)
+    taskRef.current = null
     setTaskFor(null)
     setDifficulty(null)
     setResults([])
@@ -116,6 +123,7 @@ export function GameShell() {
       if (!game) return
       const t = game.generateTask(lvl, rng)
       setTask(t)
+      taskRef.current = t
       setTaskFor(game.id)
       setReveal(false)
       startedAt.current = Date.now()
@@ -159,7 +167,8 @@ export function GameShell() {
       await db.attempts.add({
         childId,
         worldId: game.worldId,
-        gameId: game.id,
+        // Die Mix-Runde bucht auf das Spiel, aus dem die Aufgabe stammt.
+        gameId: (taskRef.current && game.attemptGameId?.(taskRef.current)) ?? game.id,
         difficulty,
         correct: report.correct,
         usedHint: report.usedHint,
@@ -331,6 +340,8 @@ export function GameShell() {
                 onWrong={handleWrong}
                 say={say}
                 revealSolution={reveal}
+                taskNo={taskNo}
+                tasksTotal={tasksPerRound}
               />
             </motion.div>
           )}

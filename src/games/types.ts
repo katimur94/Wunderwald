@@ -29,6 +29,10 @@ export interface GameComponentProps<TTask extends GameTask = GameTask> {
   say: (text: string) => void
   /** true, sobald die Shell die Lösung zeigen will (2. Fehler) */
   revealSolution: boolean
+  /** Wievielte Aufgabe der Runde, ab 0 — für Spiele mit sichtbarem Weg. */
+  taskNo?: number
+  /** Wie viele Aufgaben die Runde hat. */
+  tasksTotal?: number
 }
 
 export interface GameModule<TTask extends GameTask = GameTask> {
@@ -47,4 +51,10 @@ export interface GameModule<TTask extends GameTask = GameTask> {
    * Die GameShell zentriert dann nicht, sondern gibt die volle Höhe weiter.
    */
   fillsStage?: boolean
+  /**
+   * Auf welches Spiel der Versuch gebucht wird. Nur die Mix-Runde braucht
+   * das: Sie zieht ihre Aufgaben aus anderen Spielen, und der Versuch soll
+   * dort landen, wo die Aufgabe herkommt.
+   */
+  attemptGameId?(task: TTask): string
 }

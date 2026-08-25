@@ -46,8 +46,16 @@ export function zoneUnderPoint(zones: DropZone[], x: number, y: number): string 
 
 interface Options {
   onDrop: (dragId: string, zoneId: string | null) => void
-  /** Tipp-Tipp: Stein gewählt, dann Zone getippt. */
-  onTapPlace?: (dragId: string, zoneId: string) => void
+  /**
+   * Tipp-Tipp: Stein gewählt, dann Zone getippt.
+   *
+   * Gibt `false` zurück, wenn nichts passiert ist — dann bleibt die Auswahl
+   * stehen. Das ist wichtiger, als es klingt: Ein Tipp auf einen Stein *im*
+   * Vorrat läuft weiter bis zum Vorrat, und der ist selbst eine Zielzone.
+   * Ohne diese Rückmeldung hübe der Vorrat die eben getroffene Auswahl
+   * sofort wieder auf, und Tipp-Tipp funktionierte überhaupt nicht.
+   */
+  onTapPlace?: (dragId: string, zoneId: string) => boolean | void
   /** Wird beim Auswählen per Tipp aufgerufen (z. B. damit Funkel es benennt). */
   onSelect?: (dragId: string | null) => void
 }
@@ -144,10 +152,19 @@ export function useDragDrop({ onDrop, onTapPlace, onSelect }: Options) {
     [],
   )
 
+  /*
+   * Die Listener haengen am Fenster, nicht am laufenden Drag.
+   *
+   * Vorher wurden sie erst registriert, nachdem `start` den State gesetzt
+   * hatte und React neu gerendert hatte. Ein sehr kurzes Tippen — Finger
+   * runter und sofort wieder hoch — konnte in dieser Luecke sein `pointerup`
+   * verlieren: Der Stein wurde dann weder gewaehlt noch abgelegt, und das
+   * Kind tippt ins Leere. Jetzt stehen die Listener immer, und `dragIdRef`
+   * entscheidet, ob gerade etwas laeuft.
+   */
   useEffect(() => {
-    if (!drag) return
-
     function move(e: PointerEvent) {
+      if (!dragIdRef.current) return
       // Nur schreiben — kein State, kein Layout-Lesen.
       const p = posRef.current
       if (Math.abs(e.clientX - p.x) > 3 || Math.abs(e.clientY - p.y) > 3) bewegtRef.current = true
@@ -157,6 +174,7 @@ export function useDragDrop({ onDrop, onTapPlace, onSelect }: Options) {
 
     function end(e: PointerEvent) {
       const id = dragIdRef.current
+      if (!id) return
       dragIdRef.current = null
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current)
@@ -165,7 +183,6 @@ export function useDragDrop({ onDrop, onTapPlace, onSelect }: Options) {
       setDrag(null)
       setHoverZone(null)
       hoverRef.current = null
-      if (!id) return
 
       const zone = zoneUnderPoint(zonesCache.current, e.clientX, e.clientY)
 
@@ -189,8 +206,7 @@ export function useDragDrop({ onDrop, onTapPlace, onSelect }: Options) {
       window.removeEventListener('pointerup', end)
       window.removeEventListener('pointercancel', end)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drag, onDrop, onSelect])
+  }, [onDrop, onSelect])
 
   useEffect(() => {
     return () => {
@@ -202,7 +218,8 @@ export function useDragDrop({ onDrop, onTapPlace, onSelect }: Options) {
   const tapZone = useCallback(
     (zoneId: string) => {
       if (!gewaehlt) return false
-      onTapPlace?.(gewaehlt, zoneId)
+      const abgelegt = onTapPlace?.(gewaehlt, zoneId)
+      if (abgelegt === false) return false
       setGewaehlt(null)
       onSelect?.(null)
       return true

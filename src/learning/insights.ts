@@ -32,6 +32,9 @@ const GAME_LABELS: Record<string, string> = {
   'wort-baukasten': 'Wort-Baukasten',
   'muster-weber': 'Muster-Weber',
   'paar-finder': 'Paar-Finder',
+  'zahlen-waage': 'Zahlen-Waage',
+  'reim-boot': 'Reim-Boot',
+  'sortier-werkstatt': 'Sortier-Werkstatt',
 }
 
 const WORLD_LABELS: Record<WorldId, string> = {
@@ -54,6 +57,12 @@ const GAME_TIPS: Record<string, string> = {
     'Muster stecken überall: Fliesen im Bad, Perlenketten auffädeln, Bauklötze abwechselnd stapeln.',
   'paar-finder':
     'Merkspiele gehen auch ohne Bildschirm: „Ich packe meinen Koffer“ oder ein echtes Memory auf dem Teppich.',
+  'zahlen-waage':
+    'Zerlegen wird greifbar, wenn man es anfassen kann: sieben Bausteine hinlegen und fragen, wie man sie auf zwei Hände verteilen kann.',
+  'reim-boot':
+    'Reime hört man am besten beim Vorlesen. Reimwörter am Zeilenende betonen und das zweite Wort das Kind sagen lassen.',
+  'sortier-werkstatt':
+    'Sortieren übt sich beim Aufräumen: erst nach Art (Autos, Tiere), dann nach Merkmal (alles Rote, alles Weiche).',
 }
 
 const TAG_MS = 86_400_000
@@ -215,7 +224,54 @@ export function buildInsights(input: InsightInput, now = Date.now()): Insight[] 
     })
   }
 
-  /* --- 10. Alles ruhig --- */
+  /* --- 10. Reime sitzen noch nicht --- */
+  const reime = letzte7.filter((a) => a.gameId === 'reim-boot' && a.difficulty <= 5)
+  if (reime.length >= 6 && anteilRichtig(reime) < 0.5) {
+    out.push({
+      id: 'reime',
+      gewicht: 80,
+      ton: 'tipp',
+      titel: 'Reime sind noch schwer',
+      text:
+        `Nur ${Math.round(anteilRichtig(reime) * 100)} % der Reim-Aufgaben stimmten. ` +
+        'Reime hört man, man sieht sie nicht: Beim Vorlesen das Reimwort am Zeilenende betonen und ' +
+        `${nickname} das zweite selbst sagen lassen. Abzählreime und Quatschverse helfen genauso.`,
+    })
+  }
+
+  /* --- 11. Zerlegen macht Mühe --- */
+  const zerlegen = letzte7.filter(
+    (a) => a.gameId === 'zahlen-waage' && (a.difficulty === 4 || a.difficulty === 9),
+  )
+  if (zerlegen.length >= 6 && anteilRichtig(zerlegen) < 0.5) {
+    out.push({
+      id: 'zerlegen',
+      gewicht: 80,
+      ton: 'tipp',
+      titel: 'Zahlen zerlegen ist noch neu',
+      text:
+        'Das Aufteilen einer Zahl in zwei oder drei Summanden geht noch daneben. Mit Bausteinen wird es ' +
+        `sichtbar: sieben Klötze hinlegen und ${nickname} auf zwei Hände verteilen lassen — ` +
+        'drei und vier, fünf und zwei, jedes Mal wieder sieben.',
+    })
+  }
+
+  /* --- 12. Merkmale statt Art --- */
+  const merkmale = letzte7.filter((a) => a.gameId === 'sortier-werkstatt' && a.difficulty >= 5)
+  if (merkmale.length >= 6 && anteilRichtig(merkmale) < 0.5) {
+    out.push({
+      id: 'kategorien',
+      gewicht: 78,
+      ton: 'tipp',
+      titel: 'Sortieren nach Merkmal ist kniffliger',
+      text:
+        'Nach Art zu sortieren klappt, nach Eigenschaft noch nicht — „was fliegt" ist eben etwas anderes ' +
+        'als „was ist ein Tier". Beim Aufräumen üben: erst nach Art, dann noch einmal alles Rote oder ' +
+        'alles Weiche in eine Kiste.',
+    })
+  }
+
+  /* --- 13. Alles ruhig --- */
   if (out.length === 0) {
     out.push({
       id: 'alles-gut',

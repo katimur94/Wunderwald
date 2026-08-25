@@ -410,3 +410,203 @@ Wald-Fehler überhaupt sichtbar gemacht hat.
 
 Der Wächter fährt außerdem beide Ausbaustufen ab: ein Wald mit 14 Dingen und einer mit 38 über
 alle drei Bereiche, dazu Shop, Kiste und die Aktionsblase am Objekt.
+
+## D35 — Die Waage hat immer genau einen Weg
+Bei „7 = 3 + 4" liegt der Fehler nahe: Enthält der Vorrat auch 2 und 5, steht die Waage gerade —
+und die App sagt trotzdem „falsch". Ein Kind, das gerade richtig gerechnet hat, lernt dabei das
+Gegenteil von dem, was gemeint war.
+
+Der Vorrat wird deshalb nicht ausgewürfelt und gehofft, sondern **schrittweise gebaut**: Ein
+Ablenker kommt nur dazu, wenn es danach immer noch genau eine Kombination gibt, die die Aufgabe
+löst. Der Generator-Test rechnet das für 100 Aufgaben je Stufe nach, indem er alle Teilmengen
+des Vorrats durchprobiert.
+
+Aus demselben Grund sind die Summanden einer Zerlegung immer **verschieden**: Zwei gleiche
+Gewichte auf einer Schale sind für ein Kind kaum auseinanderzuhalten, und im Vorrat wären sie
+nicht mehr eindeutig. Erzeugt werden sie über die Umkehrung `a_i = b_i + i`, die aus einer nicht
+fallenden Folge eine streng steigende macht — statt zu würfeln und zu verwerfen.
+
+Die Waage neigt sich nach jedem abgelegten Gewicht sofort. Das Kind **sieht** zu viel oder zu
+wenig, bevor es auf Prüfen tippt — die Rückmeldung kommt vom Gegenstand, nicht von einer Meldung.
+
+## D36 — Reime stehen am Wort, nicht in einer zweiten Tabelle
+Jedes Wort der Bildwortliste trägt optional ein Feld `reimGruppe`. Daraus leiten sich die Gruppen
+ab, nicht umgekehrt. Eine zweite Liste „diese Wörter reimen sich" wäre eine zweite Wahrheit, die
+mit der ersten auseinanderlaufen kann, sobald jemand ein Wort hinzufügt.
+
+Die Kennung ist der **gehörte** Reim, nicht die Schreibweise: „Bus" gehört zu `uss`, weil es sich
+auf Nuss und Kuss reimt, obwohl es sich anders schreibt. Wer nach Buchstaben gruppiert, bekommt
+Reime, die keine sind.
+
+Daraus folgt die Regel, die die Spezifikation verlangt, von selbst: Ablenker werden aus Wörtern
+gezogen, deren Gruppe **verschieden** ist — nie aus derselben. Der Test prüft beide Richtungen:
+Innerhalb einer Gruppe reimt sich alles, über Gruppen hinweg nichts.
+
+Bei den zusammengesetzten Wörtern gilt eine harte Bedingung: Das Ergebnis braucht ein **eigenes**
+Bild. „Wassermelone" fehlt deshalb — Melone und Wassermelone tragen dasselbe Emoji, und das Kind
+könnte die Aufgabe nicht sehen, sondern nur raten.
+
+## D37 — Sortieren: erst aussieben, dann austeilen
+Die Biene ist ein Tier **und** sie fliegt **und** sie ist klein. Stehen zwei dieser Körbe offen,
+hat die Biene keine richtige Antwort. Deshalb zieht die Werkstatt ihre Objekte nur aus den
+Dingen, die in **genau einen** der offenen Körbe passen (`eindeutigeDinge`). Aussieben passiert
+beim Bauen der Aufgabe, nicht beim Bewerten.
+
+Für „zwei Merkmale gleichzeitig" (Stufe 7–8) werden die Körbe nicht zur Laufzeit geschnitten,
+sondern als fertige Runden hingeschrieben: rotes/gelbes/grünes Obst, Fahrzeuge auf Straße/Wasser/
+Luft, Tiere mit Federn/Fell/Flossen, Kleidung für Füße/Kopf/Hände. Ein Schnitt aus „rot" und
+„Fahrzeuge" ergäbe genau ein Fahrzeug — zu wenig für eine Runde, und bei Emoji-Farben ohnehin
+Glückssache.
+
+Beim falschen Korb klappt der Deckel kurz zu und das Ding bleibt in der Hand. Erst beim **zweiten**
+Fehler am selben Ding benennt Funkel die Kategorie laut — vorher darf man in Ruhe nachdenken.
+
+## D38 — Der Generator-Vertrag gilt auch für Spiele ohne Antwortknöpfe
+Kriterium 15.8 verlangt: Lösung genau einmal in den Optionen, kein Ablenker gleich der Lösung,
+100 Aufgaben je Stufe. Zwei der neuen Spiele haben aber gar keine Antwortknöpfe.
+
+Statt den Vertrag zu umgehen, bekommt jedes Spiel die Menge, die bei ihm „die Optionen" sind:
+- **Waage:** alle Gewichts-Kombinationen der geforderten Größe. Der Vertrag prüft damit genau das,
+  worauf es ankommt — dass nur eine davon die Waage geradestellt.
+- **Reim-Boot:** die Kisten-Kennungen; bei zusammengesetzten Wörtern die geordneten Paare
+  (die Reihenfolge macht das Wort), bei Silben die möglichen Klopfzahlen.
+- **Sortier-Werkstatt:** die Körbe. Weil eine Runde sechs Objekte hat, prüft der Vertrag das erste,
+  und ein **eigener** Test geht danach jedes Objekt jeder der 1000 Aufgaben durch: genau ein
+  passender Korb — oder gar keiner, dann muss es der Fragezeichen-Tisch sein.
+
+## D39 — Die Mix-Runde ist kein Spiel, sondern eine Funktion
+„Überraschung ✨" zieht pro Aufgabe ein zufälliges Spiel derselben Welt und rendert dessen
+Komponente mit dessen Aufgabe. Kein eigener Generator, keine Kopie: Neue Spiele sind automatisch
+dabei.
+
+Zwei Dinge waren dafür nötig:
+- Ein Modul kann sagen, auf welches Spiel der Versuch gebucht wird (`attemptGameId`). Sonst
+  landete jede Mix-Aufgabe unter „mix-zahlen", und die Adaptivität wüsste nicht mehr, woran das
+  Kind eigentlich geübt hat. So zählt eine Mix-Aufgabe wie eine normale Aufgabe des gezogenen
+  Spiels.
+- Brett-Spiele bleiben draußen. Beim Paar-Finder ist ein Brett eine **ganze Runde**, keine
+  einzelne Aufgabe — und es bräuchte zudem die volle Spielfläche.
+
+## D40 — Das Waldbuch zeigt Schattenrisse, keinen Fortschrittsbalken
+Fehlende Seiten stehen als Fragezeichen mit „???" im Regal — sichtbar genug, dass man sie haben
+will, ohne Prozentzahl und ohne „noch 12 fehlen". Die einzige Zahl auf dem Schirm ist „7 von 24
+Seiten entdeckt", und die steht da als Erfolg, nicht als Rückstand.
+
+Was in der Kiste liegt, zählt als gesammelt. Eingelagert heißt nicht verloren — das Kind hat sich
+das Ding verdient, und ein Album, das Seiten wieder wegnimmt, wenn man umräumt, wäre eine Falle.
+
+Die Fakten sind dieselben, die Funkel im Wald zitiert, wenn man ein Tier antippt. Album und Wald
+verweisen so aufeinander, ohne dass ein Text zweimal dasteht.
+
+## D41 — Schema 3: aus dem Gießtag wird ein kurzes Tagebuch
+Der Elternbereich soll zeigen, an wie vielen Tagen der Woche gegossen wurde. Ein einzelnes
+`lastWatered` kann das nicht beantworten.
+
+Naheliegend wäre gewesen, das Feld zu behalten und eine Liste danebenzulegen. Zwei Quellen für
+dieselbe Sache laufen aber irgendwann auseinander — also ersetzt die Liste das Feld. „Heute schon
+gegossen?" ist jetzt der letzte Eintrag, und die Wochenzahl ist ein Filter darüber. Die Migration
+hebt den alten Tag in die Liste und löscht ihn danach.
+
+Die Liste ist auf 14 Tage gedeckelt. Der Elternbereich zeigt eine Woche; alles darüber hinaus
+wäre gesammelt, ohne je gebraucht zu werden — und was man nicht speichert, kann auch nicht
+irgendwann jemandem gehören.
+
+## D42 — Die Bedienung liegt im Bild, nicht unter der Falz
+Beim Einbauen der drei neuen Spiele fiel eine Lücke im Layout-Wächter auf. Er prüfte, ob Inhalt
+unter eine Leiste rutscht — nicht aber, ob man überhaupt an die Bedienung kommt. Ein Spiel, dessen
+Antwortknöpfe erst nach dem Scrollen auftauchen, sieht für ein Kind aus wie ein Spiel ohne
+Antworten. Auf 360×560 traf das **jedes zweite Spiel**, auch die aus Phase 3 und 4.
+
+Der Wächter misst das jetzt: Hochkant darf die Spielfläche gar nicht erst scrollen müssen. Quer
+auf einem 360 px hohen Handy gilt die Regel nicht — dort bleiben zwischen Kopfleiste und
+Funkel-Ecke keine 190 px übrig, und Scrollen ist dann kein Fehler, sondern die einzige
+Möglichkeit. Die anderen vier Messungen decken den Fall weiter ab.
+
+Weil die Aufgabe zufällig gezogen wird, prüft der Wächter jedes Spiel **zweimal**, mit einem
+Neuladen dazwischen. Drei Früchte brauchen weniger Platz als zwanzig — ein einzelner Zug würde die
+großen Fälle einfach verpassen und grün melden, was auf dem Gerät nicht passt. Genau so ist es
+beim ersten Anlauf passiert.
+
+Repariert wurde in drei Schritten, vom Allgemeinen zum Besonderen:
+1. **Der Rahmen gibt Höhe ab.** Auf kurzen Schirmen wird Funkels Ecke gedeckelt (28 dvh, ab
+   600 px Höhe 26 dvh) und die Sprechblase scrollt in sich. Ein sechszeiliger Satz nahm vorher
+   mehr Platz als das Spiel — vorgelesen wird er ohnehin ganz.
+2. **Gemeinsame Bausteine schrumpfen.** Die Antwortknöpfe (`ChoiceRow`) sind auf kurzen Schirmen
+   72 statt 92 px hoch — immer noch deutlich über den 44 px Mindestgröße, und sie helfen vier
+   Spielen auf einmal.
+3. **Jedes Spiel bekommt seine eigenen engen Maße** für kurze Schirme.
+
+## D43 — Die Zahlen-Ernte misst sich an der Anzahl, nicht an der Vermutung
+Ein Sonderfall ließ sich mit festen Maßen nicht lösen: Die Zahlen-Ernte zeigt mal drei Früchte,
+mal zwanzig. Was bei drei gut aussieht, sprengt bei zwanzig den Bildschirm — und umgekehrt.
+
+Die Komponente kennt die Anzahl, also entscheidet sie: 52 px bis sechs Früchte, 44 px bis zwölf,
+darunter 36 px. Übergeben wird das als CSS-Variable. Auf kurzen Schirmen deckelt eine
+Medienabfrage zusätzlich nach oben (`min(var(--frucht), 44px)`) — sie macht nichts größer,
+sondern nur bei wenigen Früchten kleiner.
+
+36 px ist die Untergrenze, nicht weil es gut aussieht, sondern weil ein Kinderfinger darunter
+nicht mehr trifft. Dasselbe Prinzip wie beim Paar-Finder in Phase 7: Erst messen, dann rechnen,
+und lieber weniger anzeigen als etwas Untreffbares.
+
+## D44 — Der Import bringt alte Kinder auf den heutigen Stand
+Beim Schreiben der Migration fiel eine zweite Tür auf, durch die alte Datensätze in die App
+kommen: der Import einer Sicherung. Die Dexie-Migration greift nur, wenn eine **bestehende**
+Datenbank die Version wechselt — ein importierter Datensatz läuft daran vorbei. Ein Kind aus
+Schema 1 landete so ohne Kiste, ohne Gieß-Tagebuch und ohne Waldtage in einer App, die alle drei
+voraussetzt.
+
+Der Import normalisiert jetzt jedes Kind, bevor es geschrieben wird: dieselben Vorgaben, die auch
+die Migration setzt, und der alte einzelne Gießtag wandert in die Liste. Das ist bewusst
+**eine** Funktion, an derselben Stelle wie das Sicherungsformat — wer künftig ein Feld ergänzt,
+findet dort beide Wege nebeneinander.
+
+Der Geräteumzug ist der Weg, auf dem eine Familie ihre Daten mitnimmt. Er muss auch dann
+funktionieren, wenn die Sicherung vom letzten Sommer stammt.
+
+## D45 — Tipp-Tipp war seit Phase 7 kaputt, und niemand hat es gemerkt
+Beim Bauen des Abnahme-Treibers für die Zahlen-Waage fiel auf, dass der Tipp-Tipp-Weg gar nicht
+funktioniert: Stein antippen, Ziel antippen — und nichts passiert. Der Grund war eine Zeile, die
+nach Sorgfalt aussah: Der **Vorrat** ist selbst eine Zielzone (`onClick={() => tapZone('vorrat')}`),
+damit man einen gesetzten Stein durch Antippen des Vorrats wieder zurücklegen kann. Ein Tipp auf
+einen Stein *im* Vorrat läuft aber weiter bis zum Vorrat — und hebt die eben getroffene Auswahl
+sofort wieder auf.
+
+Das betraf nicht nur das neue Spiel: Der Wort-Baukasten hatte denselben Fehler seit Phase 7. Ziehen
+funktionierte, deshalb ist es nie aufgefallen — und Tipp-Tipp war ausdrücklich als **gleichwertiger
+zweiter Weg** gedacht, gerade für kleine Kinder und für die barrierefreie Bedienung.
+
+Der erste Versuch war, den Klick am Stein zu stoppen. Das behob den einen Fall und brach einen
+zweiten: Liegt schon ein Stein in einem Fach, deckt er dessen Mitte ab — der Tipp aufs Fach kam
+dann gar nicht mehr an. Ein Kind hätte den zweiten Stein nie ablegen können.
+
+Behoben ist es jetzt an zwei Stellen, und beide sagen dasselbe:
+
+1. **`onTapPlace` meldet zurück, ob etwas passiert ist.** Gibt es `false` zurück, bleibt die
+   Auswahl stehen. Ein Tipp auf einen Stein läuft weiter bis zum Vorrat, der Vorrat findet nichts
+   zu tun — und die Auswahl überlebt.
+2. **Was in der Hand liegt, hat Vorrang.** Ein Stein, der schon in einem Fach oder auf der Schale
+   liegt, greift den Finger nicht mehr ab, solange etwas anderes gewählt ist. Der Tipp gilt dann
+   dem Fach, nicht dem Stein, der zufällig darauf liegt.
+
+Zwei Lehren stehen jetzt im Testaufbau: Der Abnahme-Treiber der Zahlen-Waage bedient **per
+Tipp-Tipp** (der Wort-Baukasten weiter per Ziehen), sodass beide Wege bei jedem Durchlauf
+tatsächlich benutzt werden — genau dieser Treiber hat den Fehler gefunden. Und beim Suchen fiel
+eine zweite, kleinere Sache auf: Die Pointer-Listener hingen am laufenden Drag und wurden erst
+nach dem Rendern registriert — ein sehr kurzes Tippen konnte sein `pointerup` in dieser Lücke
+verlieren. Sie hängen jetzt fest am Fenster, und eine Ref entscheidet, ob gerade etwas läuft.
+
+## D46 — Die Mix-Runde buchte drei Aufgaben auf sich selbst
+Der Abnahme-Lauf hat einen Fehler gefunden, den kein Unit-Test finden konnte: Von 74 Versuchen
+lagen drei unter `mix-zahlen`, `mix-buchstaben` und `mix-logik` statt unter dem Spiel, aus dem die
+Aufgabe stammte — jeweils die **erste** Aufgabe jeder Mix-Runde.
+
+Die Ursache lag nicht in der Mix-Runde, sondern in der GameShell: `handleDone` pflegt sein
+Dependency-Array von Hand, und `task` stand nicht darin. Beim ersten Aufruf einer Runde las die
+Funktion deshalb noch `null` und fiel auf `game.id` zurück. Danach stimmte es wieder — genau die
+Sorte Fehler, die man in einer Statistik nie bemerkt, die aber die Adaptivität schief zieht: Ein
+Kind übt Reime, und die Stufe steigt bei „Überraschung".
+
+Die Aufgabe liegt jetzt zusätzlich in einer Ref, die beim Ziehen mitgeschrieben wird. Der Test
+dazu steht in `acceptance.mjs` (15.4g) und prüft nach einem kompletten Durchlauf, dass **kein**
+Versuch auf `mix-*` gebucht ist.

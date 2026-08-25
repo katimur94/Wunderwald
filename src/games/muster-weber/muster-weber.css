@@ -119,3 +119,19 @@
 
 /* Die Auswahl-Perlen unter der Kette bleiben groß – das sind die Touch-Ziele. */
 .ww-choices--perle .ww-bead { width: 58px; height: 58px; }
+
+/* Kurze Schirme: Perlen und Matrix-Felder ruecken zusammen. */
+@media (max-height: 700px) {
+  .ww-weber__frage { font-size: clamp(17px, 4.4vw, 22px); }
+  .ww-weber__faden .ww-bead { width: min(44px, 10.6vw) !important; height: min(44px, 10.6vw) !important; }
+  .ww-weber__zelle { width: clamp(44px, 13.5vw, 58px); height: clamp(44px, 13.5vw, 58px); }
+  .ww-weber__zelle .ww-bead { width: 36px !important; height: 36px !important; }
+  .ww-weber__zahl { min-width: 50px; min-height: 50px; font-size: clamp(21px, 5.4vw, 30px); }
+}
+
+@media (max-height: 600px) {
+  .ww-weber__matrix { gap: 4px; }
+  .ww-weber__zelle { width: clamp(38px, 11vw, 48px); height: clamp(38px, 11vw, 48px); }
+  .ww-weber__zelle .ww-bead { width: 32px !important; height: 32px !important; }
+  .ww-weber__faden .ww-bead { width: min(38px, 9.4vw) !important; height: min(38px, 9.4vw) !important; }
+}

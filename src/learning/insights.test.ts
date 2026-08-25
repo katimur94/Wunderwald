@@ -167,6 +167,82 @@ describe('Hinweise-Engine', () => {
     expect(res[0].id).toBe('schwer-rechen-bruecke')
   })
 
+  it('gibt bei schwachen Reimen einen Reim-Tipp fürs Vorlesen', () => {
+    const res = buildInsights(
+      input({
+        attempts: [
+          ...serie(10, 3, { worldId: 'buchstaben', gameId: 'reim-boot', difficulty: 3 }),
+          ...serie(10, 9, { worldId: 'zahlen', gameId: 'zahlen-ernte' }),
+        ],
+      }),
+      NOW,
+    )
+    const reim = res.find((r) => r.id === 'reime')
+    expect(reim).toBeTruthy()
+    expect(reim!.ton).toBe('tipp')
+    expect(reim!.text).toMatch(/Vorlesen/)
+  })
+
+  it('schweigt zu Reimen, wenn nur die Silben-Stufen dran waren', () => {
+    // Stufe 6 und 7 sind Silben klatschen, keine Reime — der Tipp passt dort nicht.
+    const res = buildInsights(
+      input({ attempts: serie(12, 2, { worldId: 'buchstaben', gameId: 'reim-boot', difficulty: 6 }) }),
+      NOW,
+    )
+    expect(res.find((r) => r.id === 'reime')).toBeUndefined()
+  })
+
+  it('empfiehlt Bausteine, wenn das Zerlegen an der Waage hakt', () => {
+    const res = buildInsights(
+      input({
+        attempts: [
+          ...serie(10, 2, { worldId: 'zahlen', gameId: 'zahlen-waage', difficulty: 4 }),
+          ...serie(10, 9, { worldId: 'logik', gameId: 'muster-weber' }),
+        ],
+      }),
+      NOW,
+    )
+    const tipp = res.find((r) => r.id === 'zerlegen')
+    expect(tipp).toBeTruthy()
+    expect(tipp!.text).toMatch(/Bausteine|Klötze/)
+  })
+
+  it('schweigt zum Zerlegen, wenn nur die Ergänzungs-Stufen dran waren', () => {
+    const res = buildInsights(
+      input({ attempts: serie(12, 2, { worldId: 'zahlen', gameId: 'zahlen-waage', difficulty: 2 }) }),
+      NOW,
+    )
+    expect(res.find((r) => r.id === 'zerlegen')).toBeUndefined()
+  })
+
+  it('erklärt den Unterschied zwischen Art und Merkmal beim Sortieren', () => {
+    const res = buildInsights(
+      input({
+        attempts: [
+          ...serie(10, 2, { worldId: 'logik', gameId: 'sortier-werkstatt', difficulty: 5 }),
+          ...serie(10, 9, { worldId: 'zahlen', gameId: 'zahlen-ernte' }),
+        ],
+      }),
+      NOW,
+    )
+    const tipp = res.find((r) => r.id === 'kategorien')
+    expect(tipp).toBeTruthy()
+    expect(tipp!.text).toMatch(/Aufräumen/)
+  })
+
+  it('nennt die neuen Spiele beim Namen statt bei der Kennung', () => {
+    for (const [gameId, name] of [
+      ['zahlen-waage', 'Zahlen-Waage'],
+      ['reim-boot', 'Reim-Boot'],
+      ['sortier-werkstatt', 'Sortier-Werkstatt'],
+    ] as const) {
+      const res = buildInsights(input({ attempts: serie(10, 2, { gameId }) }), NOW)
+      const treffer = res.find((r) => r.id === `schwer-${gameId}`)
+      expect(treffer, gameId).toBeTruthy()
+      expect(treffer!.titel).toContain(name)
+    }
+  })
+
   it('sagt etwas Freundliches, wenn es nichts anzumerken gibt', () => {
     // Gleichmäßig gespielt, mittlere Quote, keine Auffälligkeit
     const attempts = [

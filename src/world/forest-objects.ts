@@ -272,9 +272,25 @@ export function pendingGift(child: Child): ForestGift | null {
 /* Gieß-Ritual: einmal am Tag, ohne Druck                              */
 /* ------------------------------------------------------------------ */
 
+/** So viele Gießtage werden aufgehoben — zwei Wochen sind mehr als genug. */
+export const GIESS_TAGEBUCH = 14
+
 /** Darf heute noch gegossen werden? */
 export function darfGiessen(child: Child, heute: string): boolean {
-  return (child.lastWatered ?? '') !== heute
+  const tage = child.wateredDays ?? []
+  return tage[tage.length - 1] !== heute
+}
+
+/** Trägt den heutigen Gießtag ein und wirft die ältesten Einträge weg. */
+export function merkeGiesstag(tage: string[] | undefined, heute: string): string[] {
+  const bisher = tage ?? []
+  if (bisher[bisher.length - 1] === heute) return bisher
+  return [...bisher, heute].slice(-GIESS_TAGEBUCH)
+}
+
+/** Wie oft wurde in den letzten `tage` Tagen gegossen? (für den Elternbereich) */
+export function giesstageSeit(child: Child, seitDayKey: string): number {
+  return (child.wateredDays ?? []).filter((t) => t >= seitDayKey).length
 }
 
 /** Nur Pflanzen und Bäume, die noch wachsen können, lassen sich gießen. */

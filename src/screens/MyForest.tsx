@@ -19,6 +19,7 @@ import {
   inKiste,
   istDunkel,
   istGiessbar,
+  merkeGiesstag,
   istTier,
   makeForestItem,
   neuerBereich,
@@ -253,7 +254,7 @@ export function MyForest() {
       const forest = child.forest.map((f) =>
         f.slot === slot ? { ...f, growthDays: f.growthDays + 1 } : f,
       )
-      await updateChild(child.id, { forest, lastWatered: heute })
+      await updateChild(child.id, { forest, wateredDays: merkeGiesstag(child.wateredDays, heute) })
       await refreshChildren()
       setFrischerSlot(slot)
       setTimeout(() => setFrischerSlot(null), 900)
@@ -335,6 +336,18 @@ export function MyForest() {
           <span aria-hidden="true">←</span>
         </button>
         <h1>Mein Wald</h1>
+        <button
+          type="button"
+          className="ww-buchbtn"
+          onClick={() => {
+            sfx('click')
+            stopSpeaking()
+            navigate(`/kind/${child.id}/waldbuch`)
+          }}
+          aria-label="Waldbuch öffnen"
+        >
+          <span aria-hidden="true">📖</span>
+        </button>
         <StarCounter stars={child.stars} size="s" />
       </header>
 

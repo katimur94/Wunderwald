@@ -194,20 +194,23 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
   const usedIds = new Set(slots.filter(Boolean).map((s) => s!.id))
   const vorrat = d.bausteine.filter((b) => !usedIds.has(b.id))
 
+  /** Gibt false zurück, wenn nichts passiert ist — dann bleibt die Auswahl. */
   const place = useCallback(
     (dragId: string, zoneId: string | null) => {
-      if (fertig) return
+      if (fertig) return false
       const stein = d.bausteine.find((b) => b.id === dragId)
-      if (!stein) return
+      if (!stein) return false
 
       // Zurück in den Vorrat gelegt
       if (zoneId === null || zoneId === 'vorrat') {
+        // Ein Stein, der ohnehin im Vorrat liegt, wandert nirgendwohin.
+        if (!slots.some((x) => x?.id === dragId)) return false
         setSlots((s) => s.map((x) => (x?.id === dragId ? null : x)))
-        return
+        return true
       }
 
       const slotIndex = Number(zoneId.replace('slot-', ''))
-      if (Number.isNaN(slotIndex)) return
+      if (Number.isNaN(slotIndex)) return false
 
       const richtig = d.loesung[slotIndex] === stein.text
 
@@ -219,7 +222,7 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
         const n = tries + 1
         setTries(n)
         onWrong(n)
-        return
+        return true
       }
 
       sfx('pop')
@@ -238,6 +241,7 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
           1100,
         )
       }
+      return true
     },
     [d, slots, tries, fertig, onDone, onWrong, start],
   )
@@ -306,7 +310,11 @@ function WortBaukasten({ task, onDone, onWrong, revealSolution }: GameComponentP
               <button
                 type="button"
                 className={`ww-stein ww-stein--gesetzt ${gewaehlt === s.id ? 'ww-stein--gewaehlt' : ''}`}
-                onPointerDown={(e) => !fertig && startDrag(s.id, e)}
+                /*
+                 * Wie bei der Waage: Liegt schon ein Stein in der Hand, gilt
+                 * der Tipp dem Fach und nicht dem Stein, der darin liegt.
+                 */
+                onPointerDown={(e) => !fertig && !gewaehlt && startDrag(s.id, e)}
                 aria-label={`${s.text} wieder herausnehmen`}
               >
                 {s.text}

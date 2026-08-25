@@ -296,11 +296,21 @@ function Scene({
   }
   let running = 0
 
+  /*
+   * Je mehr Fruechte, desto kleiner — sonst waechst die Szene ueber den
+   * Bildschirm hinaus und die Antwortknoepfe rutschen unter die Falz.
+   * 36 px ist die Untergrenze: Darunter trifft ein Kinderfinger nicht mehr.
+   */
+  const fruchtGroesse = fruits.length <= 6 ? 52 : fruits.length <= 12 ? 44 : 36
+
   return (
     <div className={`ww-ernte__scene ww-ernte__scene--${kind}`}>
       {kind === 'baum' && <Crown />}
 
-      <div className={`ww-ernte__fruits ${gruppiert ? 'ww-ernte__fruits--gruppiert' : ''}`}>
+      <div
+        className={`ww-ernte__fruits ${gruppiert ? 'ww-ernte__fruits--gruppiert' : ''}`}
+        style={{ '--frucht': `${fruchtGroesse}px` } as React.CSSProperties}
+      >
         {rows.map((row, r) => {
           const startIdx = running
           running += row.length

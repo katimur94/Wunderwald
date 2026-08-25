@@ -1,0 +1,215 @@
+.ww-waage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.ww-waage__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4.6vw, 26px);
+  text-align: center;
+}
+
+/* ---------- Waage ---------- */
+.ww-waage__buehne {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  /* Platz fuer Balken und die darunter haengenden Schalen */
+  padding-top: 6px;
+}
+
+.ww-waage__balken {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * Die Schalen haengen am Balken und kippen mit ihm. Sie liegen absolut
+ * ueber der Buehne, damit die Neigung sie mitnimmt, ohne dass der Rest
+ * der Seite springt.
+ */
+.ww-waage__schalen {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transform-origin: 50% 0;
+  transition: transform 240ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  pointer-events: none;
+}
+
+.ww-waage__schale {
+  position: relative;
+  width: 42%;
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 22px;
+  border-radius: var(--r-m);
+  /* Die Schalen selbst sind wieder bedienbar. */
+  pointer-events: auto;
+}
+
+.ww-waage__inhalt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--sp-2);
+}
+
+.ww-waage__boden {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+}
+
+.ww-waage__schale--rechts {
+  border: 3px dashed transparent;
+}
+.ww-waage__schale--bereit {
+  border-color: var(--wald-sonne);
+  background: rgba(246, 189, 65, 0.16);
+}
+.ww-waage__schale--hover {
+  border-color: var(--wald-moos);
+  background: rgba(127, 176, 105, 0.24);
+}
+
+.ww-waage__term {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 6vw, 34px);
+  white-space: nowrap;
+}
+
+.ww-waage__stand {
+  margin: 0;
+  min-height: 1.4em;
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  text-align: center;
+}
+
+/* ---------- Gewichte ---------- */
+.ww-waage__vorrat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: calc(var(--touch-min) + 12px);
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 3px dashed var(--wald-tinte);
+  border-radius: var(--r-m);
+}
+
+.ww-gewicht {
+  min-width: var(--touch-min);
+  height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--sp-2);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5vw, 28px);
+  color: var(--wald-tinte);
+  background: var(--wald-sonne);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 5px 0 var(--wald-sonne-dark);
+  /* Kinderfinger: beim Ziehen darf die Seite nicht mitscrollen. */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.ww-gewicht--fest {
+  background: var(--wald-papier);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-gewicht--liegt {
+  min-width: 48px;
+  height: 48px;
+  font-size: var(--fs-s);
+}
+
+.ww-gewicht--drag { opacity: 0.28; }
+
+.ww-gewicht--fliegt {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+  /* Bewegt wird ausschliesslich ueber transform — nie ueber left/top. */
+  will-change: transform;
+  box-shadow: 0 10px 0 var(--wald-sonne-dark), 0 16px 26px rgba(46, 64, 52, 0.28);
+}
+
+.ww-gewicht--gewaehlt {
+  outline: 4px solid var(--wald-bach);
+  outline-offset: 3px;
+}
+
+.ww-gewicht--tipp {
+  background: var(--wald-blatt, #A8D5A2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ww-waage__schalen { transition: none; }
+}
+
+/*
+ * Kurze Schirme: Waage, Vorrat und Pruefen-Knopf muessen zusammen sichtbar
+ * bleiben. Was das Kind bedienen muss, darf nicht unter der Falz liegen.
+ */
+@media (max-height: 700px) {
+  .ww-waage { gap: var(--sp-2); }
+  .ww-waage__buehne { max-width: 268px; }
+  .ww-waage__schale { min-height: 66px; padding-bottom: 16px; }
+  .ww-waage__inhalt { min-height: 44px; }
+  .ww-waage__stand { font-size: var(--fs-xs); min-height: 1.2em; }
+  .ww-waage__vorrat { min-height: 0; padding: var(--sp-1, 4px); gap: 6px; }
+  .ww-gewicht { min-width: 52px; height: 52px; font-size: 20px; }
+  .ww-gewicht--liegt { min-width: 38px; height: 38px; }
+}
+
+/*
+ * Sehr kurze Schirme (360x560 und aehnlich): Hier zaehlt jeder Pixel.
+ * Der Satz unter der Waage verschwindet aus dem Bild, bleibt aber fuer
+ * Screenreader stehen — die Neigung des Balkens sagt dasselbe, nur besser.
+ */
+@media (max-height: 600px) {
+  .ww-waage { gap: 6px; }
+  .ww-waage__buehne { max-width: 236px; }
+  .ww-waage__frage { font-size: 17px; }
+  .ww-waage__stand {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ww-waage .ww-btn { min-height: 48px; }
+}

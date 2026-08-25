@@ -7,6 +7,8 @@
  *  3. Ein Vollbild-Schirm ist genau so hoch wie der Viewport — seine festen
  *     Leisten stehen also nie unterhalb der Falz.
  *  4. Waldplaetze bleiben gross genug zum Antippen.
+ *  5. Hochkant muss die Spielflaeche nicht gescrollt werden, um an die
+ *     Bedienung zu kommen.
  *
  * Voraussetzung (bewusst keine devDependency):
  *   npm i -D playwright
@@ -29,8 +31,11 @@ const VIEWPORTS = [
 ]
 
 const SPIELE = [
-  'zahlen-ernte', 'rechen-bruecke', 'buchstaben-fang',
-  'wort-baukasten', 'muster-weber', 'paar-finder',
+  'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage',
+  'buchstaben-fang', 'wort-baukasten', 'reim-boot',
+  'muster-weber', 'paar-finder', 'sortier-werkstatt',
+  // Mix-Runden ziehen aus allen Spielen ihrer Welt
+  'mix-zahlen', 'mix-buchstaben', 'mix-logik',
 ]
 
 const befunde = []
@@ -132,6 +137,34 @@ async function pruefeVollbild(page) {
 }
 
 /**
+ * Vierte Messung: Was das Kind bedienen muss, liegt im Bild.
+ *
+ * Die Spielflaeche darf scrollen — aber wenn der einzige Knopf oder der
+ * Vorrat erst nach dem Scrollen auftaucht, sieht ein Vierjaehriger ein
+ * Spiel ohne Bedienung. Geprueft wird deshalb, dass die Stage gar nicht
+ * erst scrollen muss.
+ *
+ * Nur hochkant. Quer auf einem 360 px hohen Handy bleiben zwischen
+ * Kopfleiste und Funkel-Ecke keine 190 px uebrig — dort ist Scrollen kein
+ * Layoutfehler, sondern die einzige Moeglichkeit. Der Ueberlappungs- und
+ * der Vollbild-Test decken diesen Fall weiterhin ab.
+ */
+async function pruefeBedienung(page) {
+  return page.evaluate(() => {
+    const probleme = []
+    const stage = document.querySelector('.ww-gameshell__stage')
+    if (!stage) return probleme
+    if (window.innerWidth > window.innerHeight) return probleme
+    if (stage.scrollHeight > stage.clientHeight + 2) {
+      probleme.push(
+        `Spielflaeche muss gescrollt werden (${stage.scrollHeight} > ${stage.clientHeight})`,
+      )
+    }
+    return probleme
+  })
+}
+
+/**
  * Dritte Messung: Waldplaetze bleiben antippbar. Wird der Wald groesser als
  * der Bildschirm, darf er scrollen — aber nicht so zusammenschrumpfen, dass
  * ein Kinderfinger das Reh nicht mehr trifft.
@@ -151,7 +184,7 @@ async function pruefeTippziele(page) {
   })
 }
 
-async function pruefeScreen(page, viewport, screen, hash, warten = 1400) {
+async function pruefeScreen(page, viewport, screen, hash, warten = 1400, screenshot = true) {
   await page.evaluate((h) => { location.hash = h }, hash)
   await page.waitForTimeout(warten)
 
@@ -161,8 +194,11 @@ async function pruefeScreen(page, viewport, screen, hash, warten = 1400) {
   for (const p of await pruefeUeberlappung(page)) melde(viewport, screen, p)
   for (const p of await pruefeVollbild(page)) melde(viewport, screen, p)
   for (const p of await pruefeTippziele(page)) melde(viewport, screen, p)
+  for (const p of await pruefeBedienung(page)) melde(viewport, screen, p)
 
-  await page.screenshot({ path: `${OUT}/${viewport}-${screen.replace(/\W+/g, '-')}.png` })
+  if (screenshot) {
+    await page.screenshot({ path: `${OUT}/${viewport}-${screen.replace(/\W+/g, '-')}.png` })
+  }
 }
 
 /** Legt Familie + zwei Kinder an: eines auf Startstufe, eines auf Stufe 9. */
@@ -236,12 +272,19 @@ for (const vp of VIEWPORTS) {
   for (const w of ['zahlen', 'buchstaben', 'logik']) {
     await pruefeScreen(page, vp.name, `welt-${w}`, `#/kind/klein/welt/${w}`)
   }
-  // Jedes Spiel auf niedriger UND hoher Stufe
+  // Jedes Spiel auf niedriger UND hoher Stufe.
+  // Zweimal, mit einem Neuladen dazwischen: Die Aufgabe wird zufaellig
+  // gezogen, und drei Fruechte brauchen weniger Platz als zwanzig. Ein
+  // einzelner Zug wuerde die grossen Faelle einfach verpassen.
   for (const kind of ['klein', 'gross']) {
     for (const g of SPIELE) {
       await pruefeScreen(page, vp.name, `${g}-${kind}`, `#/kind/${kind}/spiel/${g}`, 1800)
+      await page.reload({ waitUntil: 'networkidle' })
+      await pruefeScreen(page, vp.name, `${g}-${kind}`, `#/kind/${kind}/spiel/${g}`, 1600, false)
     }
   }
+  await pruefeScreen(page, vp.name, 'waldbuch', `#/kind/gross/waldbuch`, 1600)
+
   // Wald in beiden Ausbaustufen: eine Zone und alle drei Zonen fast voll.
   await pruefeScreen(page, vp.name, 'mein-wald-klein', '#/kind/klein/wald', 1800)
   await pruefeScreen(page, vp.name, 'mein-wald-gross', '#/kind/gross/wald', 2200)

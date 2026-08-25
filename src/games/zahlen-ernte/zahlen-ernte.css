@@ -54,12 +54,13 @@
 }
 
 .ww-fruit {
-  width: 52px;
-  height: 52px;
+  /* Groesse kommt aus der Komponente — sie kennt die Anzahl. */
+  width: var(--frucht, 52px);
+  height: var(--frucht, 52px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+  font-size: calc(var(--frucht, 52px) * 0.65);
   line-height: 1;
   background: transparent;
   border: 3px solid transparent;
@@ -127,6 +128,38 @@
 }
 
 @media (max-width: 380px) {
-  .ww-fruit { width: 44px; height: 44px; font-size: 29px; }
   .ww-ernte__patch .ww-fruit { width: 34px; height: 34px; font-size: 22px; }
+}
+
+/* Kurze Schirme: Baum und Fruechte ruecken zusammen. */
+@media (max-height: 700px) {
+  .ww-fruit {
+    width: min(var(--frucht, 52px), 44px);
+    height: min(var(--frucht, 52px), 44px);
+    font-size: calc(min(var(--frucht, 52px), 44px) * 0.65);
+  }
+  .ww-ernte__frage { font-size: clamp(17px, 4.4vw, 22px); }
+  .ww-ernte__crown { height: 52px; }
+  .ww-ernte__meadow { height: 30px; }
+  .ww-ernte__scene { min-height: 96px; }
+  .ww-ernte__patch .ww-fruit { width: 32px; height: 32px; font-size: 21px; }
+  .ww-ernte__trunk { width: 30px; height: 32px; }
+}
+
+@media (max-height: 600px) {
+  /*
+   * Auf 560 px Hoehe ist der Platz enger, als die Anzahl allein vorgibt.
+   * `min` deckelt nach oben, macht aber nichts groesser: Bei vielen
+   * Fruechten bleibt die kleinere Groesse aus der Komponente stehen.
+   */
+  .ww-fruit {
+    width: min(var(--frucht, 52px), 40px);
+    height: min(var(--frucht, 52px), 40px);
+    font-size: calc(min(var(--frucht, 52px), 40px) * 0.65);
+  }
+  .ww-ernte__patch .ww-fruit { width: 28px; height: 28px; font-size: 18px; }
+  .ww-ernte__crown { height: 42px; }
+  .ww-ernte__meadow { height: 24px; }
+  .ww-ernte__scene { min-height: 78px; }
+  .ww-ernte__patch .ww-fruit { width: 28px; height: 28px; font-size: 18px; }
 }

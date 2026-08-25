@@ -82,7 +82,7 @@ async function oeffneWald(browser, name, { anzahl, stunde, breite = 390, hoehe =
       // kommt, prüfen die Unit-Tests.
       milestones: ['forest-10', 'forest-25', 'forest-50', 'bereich-bach', 'bereich-huegel',
         'set-wasser', 'set-vogel', 'set-schmetterlinge'],
-      toured: true, lastWatered: '', forestDays: 7, lastVisitDay: '',
+      toured: true, wateredDays: [], forestDays: 7, lastVisitDay: '',
     })
     for (const w of ['zahlen', 'buchstaben', 'logik']) {
       tx.objectStore('progress').put({ childId: 'k', worldId: w, level: 5, xp: 0, streak: 0, failStreak: 0, recentTimes: [] })
@@ -160,7 +160,11 @@ console.log('\n▸ Kiste, Gießen und Bild')
   await ((await jung.count()) ? jung : page.locator('.ww-slotcell--voll').first()).click()
   await page.waitForTimeout(1200)
   const nachGiessen = await kindLesen(page)
-  pruefe('Gießen wird für heute vermerkt', Boolean(nachGiessen.lastWatered), nachGiessen.lastWatered)
+  pruefe(
+    'Gießen wird für heute im Tagebuch vermerkt',
+    (nachGiessen.wateredDays ?? []).length === 1,
+    (nachGiessen.wateredDays ?? []).join(', ') || 'kein Eintrag',
+  )
 
   await page.locator('.ww-kanne').click()
   await page.waitForTimeout(600)

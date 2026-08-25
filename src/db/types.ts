@@ -74,8 +74,13 @@ export interface Child {
 
   /** Kiste: eingelagerte Objekte, kosten beim Zurückholen nichts */
   inventory?: InventoryItem[]
-  /** Tag, an dem zuletzt gegossen wurde (dayKey) */
-  lastWatered?: string
+  /**
+   * Die letzten Gießtage (dayKey), ältester zuerst. Eine Quelle statt zwei:
+   * „heute schon gegossen?" ist der letzte Eintrag, und der Elternbereich
+   * zählt darin die Tage der Woche. Bewusst gedeckelt — mehr als zwei
+   * Wochen braucht niemand zu speichern.
+   */
+  wateredDays?: string[]
   /** An wie vielen verschiedenen Tagen das Kind im Wunderwald war */
   forestDays?: number
   /** Tag des letzten Besuchs (dayKey) */

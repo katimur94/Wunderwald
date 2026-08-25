@@ -9,7 +9,10 @@ import { db } from '../../db/db'
 import { deleteChild, getAllProgress, updateChild } from '../../db/children'
 import { currentTitle, describeLevel, WORLD_LABELS } from '../../learning/adaptivity'
 import { buildInsights, type Insight } from '../../learning/insights'
-import { weeklyMinutes } from '../../learning/session'
+import { dayKey, weeklyMinutes } from '../../learning/session'
+import { giesstageSeit } from '../../world/forest-objects'
+import { gesammelteObjekte } from '../Waldbuch'
+import { WALDBUCH } from '../../world/waldbuch-daten'
 import { allGames } from '../../games'
 import { WORLD_IDS, type Attempt, type Progress, type WorldId } from '../../db/types'
 
@@ -71,6 +74,8 @@ export function KidDetail() {
     ? Math.round((letzte7.filter((a) => a.correct).length / letzte7.length) * 100)
     : null
   const maxMin = Math.max(10, ...wochen.map((w) => w.minutes))
+  const siebenTageAlt = dayKey(Date.now() - 6 * TAG_MS)
+  const albumSeiten = gesammelteObjekte(child.forest, child.inventory ?? []).size
 
   async function speichern() {
     await updateChild(child!.id, { nickname: name.trim() || child!.nickname, avatarId })
@@ -147,6 +152,30 @@ export function KidDetail() {
           {quote7 !== null && <> · {quote7} % davon richtig</>} ·{' '}
           {wochen.reduce((s, w) => s + w.minutes, 0)} Minuten gespielt
         </p>
+
+        {/*
+          Was neben den Aufgaben passiert ist. Bewusst ohne Ziel und ohne
+          Balken: Das sind Zahlen zum Nachfragen beim Abendessen, keine
+          Vorgaben, die jemand erfüllen müsste.
+        */}
+        <ul className="ww-wochenzahlen">
+          <li>
+            <span className="ww-wochenzahlen__zahl">{child.forestDays ?? 0}</span>
+            <span className="ww-hint">
+              {(child.forestDays ?? 0) === 1 ? 'Waldtag' : 'Waldtage'} insgesamt
+            </span>
+          </li>
+          <li>
+            <span className="ww-wochenzahlen__zahl">{giesstageSeit(child, siebenTageAlt)}</span>
+            <span className="ww-hint">Tage gegossen</span>
+          </li>
+          <li>
+            <span className="ww-wochenzahlen__zahl">
+              {albumSeiten} / {WALDBUCH.length}
+            </span>
+            <span className="ww-hint">Seiten im Waldbuch</span>
+          </li>
+        </ul>
       </section>
 
       {/* ---------- Hinweise ---------- */}

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db, DEFAULT_SETTINGS, SCHEMA_VERSION } from './db'
 import { createChild } from './children'
-import { backupFilename, BackupError, buildBackup, daysSince, importBackup, validateBackup } from './backup'
-import type { Family } from './types'
+import { backupFilename, BackupError, buildBackup, daysSince, importBackup, normalisiereKind, validateBackup } from './backup'
+import type { Child, Family } from './types'
 
 async function seed() {
   const family: Family = {
@@ -182,5 +182,51 @@ describe('daysSince', () => {
     const now = 1_700_000_000_000
     expect(daysSince(now - 3 * 86_400_000, now)).toBe(3)
     expect(daysSince(now - 1000, now)).toBe(0)
+  })
+})
+
+/** Ein Kind in heutiger Form — Ausgangspunkt fürs Vergleichen. */
+function kind(): Child {
+  return {
+    id: 'k1', nickname: 'Mia', avatarId: 'hase', birthYear: 2019, createdAt: 1,
+    stars: 12, starsTotal: 40,
+    companion: { level: 2, xp: 0, outfitId: null, ownedOutfits: [] },
+    forest: [], milestones: [], toured: true,
+    inventory: [], wateredDays: [], forestDays: 0, lastVisitDay: '',
+  }
+}
+
+describe('Sicherung aus einer älteren Version', () => {
+  it('ergänzt einem alten Kind die fehlenden Felder', () => {
+    // So sah ein Kind in Schema 1 aus: keine Kiste, kein Gießen, keine Waldtage.
+    const alt = {
+      id: 'k1', nickname: 'Mia', avatarId: 'hase', birthYear: 2019, createdAt: 1,
+      stars: 12, starsTotal: 40,
+      companion: { level: 2, xp: 0, outfitId: null, ownedOutfits: [] },
+      forest: [{ slot: 0, objectId: 'baum', placedAt: 1, growthDays: 2, lastGrowthDay: '2026-01-01' }],
+      milestones: ['forest-10'], toured: true,
+    } as unknown as Child
+
+    const neu = normalisiereKind(alt)
+    expect(neu.nickname).toBe('Mia')
+    expect(neu.stars).toBe(12)
+    expect(neu.forest).toHaveLength(1)
+    expect(neu.milestones).toEqual(['forest-10'])
+    expect(neu.inventory).toEqual([])
+    expect(neu.wateredDays).toEqual([])
+    expect(neu.forestDays).toBe(0)
+    expect(neu.lastVisitDay).toBe('')
+  })
+
+  it('hebt einen einzelnen Gießtag ins Tagebuch', () => {
+    const alt = { ...kind(), wateredDays: undefined, lastWatered: '2026-05-01' } as unknown as Child
+    const neu = normalisiereKind(alt)
+    expect(neu.wateredDays).toEqual(['2026-05-01'])
+    expect('lastWatered' in neu).toBe(false)
+  })
+
+  it('lässt ein aktuelles Kind unverändert', () => {
+    const heute = { ...kind(), inventory: [{ objectId: 'baum', growthDays: 1 }], wateredDays: ['2026-05-02'], forestDays: 4, lastVisitDay: '2026-05-02' }
+    expect(normalisiereKind(heute)).toEqual(heute)
   })
 })
