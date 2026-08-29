@@ -125,6 +125,8 @@ export const GAME_HELP: Record<string, string> = {
   'wort-baukasten': 'Zieh die Bausteine in die leeren Felder. Ich lese dir jedes Stück vor.',
   'muster-weber': 'Schau dir die Reihe genau an. Welche Perle passt als nächste?',
   'paar-finder': 'Decke zwei Karten auf. Merk dir gut, wo welches Bild war.',
+  'zahlen-sprung':
+    'Tippe auf die Wiese, dann springe ich. Spring von unten gegen den Block mit dem Ergebnis — oder tipp den Block direkt an, dann flitze ich hin.',
 }
 
 export function hilfeFuer(gameId: string): string {

@@ -23,11 +23,11 @@ liest alle Anweisungen vor — so können auch Nichtleser alleine spielen.
 - **Datensicherung** liegt in eurer Hand: Export als JSON-Datei, Import auf einem anderen Gerät.
   Das ist auch der Weg für den Geräteumzug.
 
-## Die neun Spiele
+## Die zehn Spiele
 
 | Welt | Spiele |
 |---|---|
-| 🔢 **Zahlenland** | Zahlen-Ernte (zählen, vergleichen, ergänzen) · Rechen-Brücke (plus, minus, Einmaleins) · Zahlen-Waage (zerlegen und ergänzen) |
+| 🔢 **Zahlenland** | Zahlen-Ernte (zählen, vergleichen, ergänzen) · Rechen-Brücke (plus, minus, Einmaleins) · Zahlen-Waage (zerlegen und ergänzen) · Zahlen-Sprung (Jump-and-Run: laufen, springen, das Ergebnis von unten treffen) |
 | 🔤 **Buchstabenwald** | Buchstaben-Fang (Anlaute) · Wort-Baukasten (Wörter bauen) · Reim-Boot (Reime, Silben, Wortpaare) |
 | 🧩 **Logik-Labor** | Muster-Weber (Muster und Reihen) · Paar-Finder (Merkspiel) · Sortier-Werkstatt (Art und Merkmal) |
 
@@ -161,11 +161,11 @@ Stand des letzten vollständigen Laufs (`npm test`, `npm run build`, Lighthouse,
 | 15.5 | 360 px ohne horizontales Scrollen, Tablet quer nutzt den Platz | ✅ alle Screens passen; auf dem Tablet stehen die vier Portale nebeneinander |
 | 15.6 | Export erzeugt Datei, Import stellt Zustand her | ✅ Export → frische Instanz → Import → identischer Zustand |
 | 15.7 | Unit-Tests für `adaptivity.ts` | ✅ 23 Tests (Auf-/Abstieg, Grenzen 1 und 10, Hilfe-Fälle) |
-| 15.8 | Generator-Tests: je Stufe 100 Aufgaben, Lösung genau einmal enthalten | ✅ alle neun Spiele plus Mix-Runde, zusätzlich fachliche Prüfungen je Stufe |
+| 15.8 | Generator-Tests: je Stufe 100 Aufgaben, Lösung genau einmal enthalten | ✅ alle zehn Spiele plus Mix-Runde, zusätzlich fachliche Prüfungen je Stufe |
 | 15.9 | Kein Request auf fremde Domains | ✅ Netzwerk-Mitschnitt über den kompletten Durchlauf: keiner |
 | 15.10 | Ton aus + Vorlesen aus → App voll nutzbar | ✅ Runde ohne Ton und ohne `speechSynthesis` beendet, Anweisung steht in der Sprechblase |
 
-Insgesamt **332 Unit-Tests** und **29 Browser-Prüfungen** (Akzeptanz, Layout-Wächter, Wald-Prüfung).
+Insgesamt **350 Unit-Tests** und **29 Browser-Prüfungen** (Akzeptanz, Layout-Wächter, Wald-Prüfung).
 
 `npm audit --omit=dev` meldet 0 Schwachstellen — die ausgelieferten Abhängigkeiten sind sauber.
 Die verbleibenden Meldungen betreffen ausschließlich Entwicklungswerkzeuge (Vite-Dev-Server,

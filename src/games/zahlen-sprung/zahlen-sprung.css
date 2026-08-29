@@ -1,0 +1,353 @@
+/*
+ * Zahlen-Sprung: seitwärts laufende Szene. Alle bewegten Elemente stehen
+ * absolut an left: 0 und werden je Frame per translateX verschoben —
+ * bis zum ersten Frame bleiben sie unsichtbar, damit nichts am linken
+ * Rand aufblitzt.
+ */
+
+.ww-sprung {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: min(46dvh, 420px);
+  min-width: 0;
+  gap: var(--sp-2);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- Holzschild mit der Aufgabe ---------- */
+.ww-sprung__schild {
+  flex: none;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: var(--sp-1) var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m, 16px);
+  box-shadow: var(--sh-flat);
+}
+
+.ww-sprung__frage {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(26px, 5.4dvh, 42px);
+  line-height: 1.15;
+  color: var(--wald-tinte);
+  white-space: nowrap;
+}
+.ww-sprung__frage--lang {
+  font-size: clamp(20px, 4.2dvh, 32px);
+}
+
+.ww-sprung__menge {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  font-size: clamp(18px, 3.4dvh, 26px);
+  line-height: 1.1;
+}
+
+.ww-sprung__punktezeile {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ww-sprung__punkteplus {
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  color: var(--wald-tinte);
+}
+.ww-sprung__punktegruppe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 130px;
+  justify-content: center;
+}
+.ww-sprung__punkt {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+}
+
+/* ---------- Szene ---------- */
+.ww-sprung__szene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: var(--outline);
+  border-radius: var(--r-m, 16px);
+  background: linear-gradient(#CFE8F3 0%, #E6F3EA 70%, #E6F3EA 100%);
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* Parallax-Hügel: zwei Reihen weicher Kuppen, die unterschiedlich schnell ziehen */
+.ww-sprung__huegel {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+.ww-sprung__huegel--fern {
+  background-image: radial-gradient(62% 100% at 50% 100%, #BCD9C0 99%, transparent 100%);
+  background-size: 46% 42%;
+  background-position: 0 100%;
+  opacity: 0.7;
+}
+.ww-sprung__huegel--nah {
+  background-image: radial-gradient(62% 100% at 50% 100%, #A3CBA4 99%, transparent 100%);
+  background-size: 34% 30%;
+  background-position: 0 100%;
+}
+
+.ww-sprung__wolke {
+  position: absolute;
+  width: 74px;
+  height: 24px;
+  border-radius: 20px;
+  background: #FFFFFFD9;
+  pointer-events: none;
+  animation: ww-sprung-wolke 34s linear infinite;
+}
+.ww-sprung__wolke::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: -12px;
+  width: 34px;
+  height: 24px;
+  border-radius: 50%;
+  background: inherit;
+}
+.ww-sprung__wolke--eins { top: 9%; animation-duration: 38s; }
+.ww-sprung__wolke--zwei { top: 22%; animation-delay: -19s; }
+
+@keyframes ww-sprung-wolke {
+  from { left: 105%; }
+  to { left: -90px; }
+}
+
+/* ---------- Boden ---------- */
+.ww-sprung__boden {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--wald-blatt);
+  background-image:
+    linear-gradient(#00000000 62%, #00000014 62%),
+    repeating-linear-gradient(90deg, #00000000 0 34px, #0000000F 34px 44px);
+  border-top: var(--outline);
+  pointer-events: none;
+}
+
+/* ---------- Antwort-Blöcke ---------- */
+.ww-sprung__block {
+  position: absolute;
+  left: 0;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--wald-tinte);
+  background: var(--wald-sonne);
+  border: var(--outline);
+  border-radius: 22%;
+  box-shadow: 0 4px 0 var(--wald-sonne-dark), var(--sh-flat);
+  cursor: pointer;
+  will-change: transform;
+}
+
+.ww-sprung__blockwert {
+  animation: ww-sprung-schweben 2.4s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes ww-sprung-schweben {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.ww-sprung__block--kaputt {
+  background: #D9DDD4;
+  box-shadow: none;
+  animation: ww-sprung-wackeln 0.5s ease-in-out;
+}
+@keyframes ww-sprung-wackeln {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -7deg; }
+  55% { rotate: 6deg; }
+  80% { rotate: -3deg; }
+}
+
+.ww-sprung__block--tipp {
+  animation: ww-pulse-ring 1.3s ease-out infinite;
+  outline: 4px solid var(--wald-sonne);
+  outline-offset: 3px;
+}
+
+.ww-sprung__block--getroffen {
+  background: var(--wald-blatt);
+  animation: ww-sprung-treffer 0.55s var(--ease-pop, ease-out);
+}
+@keyframes ww-sprung-treffer {
+  0% { margin-bottom: 0; }
+  35% { margin-bottom: 14px; }
+  100% { margin-bottom: 0; }
+}
+
+/* Sternsplitter beim Treffer */
+.ww-sprung__splitter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+  pointer-events: none;
+  animation: ww-sprung-splitter 0.7s ease-out forwards;
+}
+@keyframes ww-sprung-splitter {
+  from { transform: rotate(var(--winkel)) translateY(0); opacity: 1; }
+  to { transform: rotate(var(--winkel)) translateY(-56px); opacity: 0; }
+}
+
+/* ---------- Hindernisse und Funken ---------- */
+.ww-sprung__hindernis {
+  position: absolute;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+.ww-sprung__hindernis svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ww-sprung__funke {
+  position: absolute;
+  left: 0;
+  visibility: hidden;
+  aspect-ratio: 1;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 0 4px #F6BD4166);
+}
+.ww-sprung__funke svg {
+  width: 100%;
+  height: 100%;
+  animation: ww-sprung-funkeln 1.8s ease-in-out infinite;
+}
+@keyframes ww-sprung-funkeln {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(0.82) rotate(18deg); }
+}
+.ww-sprung__funke--weg svg {
+  animation: ww-sprung-eingesammelt 0.4s ease-out forwards;
+}
+@keyframes ww-sprung-eingesammelt {
+  to { transform: scale(2.1); opacity: 0; }
+}
+
+/* ---------- Funkel, der Läufer ---------- */
+.ww-sprung__laeufer {
+  position: absolute;
+  pointer-events: none;
+}
+.ww-sprung__funkel {
+  will-change: transform;
+}
+.ww-sprung__funkel--rempler {
+  animation: ww-sprung-rempler 0.55s ease-out;
+}
+@keyframes ww-sprung-rempler {
+  0% { filter: none; }
+  30% { filter: brightness(1.25); }
+  100% { filter: none; }
+}
+
+.ww-sprung__staub {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 34px;
+  height: 10px;
+  margin-left: -17px;
+  border-radius: 50%;
+  background: #B98A5E88;
+  opacity: 0;
+}
+.ww-sprung__staub--an {
+  animation: ww-sprung-staub 0.45s ease-out;
+}
+@keyframes ww-sprung-staub {
+  0% { opacity: 0.9; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+/* ---------- Zähler und Hinweis ---------- */
+.ww-sprung__zaehler {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  font-family: var(--font-display);
+  font-size: var(--fs-s);
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: 3px solid var(--wald-tinte);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.ww-sprung__zaehler svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ww-sprung__hinweis {
+  position: absolute;
+  left: var(--sp-2);
+  top: var(--sp-2);
+  padding: 4px 12px;
+  font-family: var(--font-text);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: 3px solid var(--wald-tinte);
+  border-radius: 999px;
+  pointer-events: none;
+  animation: ww-float 3.2s ease-in-out infinite;
+}
+
+/*
+ * Weniger Bewegung: Deko-Animationen aus. Die Spielbewegung selbst bleibt —
+ * sie IST das Spiel — aber Wolken, Schweben und Funkeln stehen still.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ww-sprung__wolke,
+  .ww-sprung__blockwert,
+  .ww-sprung__funke svg,
+  .ww-sprung__hinweis {
+    animation: none;
+  }
+}

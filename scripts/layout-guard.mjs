@@ -31,7 +31,7 @@ const VIEWPORTS = [
 ]
 
 const SPIELE = [
-  'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage',
+  'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage', 'zahlen-sprung',
   'buchstaben-fang', 'wort-baukasten', 'reim-boot',
   'muster-weber', 'paar-finder', 'sortier-werkstatt',
   // Mix-Runden ziehen aus allen Spielen ihrer Welt
