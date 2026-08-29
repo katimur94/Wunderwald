@@ -33,6 +33,7 @@ const GAME_LABELS: Record<string, string> = {
   'muster-weber': 'Muster-Weber',
   'paar-finder': 'Paar-Finder',
   'zahlen-waage': 'Zahlen-Waage',
+  'zahlen-sprung': 'Zahlen-Sprung',
   'reim-boot': 'Reim-Boot',
   'sortier-werkstatt': 'Sortier-Werkstatt',
 }
@@ -59,6 +60,8 @@ const GAME_TIPS: Record<string, string> = {
     'Merkspiele gehen auch ohne Bildschirm: „Ich packe meinen Koffer“ oder ein echtes Memory auf dem Teppich.',
   'zahlen-waage':
     'Zerlegen wird greifbar, wenn man es anfassen kann: sieben Bausteine hinlegen und fragen, wie man sie auf zwei Hände verteilen kann.',
+  'zahlen-sprung':
+    'Schnelles Kopfrechnen braucht sichere Rechenwege. Kleine Blitzaufgaben im Alltag helfen: an der Ampel, beim Treppensteigen, beim Tischdecken.',
   'reim-boot':
     'Reime hört man am besten beim Vorlesen. Reimwörter am Zeilenende betonen und das zweite Wort das Kind sagen lassen.',
   'sortier-werkstatt':

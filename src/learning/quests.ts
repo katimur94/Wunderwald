@@ -73,6 +73,12 @@ const POOL: Quest[] = [
     matches: (e) => e.gameId === 'muster-weber' && e.correct >= 3,
   },
   {
+    id: 'sprung',
+    label: 'Triff 3 Blöcke im Zahlen-Sprung',
+    target: 1,
+    matches: (e) => e.gameId === 'zahlen-sprung' && e.correct >= 3,
+  },
+  {
     id: 'volltreffer',
     label: 'Löse 5 Aufgaben richtig',
     target: 1,

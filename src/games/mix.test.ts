@@ -82,12 +82,14 @@ describe('Mix-Runde', () => {
   })
 })
 
-describe('Spiel-Registry nach Phase 9', () => {
-  it('hat drei Spiele plus Mix-Runde je Welt', () => {
+describe('Spiel-Registry nach Phase 10', () => {
+  it('hat je Welt ihre Spiele plus genau eine Mix-Runde', () => {
+    // Zahlenland trägt seit dem Zahlen-Sprung vier Spiele, die anderen drei.
+    const erwartet = { zahlen: 4, buchstaben: 3, logik: 3 } as const
     for (const w of WORLD_IDS) {
       const spiele = gamesOfWorld(w).filter((g) => !g.id.startsWith('mix-'))
-      expect(spiele.length, w).toBe(3)
-      expect(gamesOfWorld(w).length, w).toBe(4)
+      expect(spiele.length, w).toBe(erwartet[w])
+      expect(gamesOfWorld(w).length, w).toBe(erwartet[w] + 1)
     }
   })
 

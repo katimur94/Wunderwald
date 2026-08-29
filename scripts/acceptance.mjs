@@ -232,6 +232,31 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
       continue
     }
 
+    // Zahlen-Sprung: Block antippen — Funkel flitzt hin und springt selbst.
+    // Nach zwei Fehlern leuchtet der richtige Block, dem folgt der Treiber.
+    if (await p.locator('.ww-sprung').count()) {
+      const aufgabe = () => p.locator('.ww-sprung').getAttribute('data-aufgabe').catch(() => null)
+      const vorher = await aufgabe()
+      for (let k = 0; k < 3; k++) {
+        const ziel = (await p.locator('.ww-sprung__block--tipp').count())
+          ? p.locator('.ww-sprung__block--tipp').first()
+          : p.locator('.ww-sprung__block').nth(k)
+        await ziel.click({ force: true }).catch(() => {})
+        // Anlauf + Sprung brauchen einen Moment; danach steht fest, ob es stimmte.
+        let fertig = false
+        for (let w = 0; w < 14 && !fertig; w++) {
+          await p.waitForTimeout(500)
+          fertig =
+            (await p.locator('.ww-reward').count()) > 0 ||
+            (await aufgabe()) !== vorher ||
+            (await p.locator('.ww-sprung__block--kaputt').count()) > 0
+        }
+        if ((await p.locator('.ww-reward').count()) || (await aufgabe()) !== vorher) break
+        await p.waitForTimeout(600)
+      }
+      continue
+    }
+
     // Sortier-Werkstatt: Ding antippen, dann Koerbe der Reihe nach probieren
     if (await p.locator('.ww-sortier').count()) {
       for (let n = 0; n < 20; n++) {
@@ -300,7 +325,7 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
   pruefe('15.4a', 'Onboarding legt Familie und Kind an', (await dbLesen(p, 'children')).length === 1)
 
   const SPIELE = [
-    'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage',
+    'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage', 'zahlen-sprung',
     'buchstaben-fang', 'wort-baukasten', 'reim-boot',
     'muster-weber', 'paar-finder', 'sortier-werkstatt',
     'mix-zahlen', 'mix-buchstaben', 'mix-logik',

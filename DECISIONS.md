@@ -610,3 +610,35 @@ Kind übt Reime, und die Stufe steigt bei „Überraschung".
 Die Aufgabe liegt jetzt zusätzlich in einer Ref, die beim Ziehen mitgeschrieben wird. Der Test
 dazu steht in `acceptance.mjs` (15.4g) und prüft nach einem kompletten Durchlauf, dass **kein**
 Versuch auf `mix-*` gebucht ist.
+
+## D47 — Der Zahlen-Sprung: Echtzeit-Spiel im Aufgaben-Korsett
+Das zehnte Spiel ist ein Jump-and-Run im Mario-Stil: Funkel läuft seitwärts durch den Wald,
+ein Tipp lässt ihn springen, und die Antwort gibt man, indem man den Block mit dem Ergebnis
+von unten anspringt. Drei Entscheidungen daran sind nicht offensichtlich:
+
+**Echtzeit, aber im normalen Aufgaben-Vertrag.** Das Spiel ist KEIN Sonderfall in der
+GameShell: `generateTask` liefert wie überall eine Aufgabe mit drei Optionen und genau einer
+Lösung (Generator-Vertrag 15.8 gilt unverändert), die Komponente meldet `onDone`/`onWrong`.
+Nur die Strecke — Blöcke, Hindernisse, Funken — entsteht erst in der Komponente, aus einem
+Seed, den der Generator mitliefert, plus der gemessenen Sichtweite. So bleibt der Generator
+deterministisch testbar, obwohl die Strecke von der Bildschirmbreite abhängt.
+
+**Zwei Wege zur Antwort, ein Treffer-Code.** Timing-Sprünge frustrieren Vierjährige, reine
+Tipp-Auswahl langweilt Achtjährige. Deshalb führen beide Eingaben zum selben `treffeBlock`:
+Tipp auf die Wiese springt sofort (Mario-Weg, mit Sprung-Puffer kurz vor der Landung), Tipp
+auf einen Block lässt Funkel selbst hinlaufen und springen (barrierefreier Weg — und der, den
+der Akzeptanz-Treiber nimmt). Hindernis-Rempler kosten bewusst nichts außer einem Hopser
+zurück: Motorik-Fehler sind keine Mathe-Fehler.
+
+**Die Physik rechnet in Szenen-Einheiten, das Zeichnen an React vorbei.** Die Szene ist
+intern immer 100 Einheiten hoch; Schwerkraft, Sprunghöhe und Blockhöhe skalieren damit vom
+560-px-Handy bis zum Tablet identisch. Die Frame-Schleife (requestAnimationFrame) schreibt
+Transforms direkt in Refs — React rendert nur diskrete Ereignisse (Treffer, Funken-Zähler).
+Ein 60-fps-Rerender des Baums wäre auf den Geräten, für die diese App gedacht ist, nicht
+drin. Die Rundstrecke wiederholt sich nahtlos, ihre Länge wächst mit der Sichtweite, damit
+nie zwei Kopien desselben Blocks gleichzeitig zu sehen sind — und weil sie rund ist, gibt es
+keinen Zeitdruck: Wer wartet, bekommt jeden Block wieder.
+
+Weil eine Echtzeit-Runde nicht in eine Mix-Aufgabe passt, steht das Spiel mit `fillsStage`
+automatisch außerhalb der Überraschungs-Runde — derselbe Filter, der schon Memory draußen
+hält.
