@@ -151,6 +151,8 @@
   }
   .ww-gameshell__funkel .ww-funkel { width: 72px !important; height: 72px !important; }
   .ww-gameshell__stage { padding: var(--sp-3) var(--sp-3) var(--sp-4); }
+  /* Frage, Bild und Antworten ruecken enger zusammen — 16 statt 24 px. */
+  .ww-gameshell__task { gap: var(--sp-4); }
   /* Auch die Kopfleiste gibt Hoehe ab — die Punkte bleiben ablesbar. */
   .ww-gameshell__bar { padding-top: calc(var(--sp-2) + var(--safe-t)); padding-bottom: var(--sp-2); }
 }
