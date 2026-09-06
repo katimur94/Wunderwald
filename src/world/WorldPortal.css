@@ -22,6 +22,7 @@
 .ww-portal--zahlen     { --accent: var(--welt-zahlen); }
 .ww-portal--buchstaben { --accent: var(--welt-buchstaben); }
 .ww-portal--logik      { --accent: var(--welt-logik); }
+.ww-portal--entdecker  { --accent: var(--welt-entdecker); }
 .ww-portal--wald       { --accent: var(--welt-wald); }
 
 .ww-portal__art {

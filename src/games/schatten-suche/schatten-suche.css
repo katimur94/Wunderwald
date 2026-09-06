@@ -1,0 +1,81 @@
+.ww-schatten__frage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5.2vw, 28px);
+  line-height: 1.25;
+  text-align: center;
+  max-width: 26ch;
+}
+
+.ww-schatten__buehne {
+  position: relative;
+  width: min(100%, 320px);
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4) var(--sp-4) var(--sp-5);
+  background: linear-gradient(180deg, #FFF7DD 0%, #F2E9CF 100%);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh-card);
+  overflow: hidden;
+}
+
+.ww-schatten__lampe {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 260px;
+  height: 260px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(246, 189, 65, 0.45) 0%, rgba(246, 189, 65, 0) 60%);
+  pointer-events: none;
+}
+
+.ww-schatten__boden {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  width: 150px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(46, 64, 52, 0.16);
+}
+
+/*
+ * Der Schatten: das Emoji wird über einen Filter schwarz. Das klappt bei
+ * Bild-Emojis (Apple, Google, Samsung) und bei Vektor-Emojis gleichermaßen.
+ */
+.ww-schatten {
+  display: inline-block;
+  line-height: 1;
+  filter: brightness(0) saturate(0);
+  opacity: 0.88;
+  transform-origin: center;
+}
+.ww-schatten--gross { font-size: clamp(84px, 24vw, 130px); position: relative; z-index: 1; }
+.ww-schatten--klein { font-size: clamp(30px, 8vw, 46px); }
+
+.ww-schatten__bild {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(84px, 24vw, 130px);
+  line-height: 1;
+  filter: drop-shadow(0 6px 2px rgba(46, 64, 52, 0.25));
+}
+
+.ww-schatten__wahl { line-height: 1; }
+
+/* Vier Antworten muessen auch auf 360 px in eine Reihe passen. */
+.ww-schatten__wahlen { width: 100%; }
+.ww-schatten__wahlen .ww-choices { gap: var(--sp-2); }
+.ww-schatten__wahlen .ww-choice { min-width: 70px; min-height: 70px; padding: var(--sp-2); font-size: clamp(30px, 8vw, 46px); }
+
+@media (max-height: 640px) {
+  .ww-schatten__buehne { min-height: min(130px, 22dvh); padding: var(--sp-2); }
+  .ww-schatten--gross, .ww-schatten__bild { font-size: min(72px, 12dvh); }
+  .ww-schatten__frage { font-size: 19px; }
+  .ww-schatten__wahlen .ww-choice { min-height: 64px; }
+}

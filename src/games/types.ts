@@ -33,6 +33,19 @@ export interface GameComponentProps<TTask extends GameTask = GameTask> {
   taskNo?: number
   /** Wie viele Aufgaben die Runde hat. */
   tasksTotal?: number
+  /** true, solange die Shell die Pause zeigt — Echtzeit-Spiele halten dann an. */
+  paused?: boolean
+}
+
+/**
+ * Was ein Generator über das Kind wissen darf, wenn er eine Aufgabe zieht.
+ * Spiele, die aus mehreren Welten schöpfen (Flitzer-Rallye), ziehen jede
+ * Frage auf der Stufe ihrer Herkunftswelt — nicht auf der eigenen.
+ */
+export interface TaskContext {
+  levels: Partial<Record<WorldId, number>>
+  /** Für Wiederholungsschutz je Kind (Wissensbank) */
+  childId?: string
 }
 
 export interface GameModule<TTask extends GameTask = GameTask> {
@@ -42,7 +55,7 @@ export interface GameModule<TTask extends GameTask = GameTask> {
   /** Kurzbeschreibung für den Welt-Screen und den Elternbereich */
   subtitle: string
   icon: ReactNode
-  generateTask(difficulty: number, rng: Rng): TTask
+  generateTask(difficulty: number, rng: Rng, ctx?: TaskContext): TTask
   Component: React.FC<GameComponentProps<TTask>>
   /** Memory zählt anders: 1 Runde = 1 Brett statt 6 Aufgaben. */
   tasksPerRound?: number
@@ -57,4 +70,17 @@ export interface GameModule<TTask extends GameTask = GameTask> {
    * dort landen, wo die Aufgabe herkommt.
    */
   attemptGameId?(task: TTask): string
+  /**
+   * In welcher Welt der Versuch die Stufe bewegt. Die Rallye stellt eine
+   * Zahlenfrage auf Zahlen-Stufe und bucht sie auch dort — sonst würde ein
+   * Rechenfehler die Stufe der Entdecker-Wiese senken.
+   */
+  attemptWorldId?(task: TTask): WorldId
+  /**
+   * true, wenn die Komponente über alle Aufgaben einer Runde hinweg montiert
+   * bleibt und neue Aufgaben als Prop bekommt (Rennen: das Auto fährt weiter,
+   * nur die Tore wechseln). Die Shell blendet dann zwischen den Aufgaben
+   * nichts aus.
+   */
+  persistent?: boolean
 }

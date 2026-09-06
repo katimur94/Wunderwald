@@ -1,7 +1,7 @@
 /** Alle Typen der lokalen Datenbank. Nichts hiervon verlässt jemals das Gerät. */
 
-export type WorldId = 'zahlen' | 'buchstaben' | 'logik'
-export const WORLD_IDS: WorldId[] = ['zahlen', 'buchstaben', 'logik']
+export type WorldId = 'zahlen' | 'buchstaben' | 'logik' | 'entdecker'
+export const WORLD_IDS: WorldId[] = ['zahlen', 'buchstaben', 'logik', 'entdecker']
 
 export interface FamilySettings {
   ttsOn: boolean
@@ -45,6 +45,49 @@ export interface InventoryItem {
   growthDays: number
 }
 
+/* ---------- ab Schema-Version 4: der Garten ---------- */
+
+export interface GardenBed {
+  /** Platz im Garten, 0-basiert */
+  slot: number
+  /** Pflanzenart (siehe garden/arten.ts) */
+  speciesId: string
+  plantedAt: number
+  /** Wachstum 0 … 1 (1 = reif) */
+  growth: number
+  /** Wasser 0 … 100 */
+  water: number
+  /** Bis hierhin wurde die Zeit schon verrechnet */
+  updatedAt: number
+  /** Unkraut im Beet, 0 … 3 */
+  weeds: number
+  /** Sitzt gerade eine Schnecke dran? */
+  snail: boolean
+  /** Wie oft schon geerntet (mehrjährige Pflanzen) */
+  harvests: number
+  /** Dünger wirkt bis zu diesem Zeitpunkt */
+  fertilizedUntil?: number
+}
+
+export interface GardenDecor {
+  slot: number
+  decorId: string
+}
+
+export interface Garden {
+  beds: GardenBed[]
+  decor: GardenDecor[]
+  /** Wie viele Beete offen sind */
+  bedCount: number
+  /** Kompost aus gejätetem Unkraut — wird zu Dünger */
+  compost: number
+  harvestsTotal: number
+  /** Tiere, die schon einmal zu Besuch waren (Ids aus garden/arten.ts) */
+  visitors: string[]
+  /** Pflanzen, die das Kind schon einmal gepflanzt hat — fürs Gartenbuch */
+  known?: string[]
+}
+
 export interface Companion {
   level: number
   xp: number
@@ -85,6 +128,11 @@ export interface Child {
   forestDays?: number
   /** Tag des letzten Besuchs (dayKey) */
   lastVisitDay?: string
+
+  /* ---------- ab Schema-Version 4 ---------- */
+
+  /** Der Garten. Fehlt er (altes Kind), wird er beim ersten Öffnen aus dem Wald gebaut. */
+  garden?: Garden
 }
 
 export interface Progress {

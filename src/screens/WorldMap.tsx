@@ -152,7 +152,7 @@ export function WorldMap() {
         </span>
       </header>
 
-      <section className="ww-map__scene" aria-label="Waldlichtung mit vier Zielen">
+      <section className="ww-map__scene" aria-label="Waldlichtung mit fünf Zielen">
         <MapBackdrop />
 
         <div className="ww-map__portals">
@@ -175,10 +175,16 @@ export function WorldMap() {
             style={{ gridArea: 'c' }}
           />
           <WorldPortal
-            worldId="wald"
-            title="Mein Wald"
-            onClick={() => go(`/kind/${child.id}/wald`)}
+            worldId="entdecker"
+            title={"Entdecker\u00ADwiese"}
+            onClick={() => go(`/kind/${child.id}/welt/entdecker`)}
             style={{ gridArea: 'd' }}
+          />
+          <WorldPortal
+            worldId="wald"
+            title="Mein Garten"
+            onClick={() => go(`/kind/${child.id}/wald`)}
+            style={{ gridArea: 'e' }}
           />
         </div>
       </section>

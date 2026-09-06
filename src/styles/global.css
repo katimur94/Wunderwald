@@ -138,6 +138,29 @@ button { cursor: pointer; }
 .ww-page--wide { max-width: 1100px; }
 .ww-page--full { max-width: none; padding-left: var(--sp-3); padding-right: var(--sp-3); }
 
+/*
+ * Spiel- und Gartenflächen: Ein Kinderfinger, der länger liegen bleibt,
+ * darf weder Text markieren noch ein Kontextmenü öffnen (iOS-Callout,
+ * Android-Langdruck). Der Elternbereich bleibt markierbar.
+ */
+.ww-gameshell,
+.ww-garten,
+.ww-map,
+.ww-world,
+.ww-reward {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ww-gameshell img,
+.ww-garten img,
+.ww-garten svg,
+.ww-gameshell svg,
+.ww-gameshell canvas {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 /* ---------- Sichtbar nur für Screenreader ---------- */
 .ww-sr {
   position: absolute;

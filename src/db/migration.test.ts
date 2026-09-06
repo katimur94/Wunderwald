@@ -33,7 +33,7 @@ async function legeV1DatenbankAn(name: string) {
   alt.close()
 }
 
-describe('Dexie-Migration von Version 1 auf 2', () => {
+describe('Dexie-Migration von Version 1 auf die aktuelle', () => {
   it('lädt bestehende Kinder und ergänzt die neuen Felder', async () => {
     const name = `ww-migr-${Math.floor(Math.random() * 1e9)}`
     await legeV1DatenbankAn(name)
@@ -57,6 +57,10 @@ describe('Dexie-Migration von Version 1 auf 2', () => {
     // Aus dem einzelnen Gießtag ist ein (hier leeres) Tagebuch geworden
     expect(kind!.wateredDays).toEqual([])
     expect('lastWatered' in kind!).toBe(false)
+    // Schema 4: aus dem Wald ist ein Garten geworden — der Baum steht als Apfelbaum im Beet
+    expect(kind!.garden).toBeTruthy()
+    expect(kind!.garden!.beds.map((b) => b.speciesId)).toEqual(['apfelbaum'])
+    expect(kind!.garden!.beds[0].growth).toBeGreaterThan(0.2)
     neu.close()
   })
 

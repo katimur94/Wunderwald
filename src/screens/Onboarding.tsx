@@ -94,7 +94,7 @@ export function Onboarding() {
           <div className="ww-onboarding__hero" aria-hidden="true">🌲🦊🌟</div>
           <h1>Willkommen im Wunderwald</h1>
           <p className="ww-lead">
-            Hier lösen Kinder kurze Aufgaben und bauen mit ihren Sternen einen eigenen Wald auf.
+            Hier lösen Kinder kurze Aufgaben, fahren Rennen und pflegen mit ihren Sternen einen eigenen Garten.
             Der Fuchs <strong>Funkel</strong> liest alles vor — auch wer noch nicht lesen kann,
             spielt alleine.
           </p>
@@ -268,7 +268,7 @@ export function Onboarding() {
             disabled={nickname.trim().length === 0 || busy}
             onClick={finish}
           >
-            {busy ? 'Einen Moment …' : 'Wald öffnen'}
+            {busy ? 'Einen Moment …' : 'Wunderwald öffnen'}
           </BigButton>
         </section>
       )}

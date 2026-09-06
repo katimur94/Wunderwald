@@ -79,6 +79,36 @@ const POOL: Quest[] = [
     matches: (e) => e.gameId === 'zahlen-sprung' && e.correct >= 3,
   },
   {
+    id: 'entdecker',
+    label: 'Spiele 1× auf der Entdecker-Wiese',
+    target: 1,
+    matches: (e) => e.worldId === 'entdecker',
+  },
+  {
+    id: 'rallye',
+    label: 'Fahre ein Rennen in der Flitzer-Rallye',
+    target: 1,
+    matches: (e) => e.gameId === 'flitzer-rallye',
+  },
+  {
+    id: 'rallye-tore',
+    label: 'Triff 4 Tore in der Flitzer-Rallye',
+    target: 1,
+    matches: (e) => e.gameId === 'flitzer-rallye' && e.correct >= 4,
+  },
+  {
+    id: 'uhr',
+    label: 'Lies 3 Uhrzeiten im Zeit-Turm',
+    target: 1,
+    matches: (e) => e.gameId === 'zeit-turm' && e.correct >= 3,
+  },
+  {
+    id: 'ballons',
+    label: 'Platze 4 richtige Ballons',
+    target: 1,
+    matches: (e) => e.gameId === 'ballon-platzer' && e.correct >= 4,
+  },
+  {
     id: 'volltreffer',
     label: 'Löse 5 Aufgaben richtig',
     target: 1,

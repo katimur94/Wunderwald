@@ -7,11 +7,12 @@ import type { AnswerReport, GameTask } from '../games/types'
 import { Funkel, type FunkelState } from '../world/Funkel'
 import { SpeechBubble } from '../world/SpeechBubble'
 import { hilfeFuer, leichter, lob, MUEDE, rundeFertig, trost, zeigeLoesung } from '../world/funkel-lines'
-import { sprich, stopSpeaking, wiederhole } from '../audio/tts'
+import { sprich, stopSpeaking } from '../audio/tts'
 import { sfx } from '../audio/AudioManager'
 import { applyAttempt, type Milestone } from '../learning/adaptivity'
 import { db } from '../db/db'
-import { getProgress } from '../db/children'
+import { getAllProgress, getProgress } from '../db/children'
+import type { WorldId } from '../db/types'
 import { useApp, useActiveChild, useSettings } from '../store/useApp'
 import { BigButton } from '../components/BigButton'
 import { RewardScreen } from './RewardScreen'
@@ -20,6 +21,15 @@ import { closeSession, isDailyLimitReached, openSession } from '../learning/sess
 import './GameShell.css'
 
 const DEFAULT_TASKS_PER_ROUND = 6
+
+/**
+ * Wie lange Funkel höchstens ausreden darf, bevor die nächste Aufgabe kommt.
+ * Das Lob soll zu Ende gesprochen werden — aber eine hängende Stimme darf
+ * das Spiel nie anhalten.
+ */
+const LOB_MAX_MS = 3200
+const LOB_MIN_MS = 750
+const LEICHTER_MAX_MS = 4200
 
 export function GameShell() {
   const { gameId, childId } = useParams()
@@ -60,8 +70,37 @@ export function GameShell() {
   const startedAt = useRef(Date.now())
   const sessionId = useRef<number | null>(null)
   const gamesPlayed = useRef(0)
+  /*
+   * Stufen aller Welten. Spiele, die aus mehreren Welten schöpfen, ziehen
+   * jede Frage auf der Stufe ihrer Herkunft. Wird nach jedem Versuch
+   * nachgeführt, damit auch die Rallye adaptiv bleibt.
+   */
+  const levelsRef = useRef<Partial<Record<WorldId, number>>>({})
+  /*
+   * true, solange zwischen zwei Aufgaben gewartet wird (Lob, Trost). In
+   * dieser Zeit darf der Start-Effekt KEINE Aufgabe ziehen — sonst kommt
+   * die nächste Aufgabe zweimal: einmal sofort, einmal nach der Pause. Genau
+   * das war der Fehler, bei dem Funkel mitten im Satz abbrach und neu ansetzte.
+   */
+  const uebergangRef = useRef(false)
+  /* Alle laufenden Timer, damit ein Spielwechsel oder Neustart nichts nachfeuert. */
+  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const rng = useMemo(() => mulberry32((Date.now() ^ 0x9e3779b9) >>> 0), [])
   const correctCount = results.filter(Boolean).length
+
+  const later = useCallback((fn: () => void, ms: number) => {
+    const t = setTimeout(() => {
+      timerRef.current = timerRef.current.filter((x) => x !== t)
+      fn()
+    }, ms)
+    timerRef.current.push(t)
+    return t
+  }, [])
+
+  const clearTimers = useCallback(() => {
+    timerRef.current.forEach(clearTimeout)
+    timerRef.current = []
+  }, [])
 
   /* ---------- Tageslimit: gilt auch bei direktem Aufruf der Adresse ---------- */
   useEffect(() => {
@@ -84,6 +123,8 @@ export function GameShell() {
     }
   }, [childId, limitErreicht])
 
+  useEffect(() => () => clearTimers(), [clearTimers])
+
   const say = useCallback(
     (text: string, state: FunkelState = 'spricht') => {
       setBubble(text)
@@ -91,14 +132,45 @@ export function GameShell() {
       if (settings.ttsOn) {
         sprich(text, { onEnd: () => setFunkelState((s) => (s === 'spricht' ? 'idle' : s)) })
       } else {
-        setTimeout(() => setFunkelState((s) => (s === 'spricht' ? 'idle' : s)), 900)
+        later(() => setFunkelState((s) => (s === 'spricht' ? 'idle' : s)), 900)
       }
     },
-    [settings.ttsOn],
+    [settings.ttsOn, later],
+  )
+
+  /**
+   * Sagt etwas und ruft `danach` auf, sobald Funkel ausgeredet hat —
+   * frühestens nach `minMs`, spätestens nach `maxMs`. Ohne Sprachausgabe
+   * gilt eine Lesepause statt der Sprechdauer.
+   */
+  const sayThen = useCallback(
+    (text: string, state: FunkelState, danach: () => void, minMs: number, maxMs: number) => {
+      setBubble(text)
+      setFunkelState(state)
+      const begonnen = Date.now()
+      let erledigt = false
+      let deckel: ReturnType<typeof setTimeout> | null = null
+      const fertig = () => {
+        if (erledigt) return
+        erledigt = true
+        if (deckel) clearTimeout(deckel)
+        const rest = Math.max(0, minMs - (Date.now() - begonnen))
+        later(danach, rest)
+      }
+      if (settings.ttsOn) {
+        deckel = later(fertig, maxMs)
+        sprich(text, { onEnd: fertig })
+      } else {
+        later(fertig, Math.min(maxMs, Math.max(minMs, 500 + text.length * 45)))
+      }
+    },
+    [settings.ttsOn, later],
   )
 
   /* ---------- Spielwechsel: alles zurücksetzen ---------- */
   useEffect(() => {
+    clearTimers()
+    uebergangRef.current = false
     setTask(null)
     taskRef.current = null
     setTaskFor(null)
@@ -109,19 +181,30 @@ export function GameShell() {
     setEarned(0)
     setMilestone(null)
     setReveal(false)
-  }, [gameId])
+  }, [gameId, clearTimers])
 
   /* ---------- Startstufe laden ---------- */
   useEffect(() => {
     if (!childId || !game || limitErreicht !== false) return
-    void getProgress(childId, game.worldId).then((p) => setDifficulty(p.level))
+    let aktiv = true
+    void getAllProgress(childId).then((alle) => {
+      if (!aktiv) return
+      const levels: Partial<Record<WorldId, number>> = {}
+      for (const w of Object.keys(alle) as WorldId[]) levels[w] = alle[w].level
+      levelsRef.current = levels
+      setDifficulty(alle[game.worldId]?.level ?? 1)
+    })
+    return () => {
+      aktiv = false
+    }
   }, [childId, game, limitErreicht])
 
   /* ---------- Neue Aufgabe ziehen ---------- */
   const nextTask = useCallback(
     (lvl: number) => {
       if (!game) return
-      const t = game.generateTask(lvl, rng)
+      uebergangRef.current = false
+      const t = game.generateTask(lvl, rng, { levels: levelsRef.current, childId })
       setTask(t)
       taskRef.current = t
       setTaskFor(game.id)
@@ -129,11 +212,18 @@ export function GameShell() {
       startedAt.current = Date.now()
       say(t.speak)
     },
-    [game, rng, say],
+    [game, rng, say, childId],
   )
 
+  /*
+   * Zieht die erste Aufgabe einer Runde (und nach „Nochmal"). Zwischen zwei
+   * Aufgaben ist `uebergangRef` gesetzt — dann zieht ausschließlich der
+   * Übergang selbst, nach Lob oder Trost.
+   */
   useEffect(() => {
-    if (difficulty !== null && task === null && !finished) nextTask(difficulty)
+    if (difficulty !== null && task === null && !finished && !uebergangRef.current) {
+      nextTask(difficulty)
+    }
   }, [difficulty, task, finished, nextTask])
 
   /* ---------- Falsche Antwort: Frustschutz ---------- */
@@ -155,35 +245,45 @@ export function GameShell() {
   const handleDone = useCallback(
     async (report: AnswerReport) => {
       if (!childId || !game || difficulty === null) return
+      if (uebergangRef.current) return
+      uebergangRef.current = true
 
-      if (report.correct && !report.usedHint) {
-        sfx('success')
-        say(lob(), 'jubelt')
-      } else if (report.correct) {
-        sfx('pop')
-        say('Gemeinsam geschafft!', 'jubelt')
+      const aktuelle = taskRef.current
+      const welt: WorldId = (aktuelle && game.attemptWorldId?.(aktuelle)) ?? game.worldId
+
+      // Lob sofort — die Datenbank wartet nicht auf Funkel, Funkel nicht auf sie.
+      let weiter: (() => void) | null = null
+      let lobFertig = false
+      const lobText = report.correct && !report.usedHint ? lob() : report.correct ? 'Gemeinsam geschafft!' : null
+      if (lobText) {
+        sfx(report.correct && !report.usedHint ? 'success' : 'pop')
+        sayThen(lobText, 'jubelt', () => { lobFertig = true; weiter?.() }, LOB_MIN_MS, LOB_MAX_MS)
+      } else {
+        later(() => { lobFertig = true; weiter?.() }, 400)
       }
 
       await db.attempts.add({
         childId,
-        worldId: game.worldId,
+        worldId: welt,
         // Die Mix-Runde bucht auf das Spiel, aus dem die Aufgabe stammt.
-        gameId: (taskRef.current && game.attemptGameId?.(taskRef.current)) ?? game.id,
-        difficulty,
+        gameId: (aktuelle && game.attemptGameId?.(aktuelle)) ?? game.id,
+        difficulty: levelsRef.current[welt] ?? difficulty,
         correct: report.correct,
         usedHint: report.usedHint,
         timeMs: report.timeMs,
         ts: Date.now(),
       })
 
-      const prev = await getProgress(childId, game.worldId)
+      const prev = await getProgress(childId, welt)
       const { progress, levelDelta, milestone: ms } = applyAttempt(prev, {
         correct: report.correct && !report.usedHint,
         usedHint: report.usedHint,
         timeMs: report.timeMs,
       })
       await db.progress.put(progress)
-      setDifficulty(progress.level)
+      levelsRef.current = { ...levelsRef.current, [welt]: progress.level }
+      const eigeneStufe = welt === game.worldId ? progress.level : difficulty
+      if (welt === game.worldId) setDifficulty(progress.level)
       if (ms) setMilestone(ms)
 
       const nextResults = [...results, report.correct && !report.usedHint]
@@ -192,22 +292,24 @@ export function GameShell() {
       const isLast = nextResults.length >= tasksPerRound
       const goOn = () => {
         if (isLast) {
+          uebergangRef.current = false
           void finishRound(nextResults, ms)
+          return
+        }
+        setTaskNo((n) => n + 1)
+        // Ohne dauerhafte Bühne verschwindet die alte Aufgabe während der Pause.
+        if (!game.persistent) setTask(null)
+        if (levelDelta < 0) {
+          sayThen(leichter(), 'troestet', () => nextTask(eigeneStufe), 1200, LEICHTER_MAX_MS)
         } else {
-          setTaskNo((n) => n + 1)
-          if (levelDelta < 0) {
-            say(leichter(), 'troestet')
-            setTimeout(() => nextTask(progress.level), 1800)
-          } else {
-            setTimeout(() => nextTask(progress.level), 950)
-          }
-          setTask(null)
+          later(() => nextTask(eigeneStufe), 200)
         }
       }
-      setTimeout(goOn, report.correct ? 750 : 400)
+      weiter = goOn
+      if (lobFertig) goOn()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [childId, game, difficulty, results, tasksPerRound, say, nextTask],
+    [childId, game, difficulty, results, tasksPerRound, say, sayThen, later, nextTask],
   )
 
   /* ---------- Runde abschließen: Sterne vergeben ---------- */
@@ -238,12 +340,15 @@ export function GameShell() {
   }
 
   function restart() {
+    clearTimers()
+    uebergangRef.current = false
     setResults([])
     setTaskNo(0)
     setFinished(false)
     setEarned(0)
     setMilestone(null)
     setTask(null)
+    taskRef.current = null
   }
 
   if (!game) {
@@ -263,7 +368,7 @@ export function GameShell() {
         <Funkel state="muede" size={150} outfitId={child?.companion.outfitId ?? null} />
         <SpeechBubble text={MUEDE} side="top" />
         <BigButton size="xl" tone="blatt" full onClick={() => navigate(`/kind/${childId}/wald`)}>
-          In meinen Wald
+          In meinen Garten
         </BigButton>
         <BigButton size="l" tone="papier" full onClick={() => navigate(`/kind/${childId}`)}>
           Zur Karte
@@ -287,9 +392,26 @@ export function GameShell() {
   }
 
   const Component = game.Component
+  const voll = game.fillsStage || game.persistent
+  const aufgabe = task && taskFor === game.id && (
+    <Component
+      task={task as never}
+      difficulty={difficulty ?? 1}
+      onDone={handleDone}
+      onWrong={handleWrong}
+      say={say}
+      revealSolution={reveal}
+      taskNo={taskNo}
+      tasksTotal={tasksPerRound}
+      paused={paused}
+    />
+  )
 
   return (
-    <main className="ww-vollbild ww-gameshell" data-world={game.worldId}>
+    <main
+      className={`ww-vollbild ww-gameshell ${game.persistent ? 'ww-gameshell--buehne' : ''}`}
+      data-world={game.worldId}
+    >
       <header className="ww-gameshell__bar">
         <button
           type="button"
@@ -321,31 +443,35 @@ export function GameShell() {
         </ol>
       </header>
 
-      <section className={`ww-gameshell__stage ${game.fillsStage ? 'ww-gameshell__stage--voll' : ''}`}>
-        <AnimatePresence mode="wait">
-          {task && taskFor === game.id && (
-            <motion.div
-              key={taskNo}
-              className={`ww-gameshell__task ${game.fillsStage ? 'ww-gameshell__task--voll' : ''}`}
-              style={game.fillsStage ? { display: 'flex', flex: 1, minHeight: 0 } : undefined}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.22 }}
-            >
-              <Component
-                task={task as never}
-                difficulty={difficulty ?? 1}
-                onDone={handleDone}
-                onWrong={handleWrong}
-                say={say}
-                revealSolution={reveal}
-                taskNo={taskNo}
-                tasksTotal={tasksPerRound}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <section className={`ww-gameshell__stage ${voll ? 'ww-gameshell__stage--voll' : ''}`}>
+        {game.persistent ? (
+          /*
+           * Dauerhafte Bühne: keine Ein-/Ausblendung je Aufgabe. Das Spiel
+           * bleibt montiert und bekommt die neue Aufgabe als Prop.
+           */
+          <div
+            className="ww-gameshell__task ww-gameshell__task--voll"
+            style={{ display: 'flex', flex: 1, minHeight: 0 }}
+          >
+            {aufgabe}
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {aufgabe && (
+              <motion.div
+                key={taskNo}
+                className={`ww-gameshell__task ${game.fillsStage ? 'ww-gameshell__task--voll' : ''}`}
+                style={game.fillsStage ? { display: 'flex', flex: 1, minHeight: 0 } : undefined}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.22 }}
+              >
+                {aufgabe}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </section>
 
       <footer className="ww-gameshell__funkel">
@@ -359,8 +485,7 @@ export function GameShell() {
             const text = task ? task.speak : hilfeFuer(game.id)
             setBubble(text)
             setFunkelState('spricht')
-            if (settings.ttsOn) wiederhole()
-            sprich(text)
+            sprich(text, { onEnd: () => setFunkelState((s) => (s === 'spricht' ? 'idle' : s)) })
           }}
           aria-label="Aufgabe noch einmal vorlesen"
         >

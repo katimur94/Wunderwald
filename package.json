@@ -14,7 +14,7 @@
     "smoke": "node scripts/smoke.mjs",
     "acceptance": "node scripts/acceptance.mjs",
     "layout-guard": "node scripts/layout-guard.mjs",
-    "forest-check": "node scripts/forest-check.mjs"
+    "garden-check": "node scripts/garden-check.mjs"
   },
   "dependencies": {
     "dexie": "^4.0.11",

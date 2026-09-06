@@ -36,12 +36,18 @@ const GAME_LABELS: Record<string, string> = {
   'zahlen-sprung': 'Zahlen-Sprung',
   'reim-boot': 'Reim-Boot',
   'sortier-werkstatt': 'Sortier-Werkstatt',
+  'flitzer-rallye': 'Flitzer-Rallye',
+  'wissens-quiz': 'Wissens-Quiz',
+  'schatten-suche': 'Schatten-Suche',
+  'zeit-turm': 'Zeit-Turm',
+  'ballon-platzer': 'Ballon-Platzer',
 }
 
 const WORLD_LABELS: Record<WorldId, string> = {
   zahlen: 'Zahlenland',
   buchstaben: 'Buchstabenwald',
   logik: 'Logik-Labor',
+  entdecker: 'Entdecker-Wiese',
 }
 
 /** Konkrete Alltagstipps je Spiel, wenn es dort gerade hakt. */
@@ -66,6 +72,16 @@ const GAME_TIPS: Record<string, string> = {
     'Reime hört man am besten beim Vorlesen. Reimwörter am Zeilenende betonen und das zweite Wort das Kind sagen lassen.',
   'sortier-werkstatt':
     'Sortieren übt sich beim Aufräumen: erst nach Art (Autos, Tiere), dann nach Merkmal (alles Rote, alles Weiche).',
+  'flitzer-rallye':
+    'Im Rennen zählt Tempo und Wissen zugleich. Wenn es hakt, hilft eine ruhige Runde im Wissens-Quiz mit denselben Fragen — ohne Zeitdruck.',
+  'wissens-quiz':
+    'Sachwissen wächst im Alltag: beim Spaziergang Tiere benennen, in der Küche fragen, woraus Brot gemacht wird, abends die Uhr gemeinsam lesen.',
+  'schatten-suche':
+    'Formen erkennen übt sich mit Schattenspielen an der Wand oder mit dem Suchen von Umrissen auf dem Spielplatz.',
+  'zeit-turm':
+    'Die Uhr lernt sich an echten Momenten: „Um halb sieben gibt es Essen — wo steht dann der große Zeiger?“ Eine Uhr mit Zeigern im Kinderzimmer hilft.',
+  'ballon-platzer':
+    'Hier zählt schnelles Erkennen. Wenn die Ballons zu schnell sind, hilft dieselbe Frage in Ruhe im Wissens-Quiz.',
 }
 
 const TAG_MS = 86_400_000

@@ -9,6 +9,7 @@
 .ww-gameshell[data-world='zahlen']     { --welt: var(--welt-zahlen); }
 .ww-gameshell[data-world='buchstaben'] { --welt: var(--welt-buchstaben); }
 .ww-gameshell[data-world='logik']      { --welt: var(--welt-logik); }
+.ww-gameshell[data-world='entdecker']  { --welt: var(--welt-entdecker); }
 
 /* ---------- Kopfleiste ---------- */
 .ww-gameshell__bar {
@@ -91,6 +92,10 @@
   padding-bottom: var(--sp-4);
 }
 
+/* Dauerhafte Bühne (Rennen): randlos, das Spiel füllt die Fläche selbst — auch auf dem Tablet in voller Breite. */
+.ww-gameshell--buehne .ww-gameshell__stage { padding: 0; }
+.ww-gameshell--buehne .ww-gameshell__task { max-width: none; }
+
 .ww-gameshell__task {
   margin: auto;
   width: 100%;
@@ -146,6 +151,8 @@
   }
   .ww-gameshell__funkel .ww-funkel { width: 72px !important; height: 72px !important; }
   .ww-gameshell__stage { padding: var(--sp-3) var(--sp-3) var(--sp-4); }
+  /* Frage, Bild und Antworten ruecken enger zusammen — 16 statt 24 px. */
+  .ww-gameshell__task { gap: var(--sp-4); }
   /* Auch die Kopfleiste gibt Hoehe ab — die Punkte bleiben ablesbar. */
   .ww-gameshell__bar { padding-top: calc(var(--sp-2) + var(--safe-t)); padding-bottom: var(--sp-2); }
 }

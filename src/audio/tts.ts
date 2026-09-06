@@ -127,7 +127,17 @@ export function sprich(text: string, opts: { rate?: number; onEnd?: () => void }
     utter.pitch = 1.05
     const voice = pickGermanVoice()
     if (voice) utter.voice = voice
-    if (opts.onEnd) utter.onend = () => opts.onEnd?.()
+    if (opts.onEnd) {
+      let gemeldet = false
+      const fertig = () => {
+        if (gemeldet) return
+        gemeldet = true
+        opts.onEnd?.()
+      }
+      utter.onend = fertig
+      // Abgebrochen (cancel) oder Stimme fehlt: Wer wartet, wartet sonst ewig.
+      utter.onerror = fertig
+    }
     window.speechSynthesis.speak(utter)
   } catch {
     opts.onEnd?.()

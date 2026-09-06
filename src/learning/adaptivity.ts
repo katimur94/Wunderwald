@@ -138,6 +138,7 @@ const MILESTONE_TITLES: Record<WorldId, string[]> = {
   zahlen: ['Zahlen-Entdecker', 'Zahlen-Kenner', 'Zahlen-Forscher', 'Zahlen-Meister', 'Zahlen-Magier'],
   buchstaben: ['Buchstaben-Entdecker', 'Silben-Kenner', 'Wort-Forscher', 'Lese-Meister', 'Wort-Magier'],
   logik: ['Muster-Entdecker', 'Muster-Kenner', 'Rätsel-Forscher', 'Rätsel-Meister', 'Logik-Magier'],
+  entdecker: ['Welt-Entdecker', 'Welt-Kenner', 'Welt-Forscher', 'Welt-Meister', 'Welt-Magier'],
 }
 
 const MILESTONE_BONUS = [3, 5, 8, 10, 15]
@@ -204,6 +205,18 @@ export const LEVEL_DESCRIPTIONS: Record<WorldId, Record<number, string>> = {
     9: 'Löst kleine Denk-Matrizen, bei denen ein Feld fehlt.',
     10: 'Kombiniert mehrere Regeln, begründet seine Wahl und findet Oberbegriffe.',
   },
+  entdecker: {
+    1: 'Kennt Haustiere, Grundfarben und die Geräusche bekannter Tiere.',
+    2: 'Ordnet Tieren ihre Kinder und ihr Zuhause zu, kennt Wetter und Tageszeiten.',
+    3: 'Unterscheidet Obst und Gemüse, kennt Körperteile und einfache Formen.',
+    4: 'Kennt die vier Jahreszeiten, was Tiere fressen und wo etwas wächst.',
+    5: 'Liest volle Stunden auf der Uhr, kennt Wochentage und Ampelfarben.',
+    6: 'Zählt Beine, Flügel und Räder, kennt Lebensräume wie Wald, Meer und Wüste.',
+    7: 'Liest halbe Stunden, kennt Monate und Berufe samt ihrer Werkzeuge.',
+    8: 'Kennt Planeten, Sinne und den Weg des Wassers vom Regen bis zum Fluss.',
+    9: 'Liest Viertelstunden, versteht Recycling und einfache Naturzusammenhänge.',
+    10: 'Liest die Uhr auf fünf Minuten genau und erklärt, warum Dinge in der Natur passieren.',
+  },
 }
 
 export function describeLevel(worldId: WorldId, level: number): string {
@@ -214,4 +227,5 @@ export const WORLD_LABELS: Record<WorldId, string> = {
   zahlen: 'Zahlenland',
   buchstaben: 'Buchstabenwald',
   logik: 'Logik-Labor',
+  entdecker: 'Entdecker-Wiese',
 }

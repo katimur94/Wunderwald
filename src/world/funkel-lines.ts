@@ -114,7 +114,7 @@ export function meilenstein(titel: string): string {
 /* ------------------------------ Tageslimit --------------------------- */
 
 export const MUEDE =
-  'Ich bin müde – morgen wachsen neue Abenteuer! Deinen Wald darfst du aber noch anschauen.'
+  'Ich bin müde – morgen wachsen neue Abenteuer! Deinen Garten darfst du aber noch gießen.'
 
 /* --------------------------- Hilfetexte je Spiel --------------------- */
 
@@ -127,6 +127,12 @@ export const GAME_HELP: Record<string, string> = {
   'paar-finder': 'Decke zwei Karten auf. Merk dir gut, wo welches Bild war.',
   'zahlen-sprung':
     'Tippe auf die Wiese, dann springe ich. Spring von unten gegen den Block mit dem Ergebnis — oder tipp den Block direkt an, dann flitze ich hin.',
+  'flitzer-rallye':
+    'Lies das Schild oben. Tippe links, in die Mitte oder rechts, dann lenkt das Auto in diese Spur. Fahr durch das Tor mit der richtigen Antwort — dann gibt es Turbo!',
+  'wissens-quiz': 'Schau dir das Bild an und hör die Frage. Tippe die Antwort, die passt.',
+  'schatten-suche': 'Schau dir die Form des Schattens an: Ohren, Räder, Blätter. Welches Bild hat genau diese Form?',
+  'zeit-turm': 'Der kurze Zeiger zeigt die Stunde, der lange Zeiger die Minuten. Tippe die passende Zeit.',
+  'ballon-platzer': 'Die Ballons steigen auf. Tippe den Ballon mit der richtigen Antwort, bevor er oben verschwindet — er kommt aber wieder.',
 }
 
 export function hilfeFuer(gameId: string): string {
@@ -140,8 +146,9 @@ export const TOUR: string[] = [
   'Im Zahlenland zählst und rechnest du.',
   'Im Buchstabenwald findest du Laute und baust Wörter.',
   'Im Logik-Labor löst du Muster und Rätsel.',
+  'Auf der Entdecker-Wiese fährst du Rennen und entdeckst die Welt.',
   'Für jede richtige Aufgabe bekommst du Sterne.',
-  'Mit den Sternen pflanzt du deinen eigenen Wald. Los geht’s!',
+  'Mit den Sternen pflanzt du deinen eigenen Garten. Gieß ihn jeden Tag! Los geht’s!',
 ]
 
 const TIPS = [
@@ -150,7 +157,9 @@ const TIPS = [
   'Tipp: Sag die Aufgabe laut mit. Dann merkst du sie dir besser.',
   'Tipp: Wenn du nicht weiterweißt, tippe auf das Fragezeichen. Dann helfe ich.',
   'Im Wunderwald darf man Fehler machen. Davon lernt man am meisten.',
-  'Sterne kannst du in deinem Wald ausgeben. Bäume kosten acht Stück.',
+  'Sterne kannst du in deinem Garten ausgeben. Samen gibt es schon ab drei Stück.',
+  'Pflanzen brauchen Wasser. Schau jeden Tag nach, ob deine Beete trocken sind.',
+  'In der Flitzer-Rallye fährst du durch das Tor mit der richtigen Antwort. Dann gibt es Turbo!',
 ]
 
 export function tippDesTages(rng?: () => number): string {
@@ -163,4 +172,5 @@ export const WORLD_INTRO: Record<WorldId, string> = {
   zahlen: 'Willkommen im Zahlenland! Such dir ein Spiel aus.',
   buchstaben: 'Im Buchstabenwald rascheln die Laute. Womit möchtest du spielen?',
   logik: 'Das Logik-Labor brummt schon. Welches Rätsel darf es sein?',
+  entdecker: 'Willkommen auf der Entdecker-Wiese! Hier wird gefahren, geraten und gestaunt.',
 }
