@@ -90,7 +90,7 @@ export function Settings() {
         <h2>Tageslimit</h2>
         <p className="ww-hint">
           Ist das Limit erreicht, verabschiedet sich Funkel freundlich („Ich bin müde – morgen
-          wachsen neue Abenteuer!“). Den eigenen Wald darf das Kind weiterhin anschauen, nur
+          wachsen neue Abenteuer!“). Den eigenen Garten darf das Kind weiterhin gießen, nur
           Spiele sind dann bis zum nächsten Tag zu.
         </p>
         <div className="ww-chips" role="group" aria-label="Tageslimit in Minuten">

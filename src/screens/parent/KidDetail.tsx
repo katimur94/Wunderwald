@@ -272,7 +272,7 @@ export function KidDetail() {
         {loeschSchritt === 0 && (
           <>
             <p className="ww-hint">
-              Entfernt {child.nickname} samt Fortschritt, Sternen und Wald. Das lässt sich nicht
+              Entfernt {child.nickname} samt Fortschritt, Sternen und Garten. Das lässt sich nicht
               rückgängig machen — es gibt keine Kopie auf einem Server.
             </p>
             <BigButton tone="papier" full onClick={() => setLoeschSchritt(1)}>

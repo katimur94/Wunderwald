@@ -41,7 +41,7 @@ async function onboarding(p, { nickname = 'Mia', jahr = '2019', pin = ['1','2','
   await p.getByRole('button', { name: 'Weiter' }).click()
   await p.getByLabel('Spitzname').fill(nickname)
   if (jahr) await p.getByLabel(/Geburtsjahr/).fill(jahr)
-  await p.getByRole('button', { name: /Wald öffnen/ }).click()
+  await p.getByRole('button', { name: /Wunderwald öffnen|Wald öffnen/ }).click()
   await p.waitForURL(/#\/kind\//, { timeout: 15000 })
   await p.waitForTimeout(1200)
   return { satz, childId: p.url().split('/kind/')[1].split('/')[0] }
@@ -291,6 +291,26 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
       continue
     }
 
+    // Flitzer-Rallye: Spur-Knoepfe der Reihe nach, nach zwei Fehlern leuchtet die Loesung.
+    if (await p.locator('.ww-rallye').count()) {
+      const ziel = (await p.locator('.ww-rallye__spur--tipp').count())
+        ? p.locator('.ww-rallye__spur--tipp').first()
+        : p.locator('.ww-rallye__spur').nth(n % 3)
+      await ziel.click({ force: true }).catch(() => {})
+      await p.waitForTimeout(1500)
+      continue
+    }
+
+    // Ballon-Platzer: Ballons antippen, der leuchtende zuerst.
+    if (await p.locator('.ww-ballon').count()) {
+      const ziel = (await p.locator('.ww-ballon__ballon--tipp').count())
+        ? p.locator('.ww-ballon__ballon--tipp').first()
+        : p.locator('.ww-ballon__ballon').nth(n % 3)
+      await ziel.dispatchEvent('pointerdown').catch(() => {})
+      await p.waitForTimeout(900)
+      continue
+    }
+
     // Auswahl-Spiele: Optionen durchprobieren
     const optionen = await p.locator('.ww-choice').count()
     if (optionen === 0) { await p.waitForTimeout(500); continue }
@@ -328,7 +348,8 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
     'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage', 'zahlen-sprung',
     'buchstaben-fang', 'wort-baukasten', 'reim-boot',
     'muster-weber', 'paar-finder', 'sortier-werkstatt',
-    'mix-zahlen', 'mix-buchstaben', 'mix-logik',
+    'flitzer-rallye', 'wissens-quiz', 'schatten-suche', 'zeit-turm', 'ballon-platzer',
+    'mix-zahlen', 'mix-buchstaben', 'mix-logik', 'mix-entdecker',
   ]
   const gespielt = []
   for (const g of SPIELE) {
@@ -372,17 +393,15 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
       : `${ausMix.length} Versuche auf mix-* gebucht`,
   )
 
-  // Objekt im Wald pflanzen
+  // Samen im Garten pflanzen
   await p.evaluate((id) => { location.hash = `#/kind/${id}/wald` }, childId)
   await p.waitForTimeout(1500)
-  await p.getByRole('button', { name: /Pflanzen/ }).click()
-  await p.waitForTimeout(600)
-  await p.locator('.ww-shopitem').first().click()
+  await p.getByRole('button', { name: /Leeres Beet/ }).first().click({ force: true })
   await p.waitForTimeout(700)
-  await p.locator('.ww-slotcell--frei').first().click()
+  await p.locator('.ww-shopitem--samen').first().click({ force: true })
   await p.waitForTimeout(1200)
-  const objekte = await p.locator('.ww-planted').count()
-  pruefe('15.4e', 'Objekt im Wald sichtbar', objekte > 0, `${objekte} Objekt(e)`)
+  const pflanzen = await p.locator('.ww-beet--voll').count()
+  pruefe('15.4e', 'Pflanze im Garten sichtbar', pflanzen > 0, `${pflanzen} Pflanze(n)`)
 
   // Neustart
   await p.reload({ waitUntil: 'networkidle' })
@@ -391,8 +410,8 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
   pruefe(
     '15.4f',
     'Nach App-Neustart ist alles noch da',
-    nachReload.forest.length === kindNachSpielen.forest.length + 1 && nachReload.starsTotal === kindNachSpielen.starsTotal,
-    `${nachReload.forest.length} Objekte, ${nachReload.starsTotal} ⭐ insgesamt`,
+    (nachReload.garden?.beds.length ?? 0) === 1 && nachReload.starsTotal === kindNachSpielen.starsTotal,
+    `${nachReload.garden?.beds.length ?? 0} Pflanze(n), ${nachReload.starsTotal} ⭐ insgesamt`,
   )
 
   /* --- 15.5 Kein horizontales Scrollen auf 360 px --- */
@@ -400,7 +419,9 @@ async function spieleRunde(p, gameId, childId, maxAufgaben = 8) {
     ['Weltkarte', `#/kind/${childId}`],
     ['Zahlenland', `#/kind/${childId}/welt/zahlen`],
     ['Spiel', `#/kind/${childId}/spiel/zahlen-ernte`],
-    ['Mein Wald', `#/kind/${childId}/wald`],
+    ['Entdecker-Wiese', `#/kind/${childId}/welt/entdecker`],
+    ['Rallye', `#/kind/${childId}/spiel/flitzer-rallye`],
+    ['Mein Garten', `#/kind/${childId}/wald`],
     ['Kind-Auswahl', '#/kinder'],
     ['Datenschutz', '#/datenschutz'],
   ]

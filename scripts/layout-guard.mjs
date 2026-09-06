@@ -6,7 +6,7 @@
  *  2. Nirgends muss horizontal gescrollt werden.
  *  3. Ein Vollbild-Schirm ist genau so hoch wie der Viewport — seine festen
  *     Leisten stehen also nie unterhalb der Falz.
- *  4. Waldplaetze bleiben gross genug zum Antippen.
+ *  4. Beete, Unkraut, Schnecken und Spur-Knoepfe bleiben gross genug zum Antippen.
  *  5. Hochkant muss die Spielflaeche nicht gescrollt werden, um an die
  *     Bedienung zu kommen.
  *
@@ -22,13 +22,17 @@ const BASE = process.env.BASE || 'http://localhost:4173/Wunderwald/'
 const OUT = process.env.SHOTS || '/tmp/wunderwald-layout'
 mkdirSync(OUT, { recursive: true })
 
-const VIEWPORTS = [
+const ALLE_VIEWPORTS = [
   { name: '360x560', width: 360, height: 560 },
   { name: '360x640', width: 360, height: 640 },
   { name: '390x780', width: 390, height: 780 },
   { name: '768x1024', width: 768, height: 1024 },
   { name: '740x360-quer', width: 740, height: 360 },
 ]
+// VIEWPORTS=360x560,740x360-quer laesst nur einzelne Groessen laufen.
+const VIEWPORTS = process.env.VIEWPORTS
+  ? ALLE_VIEWPORTS.filter((v) => process.env.VIEWPORTS.split(',').includes(v.name))
+  : ALLE_VIEWPORTS
 
 const SPIELE = [
   'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage', 'zahlen-sprung',
@@ -52,9 +56,9 @@ function melde(viewport, screen, problem) {
 async function pruefeUeberlappung(page) {
   return page.evaluate(() => {
     const probleme = []
-    const bar = document.querySelector('.ww-gameshell__bar, .ww-forest__top, .ww-world__top')
-    const panel = document.querySelector('.ww-gameshell__funkel, .ww-forest__foot')
-    const stage = document.querySelector('.ww-gameshell__stage, .ww-forest__scene')
+    const bar = document.querySelector('.ww-gameshell__bar, .ww-garten__top, .ww-world__top')
+    const panel = document.querySelector('.ww-gameshell__funkel, .ww-garten__foot')
+    const stage = document.querySelector('.ww-gameshell__stage, .ww-garten__scene')
     if (!stage) return probleme
 
     const barR = bar?.getBoundingClientRect()
@@ -126,7 +130,7 @@ async function pruefeVollbild(page) {
       probleme.push(`Seite scrollt vertikal (${document.documentElement.scrollHeight} > ${vh})`)
     }
     // Jede feste Leiste muss vollstaendig sichtbar sein.
-    for (const sel of ['.ww-gameshell__bar', '.ww-gameshell__funkel', '.ww-forest__top', '.ww-forest__foot']) {
+    for (const sel of ['.ww-gameshell__bar', '.ww-gameshell__funkel', '.ww-garten__top', '.ww-garten__foot']) {
       const el = schirm.querySelector(sel)
       if (!el) continue
       const b = el.getBoundingClientRect()
@@ -166,19 +170,20 @@ async function pruefeBedienung(page) {
 }
 
 /**
- * Dritte Messung: Waldplaetze bleiben antippbar. Wird der Wald groesser als
+ * Dritte Messung: Beete bleiben antippbar. Wird der Garten groesser als
  * der Bildschirm, darf er scrollen — aber nicht so zusammenschrumpfen, dass
- * ein Kinderfinger das Reh nicht mehr trifft.
+ * ein Kinderfinger die Tomate nicht mehr trifft. Auch Unkraut und Schnecke
+ * muessen Kinderfinger-Groesse haben.
  */
 async function pruefeTippziele(page) {
   return page.evaluate(() => {
     const probleme = []
-    const min = 40
-    for (const el of document.querySelectorAll('.ww-slotcell--voll')) {
+    const min = 44
+    for (const el of document.querySelectorAll('.ww-beet__knopf, .ww-beet__unkraut, .ww-beet__schnecke, .ww-rallye__spur, .ww-ballon__ballon, .ww-werkzeug')) {
       const r = el.getBoundingClientRect()
       if (r.width < 1 && r.height < 1) continue
       if (r.width < min || r.height < min) {
-        probleme.push(`Waldplatz nur ${Math.round(r.width)}x${Math.round(r.height)}px (min ${min})`)
+        probleme.push(`"${el.className.split(' ')[0]}" nur ${Math.round(r.width)}x${Math.round(r.height)}px (min ${min})`)
       }
     }
     return [...new Set(probleme)].slice(0, 2)
@@ -221,36 +226,37 @@ async function seed(page) {
       recoveryHash: '', recoverySalt: '', createdAt: 1,
       settings: { ttsOn: false, soundOn: false, dailyLimitMin: 0, pinFails: 0, pinLockedUntil: 0, lastBackupAt: Date.now(), installHintDismissed: true },
     })
-    const pflanze = (slot, objectId) => ({
-      slot, objectId, placedAt: 1, growthDays: 4, lastGrowthDay: '2020-01-01',
+    const now = Date.now()
+    const beet = (slot, speciesId, growth, water, extra = {}) => ({
+      slot, speciesId, plantedAt: now - 86400000, growth, water, updatedAt: now,
+      weeds: 0, snail: false, harvests: 0, ...extra,
     })
-    // Kleiner Wald: Lichtung plus gerade freigeschaltetes Bachufer.
-    const waldKlein = Array.from({ length: 14 }, (_, i) =>
-      pflanze(i, ['baum', 'blume', 'busch', 'tanne', 'pilzhaus', 'hase'][i % 6]))
-
-    // Grosser Wald: alle drei Bereiche offen und fast voll - der Stresstest fuers Layout.
-    const wiese = ['baum', 'blume', 'busch', 'tanne', 'pilzhaus', 'hase', 'bank', 'lagerfeuer',
-      'laterne', 'sonnenblume', 'erdbeerbeet', 'vogelhaus', 'schaukel', 'bienenstock', 'igel',
-      'reh', 'teich', 'schmetterlinge', 'regenbogen', 'baum', 'blume', 'busch', 'tanne', 'bank']
-    const bach = ['seerose', 'teich', 'bruecke', 'ente', 'seerose', 'teich', 'bruecke', 'ente']
-    const huegel = ['tanne', 'fuchsbau', 'eule', 'baum', 'blume', 'hase']
-    const waldGross = [
-      ...wiese.map((o, i) => pflanze(i, o)),
-      ...bach.map((o, i) => pflanze(24 + i, o)),
-      ...huegel.map((o, i) => pflanze(32 + i, o)),
-    ]
+    // Kleiner Garten: sechs Beete, drei davon bepflanzt.
+    const gartenKlein = {
+      bedCount: 6, compost: 1, harvestsTotal: 0, visitors: ['schmetterling'], decor: [{ slot: 0, decorId: 'bank' }],
+      beds: [beet(0, 'tulpe', 0.9, 80), beet(1, 'moehre', 0.4, 20, { weeds: 1 }), beet(2, 'sonnenblume', 0.15, 90)],
+    }
+    // Grosser Garten: zwoelf Beete voll, alle Deko, viele Besucher - der Stresstest fuers Layout.
+    const arten = ['tulpe', 'moehre', 'radieschen', 'sonnenblume', 'salat', 'erdbeere', 'lavendel',
+      'tomate', 'mais', 'bohne', 'rose', 'kuerbis']
+    const gartenGross = {
+      bedCount: 12, compost: 5, harvestsTotal: 20,
+      visitors: ['schmetterling', 'biene', 'vogel', 'igel', 'frosch', 'eichhoernchen', 'marienkaefer', 'hase'],
+      decor: ['vogelhaus', 'bank', 'teich', 'bienenstock', 'vogelscheuche', 'laterne', 'gartenzwerg', 'brunnen']
+        .map((decorId, slot) => ({ slot, decorId })),
+      beds: arten.map((a, i) => beet(i, a, i % 3 === 0 ? 1 : 0.3 + i * 0.05, i % 2 ? 15 : 85, { weeds: i % 4 === 0 ? 2 : 0, snail: i % 5 === 0 })),
+    }
 
     for (const [id, name, level] of [['klein', 'Mia', 4], ['gross', 'Ben', 9]]) {
       const gross = id === 'gross'
       tx.objectStore('children').put({
         id, nickname: name, avatarId: 'hase', birthYear: 2019, createdAt: gross ? 2 : 1,
         stars: 60, starsTotal: 260, companion: { level: 5, xp: 0, outfitId: 'hut', ownedOutfits: [] },
-        forest: gross ? waldGross : waldKlein,
-        inventory: gross ? [{ objectId: 'baum', growthDays: 4 }, { objectId: 'ente', growthDays: 0 }] : [],
-        milestones: gross ? ['forest-10', 'forest-25', 'set-wasser'] : ['forest-10'],
+        forest: [], inventory: [], milestones: [], wateredDays: [],
         forestDays: gross ? 12 : 3, lastVisitDay: '2020-01-01', toured: true,
+        garden: gross ? gartenGross : gartenKlein,
       })
-      for (const w of ['zahlen', 'buchstaben', 'logik']) {
+      for (const w of ['zahlen', 'buchstaben', 'logik', 'entdecker']) {
         tx.objectStore('progress').put({ childId: id, worldId: w, level, xp: 0, streak: 0, failStreak: 0, recentTimes: [] })
       }
     }
@@ -270,7 +276,7 @@ for (const vp of VIEWPORTS) {
   await seed(page)
 
   await pruefeScreen(page, vp.name, 'weltkarte', '#/kind/klein', 2000)
-  for (const w of ['zahlen', 'buchstaben', 'logik']) {
+  for (const w of ['zahlen', 'buchstaben', 'logik', 'entdecker']) {
     await pruefeScreen(page, vp.name, `welt-${w}`, `#/kind/klein/welt/${w}`)
   }
   // Jedes Spiel auf niedriger UND hoher Stufe.
@@ -284,25 +290,25 @@ for (const vp of VIEWPORTS) {
       await pruefeScreen(page, vp.name, `${g}-${kind}`, `#/kind/${kind}/spiel/${g}`, 1600, false)
     }
   }
-  await pruefeScreen(page, vp.name, 'waldbuch', `#/kind/gross/waldbuch`, 1600)
+  await pruefeScreen(page, vp.name, 'gartenbuch', `#/kind/gross/waldbuch`, 1600)
 
-  // Wald in beiden Ausbaustufen: eine Zone und alle drei Zonen fast voll.
-  await pruefeScreen(page, vp.name, 'mein-wald-klein', '#/kind/klein/wald', 1800)
-  await pruefeScreen(page, vp.name, 'mein-wald-gross', '#/kind/gross/wald', 2200)
-  // Shop mit beiden Reitern - das laengste scrollbare Blatt der App.
-  await page.getByRole('button', { name: /Pflanzen/ }).first().click().catch(() => {})
+  // Garten in beiden Ausbaustufen: sechs Beete und zwoelf volle Beete.
+  await pruefeScreen(page, vp.name, 'mein-garten-klein', '#/kind/klein/wald', 1800)
+  await pruefeScreen(page, vp.name, 'mein-garten-gross', '#/kind/gross/wald', 2200)
+  // Laden mit beiden Reitern - das laengste scrollbare Blatt der App.
+  await page.getByRole('button', { name: /Laden/ }).first().click().catch(() => {})
   await page.waitForTimeout(900)
-  await pruefeScreen(page, vp.name, 'wald-shop-kaufen', '#/kind/gross/wald', 700)
-  await page.getByRole('tab', { name: /Kiste/ }).click().catch(() => {})
+  await pruefeScreen(page, vp.name, 'garten-laden-samen', '#/kind/gross/wald', 700)
+  await page.getByRole('tab', { name: /Deko/ }).click().catch(() => {})
   await page.waitForTimeout(600)
-  await pruefeScreen(page, vp.name, 'wald-shop-kiste', '#/kind/gross/wald', 600)
+  await pruefeScreen(page, vp.name, 'garten-laden-deko', '#/kind/gross/wald', 600)
   await page.getByRole('button', { name: /Schlie\u00dfen|Zur\u00fcck|Fertig/ }).first().click().catch(() => {})
   await page.waitForTimeout(700)
 
-  // Aktionsblase an einem Objekt: sie darf nicht aus dem Bild laufen.
-  await page.locator('.ww-slotcell--voll').first().click().catch(() => {})
+  // Aktionsblase an einem Beet: sie darf nicht aus dem Bild laufen.
+  await page.locator('.ww-beet--voll .ww-beet__knopf').first().click({ force: true }).catch(() => {})
   await page.waitForTimeout(700)
-  await pruefeScreen(page, vp.name, 'wald-aktionsblase', '#/kind/gross/wald', 600)
+  await pruefeScreen(page, vp.name, 'garten-aktionsblase', '#/kind/gross/wald', 600)
 
   // Elternbereich (hinter PIN)
   await page.evaluate(() => { location.hash = '#/eltern' })

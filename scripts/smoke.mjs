@@ -67,7 +67,7 @@ await page.getByLabel('Spitzname').fill('Mia')
 await page.getByRole('button', { name: 'Igel' }).click()
 await page.getByLabel(/Geburtsjahr/).fill('2019')
 await shot('04-kind')
-await page.getByRole('button', { name: /Wald öffnen/ }).click()
+await page.getByRole('button', { name: /Wunderwald öffnen|Wald öffnen/ }).click()
 
 // --- Weltkarte ---
 await page.waitForURL(/#\/kind\//, { timeout: 10000 })

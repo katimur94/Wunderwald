@@ -114,7 +114,7 @@ export function meilenstein(titel: string): string {
 /* ------------------------------ Tageslimit --------------------------- */
 
 export const MUEDE =
-  'Ich bin müde – morgen wachsen neue Abenteuer! Deinen Wald darfst du aber noch anschauen.'
+  'Ich bin müde – morgen wachsen neue Abenteuer! Deinen Garten darfst du aber noch gießen.'
 
 /* --------------------------- Hilfetexte je Spiel --------------------- */
 

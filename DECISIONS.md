@@ -642,3 +642,78 @@ keinen Zeitdruck: Wer wartet, bekommt jeden Block wieder.
 Weil eine Echtzeit-Runde nicht in eine Mix-Aufgabe passt, steht das Spiel mit `fillsStage`
 automatisch außerhalb der Überraschungs-Runde — derselbe Filter, der schon Memory draußen
 hält.
+
+## D48 — Der Übergang zwischen zwei Aufgaben zieht genau einmal
+Ein Fehler, den Kinder sofort gemerkt haben: Nach einer Aufgabe kam die nächste, wurde aber
+mitten im Vorlesen abgebrochen und durch eine andere ersetzt. Die Ursache steckte in der
+GameShell. `goOn` setzte `task` auf `null`, damit die alte Aufgabe ausblendet — und der Effekt
+„keine Aufgabe da, also eine ziehen" (gedacht für den Rundenstart) griff sofort zu. 950 ms später
+zog der Timer aus `goOn` ein zweites Mal. Zwei Aufgaben, zwei Ansagen, und das Lob war dazwischen
+längst abgewürgt.
+
+Jetzt gibt es eine Übergangs-Ref: Solange sie gesetzt ist, zieht ausschließlich der Übergang.
+Und der wartet, bis Funkel ausgeredet hat (`sayThen`, mit Mindest- und Höchstdauer, damit weder
+ein stummer Browser noch eine hängende Stimme das Spiel anhält). Die Sprachausgabe meldet ein
+abgebrochenes `utterance` jetzt ebenfalls als Ende — wer auf `onEnd` wartet, wartete sonst ewig.
+
+## D49 — Die Flitzer-Rallye: ein echtes Rennen im Aufgaben-Vertrag
+Das gewünschte „Mario Kart mit Wissensaufgaben" ist ein Pseudo-3D-Rennen auf Canvas 2D — die
+Straßenprojektion der Achtziger, kein WebGL, keine Bibliothek. Drei Entscheidungen dahinter:
+
+**Keine 3D-Bibliothek.** Three.js wäre mehr als die halbe App und müsste im Precache liegen.
+Die Projektion von Streckenstücken (Krümmung, Höhe, Sprites am Rand) sind zweihundert Zeilen,
+laufen auf jedem Tablet, das ein Canvas kann, und brauchen keine einzige Bilddatei: Bäume, Autos
+und Tore werden gezeichnet, Blumen und Tiere sind System-Emojis wie überall in der App.
+
+**Dauerhafte Bühne (`persistent`).** Die GameShell blendet Aufgaben normalerweise ein und aus.
+Ein Rennen darf dabei nicht stehen bleiben. Ein Modul mit `persistent: true` bleibt montiert und
+bekommt jede neue Aufgabe als Prop; die Shell blendet dazwischen nichts aus und die Bühne wird
+randlos. Das Auto fährt während des Lobs weiter, und die nächsten Tore stehen ein Stück voraus.
+Die Ziellinie kommt erst nach dem letzten Tor: Das Spiel hält den `onDone`-Bericht zurück, bis
+das Auto durchs Ziel ist — die Shell merkt davon nichts.
+
+**Jede Frage auf der Stufe ihrer Welt.** Das Rennen zieht Fragen aus drei Welten. Damit eine
+Rechenfrage nicht die Wiesen-Stufe bewegt, bekommt jeder Generator jetzt einen Kontext mit allen
+Stufen des Kindes (`TaskContext`), und ein Modul kann sagen, in welcher Welt der Versuch gebucht
+wird (`attemptWorldId`). Die Shell führt die Stufen aller Welten nach jedem Versuch nach — die
+Rallye bleibt adaptiv, in allen drei Welten zugleich.
+
+## D50 — Die Wissensbank: Familien statt Listen, Vorlesen in Anzeige-Reihenfolge
+Sachkunde-Fragen lassen sich nicht generieren wie Rechenaufgaben — aber auch nicht sinnvoll als
+lange Liste pflegen. Die Bank besteht deshalb aus **Familien**: Eine Tabelle (Tier → Laut, Ding →
+Farbe, Beruf → Werkzeug, Uhrzeiten …) erzeugt viele Fragen, die Ablenker werden bei jedem Ziehen
+neu aus derselben Tabelle gelost. Feste Fragen sind Familien mit einer einzigen Zeile.
+
+Zwei Dinge daran waren nicht offensichtlich. Erstens die **Sprechreihenfolge**: Ein Kind, das
+noch nicht liest, hört „Welpe, Kalb oder Fohlen" und tippt das zweite Wort — das klappt nur,
+wenn die Reihenfolge der vorgelesenen Antworten der Reihenfolge auf dem Schirm entspricht. Jeder
+Vorlesetext trägt deshalb einen Platzhalter, der beim Ziehen mit den *gemischten* Antworten
+gefüllt wird. Zweitens der **Wiederholungsschutz**: Das Gedächtnis liegt im Browserspeicher, je
+Kind, und wird geleert, sobald der Vorrat der Stufe durch ist. Es gehört bewusst nicht in die
+Datenbank — verliert man es, verliert man nichts. Ohne Gedächtnis (in Tests) bleibt das Ziehen
+rein vom Seed abhängig.
+
+## D51 — Der Garten wächst in Echtzeit, aber nur mit Wasser
+Der Emoji-Wald hatte kaum Interaktion: Emojis in zwei Stadien, Wachstum nach Spieltagen, einmal
+Gießen am Tag als Ritual ohne Folgen. Der Garten stellt das um:
+
+- **Echtzeit, an Wasser gebunden.** Jedes Beet hat Wasser (0–100) und Wachstum (0–1). Die Zeit
+  seit dem letzten Besuch wird beim Öffnen verrechnet — Wachstum gibt es nur für die Stunden, in
+  denen das Wasser über der Grenze lag. Wer nicht gießt, dessen Pflanze wartet mit hängenden
+  Blättern. **Sie stirbt nie**: Vertrocknen wäre für ein Vierjähriges eine Strafe, keine Lehre.
+- **Jede Pflege ist sofort sichtbar.** Ein Kind, das gießt und nichts passieren sieht, gießt
+  kein zweites Mal. Deshalb geben Gießen (nur bei echtem Durst), Jäten und Düngen einen kleinen
+  Wachstumsschub, und die Pflanze streckt sich in derselben Sekunde ein Stück.
+- **Es gibt Ernte.** Reife Pflanzen bringen Sterne, mehrjährige tragen weiter, einjährige räumen
+  das Beet. Ernten schalten Beete frei und feiern Meilensteine. Unkraut wird zu Kompost und der
+  zu Dünger — ein kleiner Kreislauf, den Kinder verstehen.
+- **Alte Wälder werden übersetzt, nicht gelöscht.** Schema 4 baut aus `forest` und `inventory`
+  Beete (mit dem alten Wachstum), Deko und schon bekannte Besucher. Die alten Felder bleiben
+  stehen. Der Import einer Sicherung macht dasselbe.
+
+## D52 — Pflanzen sind SVG-Text, nicht React-Bäume
+Die Pflanzen werden parametrisch gezeichnet: Stiel, Blätter, Knospe, Blüte oder Frucht hängen an
+Wachstum und Durst. Die Zeichnung ist ein String, den `pflanze-svg.ts` erzeugt. Der Grund: Der
+Garten braucht sie als Inline-SVG, der Bild-Export braucht sie als Image im Canvas. Ein String
+kann beides, ohne dass die Formen zweimal existieren — und die Unit-Tests können jede Art in
+jedem Zustand auf „NaN" und „undefined" abklopfen, ohne einen Browser.

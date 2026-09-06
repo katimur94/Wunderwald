@@ -99,15 +99,20 @@
 .ww-garten__rand {
   position: relative;
   flex: none;
-  min-height: 56px;
+  min-height: 52px;
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
+  /* Passt alles, steht es mittig; sonst beginnt die Reihe links und scrollt seitlich. */
+  justify-content: safe center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
   padding: 0 var(--sp-3) 6px;
   margin-bottom: var(--sp-2);
 }
+.ww-garten__rand::-webkit-scrollbar { display: none; }
 .ww-garten__zaun {
   position: absolute;
   left: 0;
@@ -124,7 +129,8 @@
 .ww-garten__besucher {
   position: relative;
   z-index: 1;
-  font-size: clamp(26px, 7vw, 36px);
+  flex: none;
+  font-size: clamp(24px, 6vw, 34px);
   line-height: 1;
   filter: drop-shadow(0 3px 2px rgba(46, 64, 52, 0.22));
 }
@@ -252,8 +258,8 @@
 .ww-beet__schnecke {
   position: absolute;
   z-index: 2;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   font-size: 22px;
   line-height: 1;
@@ -329,14 +335,19 @@
 .ww-garten__bubble .ww-bubble { max-width: 100%; }
 
 /* ---------- Fußleiste ---------- */
+/*
+ * Werkzeuge in einer Reihe, der Zaehler darunter. Kein Umbruch: Auf 360 px
+ * lief die Kamera sonst in eine zweite Zeile und die Leiste wurde doppelt hoch.
+ */
 .ww-garten__foot {
   flex: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4) calc(var(--sp-5) + var(--safe-b));
-  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-3) calc(var(--sp-4) + var(--safe-b));
 }
+.ww-garten__foot .ww-btn { min-width: 0; width: 100%; }
 
 .ww-werkzeug {
   position: relative;
@@ -372,13 +383,17 @@
 }
 
 .ww-garten__zaehler {
+  grid-column: 1 / -1;
   margin: 0;
-  flex: 1;
-  min-width: 120px;
   font-family: var(--font-display);
   font-size: var(--fs-xs);
   opacity: 0.8;
-  text-align: right;
+  text-align: center;
+}
+
+@media (max-width: 380px) {
+  .ww-werkzeug { width: 56px; height: 56px; font-size: 24px; }
+  .ww-garten__foot { gap: var(--sp-2); }
 }
 
 .ww-garten__level {
@@ -518,8 +533,24 @@
 
 @media (max-height: 640px) {
   .ww-garten__feld { padding-top: 22px; padding-bottom: 62px; }
+  .ww-garten__rand { min-height: 44px; }
   .ww-beet, .ww-beet__knopf { min-height: 128px; }
+  .ww-garten__bubble { padding-top: var(--sp-2); min-height: 0; }
   .ww-garten__foot { padding-top: var(--sp-2); padding-bottom: calc(var(--sp-3) + var(--safe-b)); }
+  .ww-garten__zaehler { display: none; }
+}
+
+/* Quer auf dem Handy: Leisten schrumpfen, die Beete bekommen die Höhe. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .ww-garten__top { padding-top: calc(var(--sp-2) + var(--safe-t)); padding-bottom: var(--sp-2); }
+  .ww-garten__top h1 { font-size: var(--fs-m); }
+  .ww-garten__bubble { padding-top: var(--sp-2); min-height: 0; }
+  .ww-garten__foot { padding: var(--sp-2) var(--sp-4) calc(var(--sp-2) + var(--safe-b)); gap: var(--sp-2); }
+  .ww-werkzeug { width: 52px; height: 52px; font-size: 24px; }
+  .ww-garten__feld { padding-top: 14px; padding-bottom: 40px; }
+  .ww-garten__rand { min-height: 40px; }
+  .ww-beet, .ww-beet__knopf { min-height: 118px; }
+  .ww-garten__funkel { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
