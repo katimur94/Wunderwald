@@ -160,24 +160,27 @@ function ZeitTurm({ task, onDone, onWrong, revealSolution }: GameComponentProps<
         <span className="ww-turm__tor" aria-hidden="true" />
       </div>
 
-      <ChoiceRow
-        options={d.optionen}
-        onPick={choose}
-        wrongValue={wrongPick}
-        highlight={revealSolution ? (task.answer as string) : null}
-        ariaLabel={(v) => {
-          if (d.mode !== 'finden') return v
-          const z = d.uhren?.[d.optionen.indexOf(v)]
-          return z ? `Uhr ${d.optionen.indexOf(v) + 1}: ${uhrText(z.stunde, z.minute)}` : v
-        }}
-        render={(v) => {
-          if (d.mode === 'finden') {
+      {/* Drei Antworten teilen sich eine Reihe — sonst wandert die dritte unter die Falz. */}
+      <div className={`ww-turm__wahlen ww-turm__wahlen--${d.mode === 'finden' ? 'uhren' : 'texte'}`}>
+        <ChoiceRow
+          options={d.optionen}
+          onPick={choose}
+          wrongValue={wrongPick}
+          highlight={revealSolution ? (task.answer as string) : null}
+          ariaLabel={(v) => {
+            if (d.mode !== 'finden') return v
             const z = d.uhren?.[d.optionen.indexOf(v)]
-            return z ? <Uhr stunde={z.stunde} minute={z.minute} size={86} ziffern={d.ziffern} /> : v
-          }
-          return <span className="ww-turm__zeit">{v}</span>
-        }}
-      />
+            return z ? `Uhr ${d.optionen.indexOf(v) + 1}: ${uhrText(z.stunde, z.minute)}` : v
+          }}
+          render={(v) => {
+            if (d.mode === 'finden') {
+              const z = d.uhren?.[d.optionen.indexOf(v)]
+              return z ? <Uhr stunde={z.stunde} minute={z.minute} size={86} ziffern={d.ziffern} className="ww-turm__wahluhr" /> : v
+            }
+            return <span className="ww-turm__zeit">{v}</span>
+          }}
+        />
+      </div>
     </>
   )
 }

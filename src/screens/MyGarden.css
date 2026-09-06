@@ -258,8 +258,9 @@
 .ww-beet__schnecke {
   position: absolute;
   z-index: 2;
-  width: 44px;
-  height: 44px;
+  /* 48 px statt 44: Bruchteil-Pixel beim Skalieren der Beete duerfen das Ziel nicht unter Kinderfinger-Groesse druecken. */
+  width: 48px;
+  height: 48px;
   padding: 0;
   font-size: 22px;
   line-height: 1;
@@ -267,10 +268,10 @@
   border: 0;
   filter: drop-shadow(0 2px 1px rgba(46, 64, 52, 0.3));
 }
-.ww-beet__unkraut--0 { left: 4px; bottom: 28px; }
-.ww-beet__unkraut--1 { right: 2px; bottom: 34px; }
-.ww-beet__unkraut--2 { left: 30px; bottom: 40px; }
-.ww-beet__schnecke { right: 8px; bottom: 44px; }
+.ww-beet__unkraut--0 { left: 2px; bottom: 26px; }
+.ww-beet__unkraut--1 { right: 0; bottom: 32px; }
+.ww-beet__unkraut--2 { left: 28px; bottom: 38px; }
+.ww-beet__schnecke { right: 6px; bottom: 42px; }
 
 /* Gießen: Tropfen fallen */
 .ww-beet__regen {

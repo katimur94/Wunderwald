@@ -138,7 +138,8 @@
     grid-template-areas: 'a b c d e';
     grid-template-columns: repeat(5, 1fr);
     padding: var(--sp-6) var(--sp-5);
-    align-items: end;
+    /* Alle fuenf gleich hoch — ein zweizeiliger Name („Buchstaben-wald") ragt sonst allein nach oben. */
+    align-items: stretch;
   }
   .ww-map__portals .ww-portal--wald { min-height: 168px; }
   .ww-map__scene { min-height: 340px; }

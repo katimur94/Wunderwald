@@ -138,12 +138,24 @@
     height: min(var(--frucht, 52px), 44px);
     font-size: calc(min(var(--frucht, 52px), 44px) * 0.65);
   }
-  .ww-ernte__frage { font-size: clamp(17px, 4.4vw, 22px); }
+  /* Die Frage darf breiter werden, damit sie in einer Zeile bleibt. */
+  .ww-ernte__frage { font-size: clamp(17px, 4.4vw, 22px); max-width: 32ch; }
   .ww-ernte__crown { height: 52px; }
   .ww-ernte__meadow { height: 30px; }
   .ww-ernte__scene { min-height: 96px; }
   .ww-ernte__patch .ww-fruit { width: 32px; height: 32px; font-size: 21px; }
   .ww-ernte__trunk { width: 30px; height: 32px; }
+  /*
+   * Enge Reihen: Bei 16 gemischten Fruechten passen so acht in eine Reihe,
+   * und vier Fuenferreihen (Stufe 6 und 8) brauchen keine Baumkrone mehr —
+   * sonst liegen die Antwortknoepfe auf 360×640 unter der Falz.
+   */
+  .ww-ernte__fruits { gap: 4px; padding: var(--sp-2) var(--sp-2) 4px; }
+  .ww-ernte__row { gap: 4px; }
+  .ww-ernte__fruits--gruppiert .ww-ernte__row { padding: 1px 6px; }
+  .ww-ernte__scene:has(.ww-ernte__fruits--gruppiert) .ww-ernte__crown { display: none; }
+  /* „Ziel: 20" steht schon in der Frage — die Extrazeile kostet 52 px. */
+  .ww-ernte__ziel { display: none; }
 }
 
 @media (max-height: 600px) {
@@ -161,5 +173,17 @@
   .ww-ernte__crown { height: 42px; }
   .ww-ernte__meadow { height: 24px; }
   .ww-ernte__scene { min-height: 78px; }
-  .ww-ernte__patch .ww-fruit { width: 28px; height: 28px; font-size: 18px; }
+  /*
+   * Fuenferreihen auf 560 px (altes Handy im Browser mit Adressleiste):
+   * 32 px pro Frucht, Reihen ohne Rand, kuerzerer Stamm. Die Fruechte sind
+   * nur Zaehlhilfe — die Antwortknoepfe bleiben 72 px gross.
+   */
+  .ww-ernte__fruits--gruppiert { gap: 3px; padding: 4px var(--sp-2) 2px; }
+  .ww-ernte__fruits--gruppiert .ww-ernte__row { gap: 3px; padding: 0 5px; }
+  .ww-ernte__fruits--gruppiert .ww-fruit {
+    width: min(var(--frucht, 52px), 32px);
+    height: min(var(--frucht, 52px), 32px);
+    font-size: calc(min(var(--frucht, 52px), 32px) * 0.65);
+  }
+  .ww-ernte__trunk { height: 26px; }
 }

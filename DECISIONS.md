@@ -717,3 +717,20 @@ Wachstum und Durst. Die Zeichnung ist ein String, den `pflanze-svg.ts` erzeugt. 
 Garten braucht sie als Inline-SVG, der Bild-Export braucht sie als Image im Canvas. Ein String
 kann beides, ohne dass die Formen zweimal existieren — und die Unit-Tests können jede Art in
 jedem Zustand auf „NaN" und „undefined" abklopfen, ohne einen Browser.
+
+## D53 — Kurze Schirme: erst Schmuck, dann Abstände, zuletzt Zählhilfen
+Auf 360×560 (altes Handy im Browser, Adressleiste sichtbar) liegen zwischen Kopfleiste und
+Funkel-Panel rund 330 px. Ein Spiel, dessen Antwortknöpfe unter der Falz liegen, sieht für ein
+Kind kaputt aus. Deshalb gibt es je Spiel ein Platzbudget in drei Stufen (`max-height` 800, 700,
+600 px), und beim Kürzen gilt eine feste Reihenfolge:
+
+1. **Schmuck zuerst.** Turmdach, Tor, Baumkrone bei Fünferreihen — was nichts erklärt, fällt weg.
+2. **Dann Abstände.** Reihen-Lücken, Kartenränder, die Extrazeile „Ziel: 20", die schon in der
+   Frage steht.
+3. **Zuletzt Zählhilfen.** Früchte in Fünferreihen dürfen auf 32 px schrumpfen — sie werden
+   angetippt, um mitzuzählen, entscheiden aber nichts.
+4. **Nie die Antworten.** Antwortknöpfe bleiben mindestens 72 px hoch, und drei Antworten teilen
+   sich eine Reihe (der Text bricht innen um), statt in eine zweite Zeile zu fallen.
+
+Der Layout-Wächter zieht jedes Spiel zweimal pro Größe, weil die Aufgabe zufällig ist: Drei
+Früchte passen immer, neunzehn in Fünferreihen sind der Fall, der zählt.

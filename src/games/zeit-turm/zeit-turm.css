@@ -59,9 +59,28 @@
 }
 
 .ww-turm__zeit {
-  font-size: clamp(18px, 4.8vw, 26px);
-  line-height: 1.2;
-  white-space: nowrap;
+  font-size: clamp(17px, 4.6vw, 24px);
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Drei Antworten in einer Reihe: Texte teilen sich die Breite und brechen
+ * innen um („Viertel / nach 10"), Uhren werden auf schmalen Handys kleiner.
+ * Sonst faellt die dritte Antwort auf 390 px in eine zweite Zeile und die
+ * Spielflaeche muss scrollen.
+ */
+.ww-turm__wahlen { width: 100%; }
+.ww-turm__wahlen .ww-choices { flex-wrap: nowrap; gap: var(--sp-2); }
+.ww-turm__wahlen--texte .ww-choice { flex: 1 1 0; min-width: 0; padding: var(--sp-2) 6px; }
+.ww-turm__wahlen--uhren .ww-choice { min-width: 0; padding: var(--sp-2); }
+.ww-turm__wahluhr { width: min(86px, 22vw); height: auto; }
+
+/* Normale Handys (390×780): der Turm wird etwas gedrungener, sonst fehlen 6 px. */
+@media (max-height: 800px) {
+  .ww-turm__turm { padding: var(--sp-4) var(--sp-4) var(--sp-3); }
+  .ww-turm__tor { height: 24px; margin-top: var(--sp-2); }
 }
 
 /*
