@@ -1,5 +1,6 @@
 import { db, DB_NAME, SCHEMA_VERSION, updateSettings } from './db'
 import type { Attempt, Child, Family, Progress, Session } from './types'
+import { ausWald } from '../garden/garden'
 
 export interface BackupFile {
   app: 'wunderwald'
@@ -134,6 +135,14 @@ export function normalisiereKind(kind: Child): Child {
     wateredDays: tage,
     forestDays: typeof kind.forestDays === 'number' ? kind.forestDays : 0,
     lastVisitDay: typeof kind.lastVisitDay === 'string' ? kind.lastVisitDay : '',
+    garden:
+      kind.garden && Array.isArray(kind.garden.beds)
+        ? kind.garden
+        : ausWald(
+            Array.isArray(kind.forest) ? kind.forest : [],
+            Array.isArray(kind.inventory) ? kind.inventory : [],
+            Date.now(),
+          ),
   }
   delete (sauber as { lastWatered?: string }).lastWatered
   return sauber

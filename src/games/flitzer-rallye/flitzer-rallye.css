@@ -1,0 +1,233 @@
+/*
+ * Flitzer-Rallye: Die Szene füllt die Bühne, darunter drei Spur-Knöpfe.
+ * Das Canvas liegt hinter allem, Schild und Anzeigen schweben darüber.
+ */
+.ww-rallye {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ww-rallye__szene {
+  position: relative;
+  flex: 1;
+  min-height: 160px;
+  overflow: hidden;
+  /* Kein Scrollen, kein Zoomen, kein Textmarkieren — der Finger lenkt. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  background: #BEE3F5;
+}
+
+.ww-rallye__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* ---------- Schild oben ---------- */
+.ww-rallye__schild {
+  position: absolute;
+  top: var(--sp-2);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  max-width: min(92%, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-card);
+  pointer-events: none;
+}
+
+.ww-rallye__bild { font-size: clamp(30px, 8vw, 44px); line-height: 1.1; }
+.ww-rallye__menge {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 280px;
+  font-size: clamp(20px, 5vw, 28px);
+  line-height: 1.1;
+}
+.ww-rallye__uhr { margin-bottom: 2px; }
+
+.ww-rallye__frage {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 6vw, 34px);
+  line-height: 1.15;
+  text-align: center;
+  color: var(--wald-tinte);
+  overflow-wrap: anywhere;
+}
+.ww-rallye__frage--lang { font-size: clamp(17px, 4.4vw, 24px); }
+
+/* ---------- Anzeigen ---------- */
+.ww-rallye__hud {
+  position: absolute;
+  left: var(--sp-2);
+  top: var(--sp-2);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.ww-rallye__platz,
+.ww-rallye__funken {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  background: var(--wald-papier);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+.ww-rallye__platz { background: var(--wald-sonne); }
+
+.ww-rallye__meldung {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%;
+  width: max-content;
+  max-width: 90%;
+  margin: 0 auto;
+  z-index: 3;
+  padding: var(--sp-2) var(--sp-5);
+  font-family: var(--font-display);
+  font-size: clamp(26px, 7vw, 40px);
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-card);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.ww-rallye__meldung--turbo { background: var(--wald-sonne); }
+.ww-rallye__meldung--schlamm { background: #D9B98C; }
+
+.ww-rallye__hinweis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--sp-3);
+  width: max-content;
+  max-width: 92%;
+  margin: 0 auto;
+  z-index: 2;
+  padding: 6px 14px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  background: rgba(251, 253, 248, 0.9);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: ww-float 2.2s ease-in-out infinite;
+}
+
+/* ---------- Ziel ---------- */
+.ww-rallye__ziel {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  background: rgba(46, 64, 52, 0.28);
+  font-family: var(--font-display);
+  color: var(--wald-tinte);
+  pointer-events: none;
+}
+.ww-rallye__zielflagge { font-size: clamp(48px, 14vw, 84px); line-height: 1; }
+.ww-rallye__ziel strong {
+  font-size: clamp(30px, 9vw, 52px);
+  padding: 4px var(--sp-5);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+}
+.ww-rallye__zielplatz {
+  font-size: clamp(22px, 6vw, 34px);
+  padding: 4px var(--sp-4);
+  background: var(--wald-sonne);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+}
+
+/* ---------- Spur-Knöpfe ---------- */
+.ww-rallye__spuren {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2);
+  background: #E1EDD8;
+}
+
+.ww-rallye__spur {
+  min-height: var(--touch-min);
+  padding: var(--sp-2);
+  font-family: var(--font-display);
+  color: var(--wald-tinte);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+  transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  overflow: hidden;
+}
+.ww-rallye__spur:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--wald-tinte); }
+.ww-rallye__spur--0 { border-top: 8px solid #E4634F; }
+.ww-rallye__spur--1 { border-top: 8px solid #F6BD41; }
+.ww-rallye__spur--2 { border-top: 8px solid #6FB5C9; }
+.ww-rallye__spur--an { background: #FFF0CB; box-shadow: 0 4px 0 var(--wald-tinte), 0 0 0 4px rgba(246, 189, 65, 0.5); }
+.ww-rallye__spur--falsch { animation: ww-wiggle 420ms var(--ease-pop); }
+.ww-rallye__spur--tipp {
+  background: var(--wald-blatt);
+  animation: ww-pulse-ring 1.4s ease-out infinite;
+}
+
+.ww-rallye__spurtext {
+  display: block;
+  font-size: clamp(22px, 6.5vw, 34px);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.ww-rallye__spurtext--lang { font-size: clamp(15px, 3.8vw, 20px); }
+
+/* Auf kurzen Schirmen rücken Schild und Knöpfe enger zusammen. */
+@media (max-height: 640px) {
+  .ww-rallye__schild { padding: 4px var(--sp-3); }
+  .ww-rallye__bild { font-size: 28px; }
+  .ww-rallye__frage { font-size: clamp(18px, 5vw, 26px); }
+  .ww-rallye__spur { min-height: 56px; }
+}
+
+/* Quer auf dem Handy: Schild nach links, damit die Strecke frei bleibt. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .ww-rallye__schild {
+    left: auto;
+    right: var(--sp-2);
+    transform: none;
+    max-width: 44%;
+  }
+  .ww-rallye__spuren { padding: 4px var(--sp-2); }
+  .ww-rallye__spur { min-height: 50px; }
+}

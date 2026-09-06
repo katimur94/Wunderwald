@@ -37,7 +37,7 @@
   border-radius: var(--r-l);
   overflow: hidden;
   box-shadow: var(--sh-card);
-  min-height: 300px;
+  min-height: 420px;
   flex: 1;
 }
 
@@ -54,10 +54,16 @@
   display: grid;
   grid-template-areas:
     'a b'
-    'c d';
+    'c d'
+    'e e';
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
   padding: var(--sp-4);
 }
+
+/* Der Garten liegt quer über die ganze Breite — er ist das Ziel aller Sterne. */
+.ww-map__portals .ww-portal--wald { min-height: 112px; }
+.ww-map__portals .ww-portal--wald .ww-portal__art svg { max-width: 200px; max-height: 150px; }
 
 /* ---------- Tagesabenteuer ---------- */
 .ww-quests {
@@ -129,11 +135,12 @@
     margin-right: auto;
   }
   .ww-map__portals {
-    grid-template-areas: 'a b c d';
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas: 'a b c d e';
+    grid-template-columns: repeat(5, 1fr);
     padding: var(--sp-6) var(--sp-5);
     align-items: end;
   }
+  .ww-map__portals .ww-portal--wald { min-height: 168px; }
   .ww-map__scene { min-height: 340px; }
 }
 

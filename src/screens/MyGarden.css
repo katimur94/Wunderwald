@@ -1,0 +1,527 @@
+/*
+ * Mein Garten. Leisten stehen, die Szene dazwischen scrollt bei Bedarf.
+ * Hoehe und Ueberlauf kommen aus `.ww-vollbild` (global.css).
+ */
+.ww-garten {
+  position: relative;
+  background: var(--wald-creme);
+}
+
+.ww-garten__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: calc(var(--sp-3) + var(--safe-t)) var(--sp-4) var(--sp-3);
+}
+.ww-garten__top h1 { flex: 1; margin: 0; font-size: var(--fs-l); text-align: center; }
+/* Vier Dinge in der Kopfzeile: auf schmalen Handys bleibt der Titel einzeilig. */
+@media (max-width: 420px) {
+  .ww-garten__top h1 { font-size: var(--fs-m); }
+}
+
+/* ---------- Szene ---------- */
+.ww-garten__scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 var(--sp-3);
+  border: var(--outline);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  box-shadow: var(--sh-card);
+}
+
+.ww-garten__bg { position: absolute; inset: 0; overflow: hidden; }
+.ww-garten__terrain { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.ww-garten__sonne {
+  position: absolute;
+  top: 4%;
+  right: 7%;
+  width: clamp(38px, 13%, 66px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--wald-sonne);
+  box-shadow: 0 0 0 8px rgba(246, 189, 65, 0.24);
+}
+.ww-garten__sonne--abend { background: #F08A3C; box-shadow: 0 0 0 10px rgba(240, 138, 60, 0.26); }
+.ww-garten__sonne--nacht { background: #EFF3E4; box-shadow: 0 0 0 8px rgba(239, 243, 228, 0.2); }
+.ww-garten__sonne--morgen { background: #FFD98A; }
+
+.ww-garten__wolke {
+  position: absolute;
+  height: 16px;
+  border-radius: var(--r-pill);
+  background: var(--wald-papier);
+  opacity: 0.92;
+}
+.ww-garten__wolke::before,
+.ww-garten__wolke::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  border-radius: 50%;
+  background: inherit;
+}
+.ww-garten__wolke--a { top: 7%; left: 8%; width: 62px; }
+.ww-garten__wolke--a::before { left: 10px; width: 26px; height: 26px; }
+.ww-garten__wolke--a::after { left: 30px; width: 20px; height: 20px; }
+.ww-garten__wolke--b { top: 15%; left: 44%; width: 46px; }
+.ww-garten__wolke--b::before { left: 8px; width: 20px; height: 20px; }
+.ww-garten__wolke--b::after { left: 22px; width: 15px; height: 15px; }
+
+.ww-garten__schleier {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background var(--dur-slow) ease;
+}
+.ww-garten__schleier--morgen { background: linear-gradient(180deg, rgba(255, 214, 140, 0.36), rgba(255, 236, 190, 0.12)); }
+.ww-garten__schleier--tag { background: transparent; }
+.ww-garten__schleier--abend { background: linear-gradient(180deg, rgba(255, 150, 70, 0.32), rgba(255, 190, 120, 0.18)); }
+.ww-garten__schleier--nacht { background: linear-gradient(180deg, rgba(24, 38, 84, 0.52), rgba(30, 48, 96, 0.42)); }
+
+/* Nur die Beete scrollen — Himmel und Funkel stehen. */
+.ww-garten__feld {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(28px, 12%, 60px) var(--sp-2) 70px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Gartenrand: Zaun, Deko, Besucher ---------- */
+.ww-garten__rand {
+  position: relative;
+  flex: none;
+  min-height: 56px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: 0 var(--sp-3) 6px;
+  margin-bottom: var(--sp-2);
+}
+.ww-garten__zaun {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18px;
+  background:
+    repeating-linear-gradient(90deg, #D9B98C 0 8px, transparent 8px 22px),
+    linear-gradient(180deg, transparent 0 5px, #C49A6A 5px 9px, transparent 9px);
+  border-bottom: 2px solid #8E6842;
+  opacity: 0.9;
+}
+.ww-garten__deko,
+.ww-garten__besucher {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(26px, 7vw, 36px);
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px rgba(46, 64, 52, 0.22));
+}
+.ww-garten__besucher { background: none; border: 0; padding: 0; cursor: pointer; }
+.ww-garten__deko--leuchtet { filter: drop-shadow(0 0 10px rgba(255, 214, 120, 0.95)); }
+
+/* ---------- Beete ---------- */
+.ww-garten__beete {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: var(--sp-2);
+  align-content: start;
+}
+
+.ww-beet {
+  position: relative;
+  min-height: 150px;
+}
+
+.ww-beet__knopf {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background: transparent;
+  border: 3px solid transparent;
+  border-radius: var(--r-m);
+}
+
+/* Erdhaufen als Beet */
+.ww-beet__erde {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 16px;
+  height: 30px;
+  background: linear-gradient(180deg, #A5784F 0%, #8E6842 100%);
+  border: 2.5px solid var(--wald-tinte);
+  border-radius: 50%;
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.12);
+}
+.ww-beet--leer .ww-beet__erde {
+  background: rgba(142, 104, 66, 0.35);
+  border-style: dashed;
+}
+
+.ww-beet__pflanze {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 88%;
+  max-width: 130px;
+  margin-bottom: 16px;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 4px 2px rgba(46, 64, 52, 0.2));
+}
+.ww-pflanze { display: block; width: 100%; height: auto; }
+
+.ww-beet__plus {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--wald-tinte);
+  background: rgba(251, 253, 248, 0.85);
+  border: 2px dashed var(--wald-tinte);
+  border-radius: 50%;
+}
+
+/* Wasserstand */
+.ww-beet__wasser {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 4px;
+  height: 8px;
+  background: rgba(251, 253, 248, 0.9);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.ww-beet__wasser i {
+  display: block;
+  height: 100%;
+  background: var(--wald-bach);
+  transition: width var(--dur-slow) ease;
+}
+.ww-beet__wasser--leer i { background: #F08A3C; }
+
+.ww-beet__durst,
+.ww-beet__reif,
+.ww-beet__duenger {
+  position: absolute;
+  top: 6px;
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 1px rgba(46, 64, 52, 0.25));
+}
+.ww-beet__durst { right: 6px; animation: ww-float 1.6s ease-in-out infinite; }
+.ww-beet__reif { left: 6px; animation: ww-float 1.2s ease-in-out infinite; }
+.ww-beet__duenger { right: 6px; top: auto; bottom: 18px; font-size: 16px; }
+
+.ww-beet--reif .ww-beet__knopf { background: rgba(246, 189, 65, 0.18); border-color: rgba(246, 189, 65, 0.7); }
+.ww-beet--aktiv .ww-beet__knopf { border-color: var(--wald-moos); background: rgba(47, 107, 79, 0.14); }
+.ww-garten--kanne .ww-beet--voll .ww-beet__knopf { cursor: pointer; }
+.ww-garten--kanne .ww-beet--durst .ww-beet__knopf {
+  border-color: var(--wald-bach);
+  animation: ww-pulse-ring 1.6s ease-out infinite;
+}
+.ww-garten--duenger .ww-beet--voll .ww-beet__knopf { border-color: var(--wald-sonne); }
+
+/* Unkraut und Schnecke */
+.ww-beet__unkraut,
+.ww-beet__schnecke {
+  position: absolute;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  filter: drop-shadow(0 2px 1px rgba(46, 64, 52, 0.3));
+}
+.ww-beet__unkraut--0 { left: 4px; bottom: 28px; }
+.ww-beet__unkraut--1 { right: 2px; bottom: 34px; }
+.ww-beet__unkraut--2 { left: 30px; bottom: 40px; }
+.ww-beet__schnecke { right: 8px; bottom: 44px; }
+
+/* Gießen: Tropfen fallen */
+.ww-beet__regen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.ww-beet__regen i {
+  position: absolute;
+  top: 10%;
+  width: 6px;
+  height: 12px;
+  background: var(--wald-bach);
+  border-radius: 50% 50% 60% 60%;
+  opacity: 0;
+  animation: ww-tropfen 0.9s ease-in forwards;
+}
+.ww-beet__regen i:nth-child(1) { left: 30%; animation-delay: 0s; }
+.ww-beet__regen i:nth-child(2) { left: 45%; animation-delay: 0.12s; }
+.ww-beet__regen i:nth-child(3) { left: 60%; animation-delay: 0.05s; }
+.ww-beet__regen i:nth-child(4) { left: 38%; animation-delay: 0.3s; }
+.ww-beet__regen i:nth-child(5) { left: 54%; animation-delay: 0.4s; }
+@keyframes ww-tropfen {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(80px); opacity: 0; }
+}
+
+.ww-beet--ernte .ww-beet__pflanze { animation: ww-pop 0.6s var(--ease-pop); }
+
+/* ---------- Funkel in der Szene ---------- */
+.ww-garten__funkel {
+  position: absolute;
+  left: 3%;
+  bottom: 2px;
+  pointer-events: none;
+}
+.ww-garten__funkelbtn { background: none; border: 0; padding: 0; pointer-events: auto; }
+
+/* ---------- Aktionsblase am Beet ---------- */
+.ww-aktionen--garten {
+  left: var(--sp-2);
+  right: var(--sp-2);
+  bottom: 70px;
+  transform: none;
+  max-width: none;
+}
+.ww-aktionen__name { display: flex; flex-direction: column; line-height: 1.15; }
+.ww-aktionen__name small { font-family: var(--font-text); font-size: 13px; opacity: 0.75; }
+.ww-aktionen__haupt { background: var(--wald-sonne) !important; }
+.ww-aktionen__leise { font-size: 13px !important; opacity: 0.8; }
+
+/* ---------- Sprechblase ---------- */
+.ww-garten__bubble {
+  flex: none;
+  padding: var(--sp-4) var(--sp-4) 0;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+}
+.ww-garten__bubble .ww-bubble { max-width: 100%; }
+
+/* ---------- Fußleiste ---------- */
+.ww-garten__foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) calc(var(--sp-5) + var(--safe-b));
+  flex-wrap: wrap;
+}
+
+.ww-werkzeug {
+  position: relative;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: none;
+  font-size: 28px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+}
+.ww-werkzeug:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wald-tinte); }
+.ww-werkzeug--an { background: var(--wald-sonne); box-shadow: 0 4px 0 var(--wald-tinte), 0 0 0 4px rgba(246, 189, 65, 0.45); }
+.ww-werkzeug--leer { opacity: 0.55; }
+.ww-werkzeug--noetig { animation: ww-pulse-ring 1.8s ease-out infinite; }
+.ww-werkzeug__zahl {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--wald-tinte);
+  background: var(--wald-bach);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+.ww-garten__zaehler {
+  margin: 0;
+  flex: 1;
+  min-width: 120px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  opacity: 0.8;
+  text-align: right;
+}
+
+.ww-garten__level {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  padding: 4px var(--sp-3);
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+
+/* ---------- Laden (die Leiste selbst steht in Sheet.css) ---------- */
+.ww-shop__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--sp-3);
+}
+
+.ww-shopitem {
+  width: 100%;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--wald-creme);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-flat);
+}
+.ww-shopitem:active { transform: translateY(2px); box-shadow: none; }
+.ww-shopitem--teuer { opacity: 0.5; }
+.ww-shopitem--an {
+  background: var(--wald-sonne);
+  box-shadow: var(--sh-flat), 0 0 0 4px rgba(246, 189, 65, 0.45);
+}
+.ww-shopitem__bild { font-size: 40px; line-height: 1; }
+.ww-shopitem__name { font-family: var(--font-display); font-size: var(--fs-xs); }
+.ww-shopitem__preis {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  padding: 1px var(--sp-2);
+  background: var(--wald-sonne);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+.ww-shopitem__preis--frei { background: var(--wald-blatt); }
+.ww-shop__list--outfits .ww-shopitem { min-height: 106px; }
+.ww-shop__mehr { margin: var(--sp-4) 0 0; text-align: center; }
+
+.ww-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+.ww-tab {
+  flex: 1;
+  min-height: 52px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-tinte);
+  background: var(--wald-creme);
+  border: var(--outline);
+  border-radius: var(--r-m);
+}
+.ww-tab--an { background: var(--wald-moos); color: #fff; }
+
+/* ---------- Aktionsblase ---------- */
+.ww-aktionen {
+  position: absolute;
+  left: 50%;
+  bottom: 62px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-pill);
+  box-shadow: var(--sh-card);
+  max-width: calc(100% - var(--sp-4));
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ww-aktionen__name { font-family: var(--font-display); font-size: var(--fs-xs); }
+.ww-aktionen button {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--wald-tinte);
+  background: var(--wald-creme);
+  border: 2px solid var(--wald-tinte);
+  border-radius: var(--r-pill);
+}
+.ww-aktionen__zu { background: transparent !important; border-color: transparent !important; }
+
+/* ---------- Knopf zum Gartenbuch ---------- */
+.ww-buchbtn {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  flex: none;
+  font-size: 28px;
+  background: var(--wald-papier);
+  border: var(--outline);
+  border-radius: var(--r-m);
+  box-shadow: 0 4px 0 var(--wald-tinte);
+}
+.ww-buchbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wald-tinte); }
+
+.ww-shop__list--samen { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
+.ww-shopitem--samen { min-height: 150px; gap: 2px; }
+.ww-shopitem__pflanze { width: 70px; height: 84px; }
+.ww-shopitem__pflanze .ww-pflanze { width: 100%; height: 100%; }
+.ww-shopitem__dauer { font-size: 12px; opacity: 0.7; }
+
+/* ---------- Größere Displays ---------- */
+@media (min-width: 720px) {
+  .ww-garten__scene, .ww-garten__top, .ww-garten__foot, .ww-garten__bubble {
+    width: 100%;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .ww-garten__beete { grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--sp-3); }
+  .ww-beet, .ww-beet__knopf { min-height: 205px; }
+  .ww-beet__pflanze { max-width: 185px; }
+  .ww-garten__rand { min-height: 64px; }
+}
+
+@media (max-height: 640px) {
+  .ww-garten__feld { padding-top: 22px; padding-bottom: 62px; }
+  .ww-beet, .ww-beet__knopf { min-height: 128px; }
+  .ww-garten__foot { padding-top: var(--sp-2); padding-bottom: calc(var(--sp-3) + var(--safe-b)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ww-beet__durst, .ww-beet__reif, .ww-werkzeug--noetig { animation: none; }
+}

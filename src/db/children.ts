@@ -1,5 +1,6 @@
 import { db } from './db'
 import { startLevelForBirthYear } from '../learning/adaptivity'
+import { leererGarten } from '../garden/garden'
 import type { Child, Progress, WorldId } from './types'
 import { WORLD_IDS } from './types'
 
@@ -32,6 +33,7 @@ export async function createChild(input: NewChildInput): Promise<Child> {
     wateredDays: [],
     forestDays: 0,
     lastVisitDay: '',
+    garden: leererGarten(),
   }
   const level = startLevelForBirthYear(input.birthYear)
   const progress: Progress[] = WORLD_IDS.map((worldId: WorldId) => ({
@@ -65,18 +67,28 @@ export async function updateChild(childId: string, patch: Partial<Child>): Promi
   await db.children.update(childId, patch)
 }
 
-export async function getProgress(childId: string, worldId: WorldId): Promise<Progress> {
-  const found = await db.progress.get([childId, worldId])
-  if (found) return found
-  const fresh: Progress = {
+/**
+ * Fehlt einer Welt der Fortschritt (Kind aus einer Version mit drei Welten,
+ * die vierte kam später), beginnt sie wie beim Anlegen: auf der Stufe, die
+ * zum Geburtsjahr passt — nicht auf Stufe 1.
+ */
+async function frischerFortschritt(childId: string, worldId: WorldId): Promise<Progress> {
+  const child = await db.children.get(childId)
+  return {
     childId,
     worldId,
-    level: 1,
+    level: startLevelForBirthYear(child?.birthYear ?? null),
     xp: 0,
     streak: 0,
     failStreak: 0,
     recentTimes: [],
   }
+}
+
+export async function getProgress(childId: string, worldId: WorldId): Promise<Progress> {
+  const found = await db.progress.get([childId, worldId])
+  if (found) return found
+  const fresh = await frischerFortschritt(childId, worldId)
   await db.progress.put(fresh)
   return fresh
 }
@@ -85,14 +97,12 @@ export async function getAllProgress(childId: string): Promise<Record<WorldId, P
   const rows = await db.progress.where('childId').equals(childId).toArray()
   const out = {} as Record<WorldId, Progress>
   for (const w of WORLD_IDS) {
-    out[w] = rows.find((r) => r.worldId === w) ?? {
-      childId,
-      worldId: w,
-      level: 1,
-      xp: 0,
-      streak: 0,
-      failStreak: 0,
-      recentTimes: [],
+    const row = rows.find((r) => r.worldId === w)
+    if (row) {
+      out[w] = row
+    } else {
+      out[w] = await frischerFortschritt(childId, w)
+      await db.progress.put(out[w])
     }
   }
   return out

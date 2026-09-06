@@ -94,7 +94,7 @@ export function RewardScreen({ stars, correct, total, milestone, onAgain, onFore
           Nochmal
         </BigButton>
         <BigButton size="l" tone="blatt" full onClick={onForest}>
-          In meinen Wald
+          In meinen Garten
         </BigButton>
         <BigButton size="l" tone="papier" full onClick={onMap}>
           Zur Karte

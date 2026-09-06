@@ -23,7 +23,12 @@ function progress(level = 3): Record<WorldId, Progress> {
   const mk = (worldId: WorldId): Progress => ({
     childId: 'k1', worldId, level, xp: 0, streak: 0, failStreak: 0, recentTimes: [],
   })
-  return { zahlen: mk('zahlen'), buchstaben: mk('buchstaben'), logik: mk('logik') }
+  return {
+    zahlen: mk('zahlen'),
+    buchstaben: mk('buchstaben'),
+    logik: mk('logik'),
+    entdecker: mk('entdecker'),
+  }
 }
 
 function input(over: Partial<InsightInput> = {}): InsightInput {

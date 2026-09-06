@@ -16,7 +16,7 @@ import { setTtsEnabled } from './audio/tts'
  * Elternbereich braucht niemand in der ersten Sekunde.
  */
 const GameShell = lazy(() => import('./screens/GameShell').then((m) => ({ default: m.GameShell })))
-const MyForest = lazy(() => import('./screens/MyForest').then((m) => ({ default: m.MyForest })))
+const MyGarden = lazy(() => import('./screens/MyGarden').then((m) => ({ default: m.MyGarden })))
 const Waldbuch = lazy(() => import('./screens/Waldbuch').then((m) => ({ default: m.Waldbuch })))
 const ParentArea = lazy(() =>
   import('./screens/parent/ParentArea').then((m) => ({ default: m.ParentArea })),
@@ -120,7 +120,7 @@ function Shell() {
           path="/kind/:childId/wald"
           element={
             <ChildRoute>
-              <MyForest />
+              <MyGarden />
             </ChildRoute>
           }
         />

@@ -48,7 +48,7 @@ describe('Sicherung erstellen', () => {
     expect(backup.schemaVersion).toBe(SCHEMA_VERSION)
     expect(backup.data.family).toHaveLength(1)
     expect(backup.data.children).toHaveLength(1)
-    expect(backup.data.progress).toHaveLength(3) // drei Welten
+    expect(backup.data.progress).toHaveLength(4) // vier Welten
     expect(backup.data.attempts).toHaveLength(2)
     expect(backup.data.sessions).toHaveLength(1)
   })
@@ -100,7 +100,7 @@ describe('Import: ersetzen', () => {
     expect(restored?.nickname).toBe('Mia')
     expect(restored?.stars).toBe(12)
     expect(restored?.starsTotal).toBe(30)
-    expect(await db.progress.where('childId').equals(kid.id).count()).toBe(3)
+    expect(await db.progress.where('childId').equals(kid.id).count()).toBe(4)
     expect(await db.attempts.count()).toBe(2)
     expect(await db.sessions.count()).toBe(1)
     expect((await db.family.get('family'))?.parentName).toBe('Testeltern')
@@ -226,7 +226,23 @@ describe('Sicherung aus einer älteren Version', () => {
   })
 
   it('lässt ein aktuelles Kind unverändert', () => {
-    const heute = { ...kind(), inventory: [{ objectId: 'baum', growthDays: 1 }], wateredDays: ['2026-05-02'], forestDays: 4, lastVisitDay: '2026-05-02' }
+    const heute = {
+      ...kind(),
+      inventory: [{ objectId: 'baum', growthDays: 1 }],
+      wateredDays: ['2026-05-02'],
+      forestDays: 4,
+      lastVisitDay: '2026-05-02',
+      garden: { beds: [], decor: [], bedCount: 6, compost: 0, harvestsTotal: 0, visitors: [] },
+    }
     expect(normalisiereKind(heute)).toEqual(heute)
+  })
+
+  it('baut einem Kind ohne Garten seinen Wald zum Garten um', () => {
+    const alt = {
+      ...kind(),
+      forest: [{ slot: 0, objectId: 'sonnenblume', placedAt: 1, growthDays: 2, lastGrowthDay: '2026-01-01' }],
+    }
+    const neu = normalisiereKind(alt)
+    expect(neu.garden?.beds.map((b) => b.speciesId)).toEqual(['sonnenblume'])
   })
 })

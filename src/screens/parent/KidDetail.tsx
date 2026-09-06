@@ -11,7 +11,7 @@ import { currentTitle, describeLevel, WORLD_LABELS } from '../../learning/adapti
 import { buildInsights, type Insight } from '../../learning/insights'
 import { dayKey, weeklyMinutes } from '../../learning/session'
 import { giesstageSeit } from '../../world/forest-objects'
-import { gesammelteObjekte } from '../Waldbuch'
+import { gartenVon, gesammelteSeiten } from '../../garden/garden'
 import { WALDBUCH } from '../../world/waldbuch-daten'
 import { allGames } from '../../games'
 import { WORLD_IDS, type Attempt, type Progress, type WorldId } from '../../db/types'
@@ -75,7 +75,8 @@ export function KidDetail() {
     : null
   const maxMin = Math.max(10, ...wochen.map((w) => w.minutes))
   const siebenTageAlt = dayKey(Date.now() - 6 * TAG_MS)
-  const albumSeiten = gesammelteObjekte(child.forest, child.inventory ?? []).size
+  const garten = gartenVon(child)
+  const albumSeiten = gesammelteSeiten(garten).size
 
   async function speichern() {
     await updateChild(child!.id, { nickname: name.trim() || child!.nickname, avatarId })
@@ -100,7 +101,8 @@ export function KidDetail() {
             <strong>{child.nickname}</strong>
             <span className="ww-hint">
               {child.stars} ⭐ Guthaben · {child.starsTotal} ⭐ insgesamt ·{' '}
-              {child.forest.length} Objekte im Wald
+              {garten.beds.length} Pflanzen im Garten · {garten.harvestsTotal}{' '}
+              {garten.harvestsTotal === 1 ? 'Ernte' : 'Ernten'}
             </span>
           </div>
         </div>
@@ -162,7 +164,7 @@ export function KidDetail() {
           <li>
             <span className="ww-wochenzahlen__zahl">{child.forestDays ?? 0}</span>
             <span className="ww-hint">
-              {(child.forestDays ?? 0) === 1 ? 'Waldtag' : 'Waldtage'} insgesamt
+              {(child.forestDays ?? 0) === 1 ? 'Gartentag' : 'Gartentage'} insgesamt
             </span>
           </li>
           <li>
@@ -173,7 +175,7 @@ export function KidDetail() {
             <span className="ww-wochenzahlen__zahl">
               {albumSeiten} / {WALDBUCH.length}
             </span>
-            <span className="ww-hint">Seiten im Waldbuch</span>
+            <span className="ww-hint">Seiten im Gartenbuch</span>
           </li>
         </ul>
       </section>
@@ -282,7 +284,7 @@ export function KidDetail() {
           <>
             <p>
               <strong>Wirklich löschen?</strong> {child.nickname} hat {child.starsTotal} Sterne
-              gesammelt und {child.forest.length} Dinge gepflanzt.
+              gesammelt und {garten.beds.length} Pflanzen im Garten.
             </p>
             <BigButton tone="beere" full onClick={() => setLoeschSchritt(2)}>
               Ja, weiter

@@ -1,13 +1,17 @@
-import { emojiOf, scaleOf, zoneOfSlot, BEREICHE, type Tageszeit } from './forest-objects'
-import type { ForestItem } from '../db/types'
+import type { Garden } from '../db/types'
+import { dekoById, pflanzeById } from '../garden/arten'
+import { welke } from '../garden/garden'
+import { pflanzeSvg } from '../garden/pflanze-svg'
+import type { Tageszeit } from './forest-objects'
 
 /**
- * Malt den Wald in ein Canvas und gibt ein PNG zurück.
+ * Malt den Garten in ein Canvas und gibt ein PNG zurück.
  *
- * Bewusst direkt aufs Canvas gezeichnet statt ein SVG zu serialisieren:
- * Das kommt ohne externe Schriften und ohne `foreignObject` aus, läuft
- * offline und rendert die Emojis in der Systemschrift des Geräts.
- * Es verlässt nichts das Gerät — die Datei landet nur im Download-Ordner.
+ * Die Pflanzen sind dieselben SVG-Zeichnungen wie auf dem Schirm; sie werden
+ * als Bilder ins Canvas gemalt. Das kommt ohne externe Schriften und ohne
+ * `foreignObject` aus, läuft offline und rendert die Emojis in der
+ * Systemschrift des Geräts. Es verlässt nichts das Gerät — die Datei
+ * landet nur im Download-Ordner.
  */
 
 const BREITE = 1200
@@ -20,12 +24,20 @@ const HIMMEL: Record<Tageszeit, [string, string]> = {
   nacht: ['#2B3A63', '#4A5B84'],
 }
 
-export function zeichneWald(
+function svgAlsBild(svg: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error('SVG konnte nicht geladen werden'))
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+  })
+}
+
+export async function zeichneGarten(
   ctx: CanvasRenderingContext2D,
-  forest: ForestItem[],
+  garden: Garden,
   nickname: string,
   zeit: Tageszeit,
-  offeneZonen: string[],
 ) {
   const [oben, unten] = HIMMEL[zeit]
   const g = ctx.createLinearGradient(0, 0, 0, HOEHE)
@@ -55,79 +67,99 @@ export function zeichneWald(
   // Wiese
   ctx.fillStyle = dunkel ? '#3F5C46' : '#CFE6B8'
   ctx.beginPath()
-  ctx.moveTo(-20, 420)
-  ctx.quadraticCurveTo(420, 390, 800, 430)
-  ctx.quadraticCurveTo(1030, 452, BREITE + 20, 420)
+  ctx.moveTo(-20, 400)
+  ctx.quadraticCurveTo(420, 370, 800, 410)
+  ctx.quadraticCurveTo(1030, 432, BREITE + 20, 400)
   ctx.lineTo(BREITE + 20, HOEHE)
   ctx.lineTo(-20, HOEHE)
   ctx.fill()
 
-  // Bachlauf
-  ctx.fillStyle = dunkel ? '#38507A' : '#9FD0DF'
+  // Zaun mit Deko und Besuchern
+  ctx.strokeStyle = dunkel ? '#7B6248' : '#C49A6A'
+  ctx.lineWidth = 6
+  for (let x = 60; x < BREITE - 40; x += 46) {
+    ctx.beginPath()
+    ctx.moveTo(x, 370)
+    ctx.lineTo(x, 420)
+    ctx.stroke()
+  }
   ctx.beginPath()
-  ctx.moveTo(-20, 640)
-  ctx.quadraticCurveTo(300, 610, 620, 640)
-  ctx.quadraticCurveTo(940, 672, BREITE + 20, 630)
-  ctx.lineTo(BREITE + 20, 700)
-  ctx.quadraticCurveTo(900, 716, 560, 700)
-  ctx.quadraticCurveTo(240, 684, -20, 706)
-  ctx.fill()
+  ctx.moveTo(40, 392)
+  ctx.lineTo(BREITE - 40, 392)
+  ctx.stroke()
 
-  // Objekte, hintere Reihen zuerst
-  const sortiert = [...forest].sort((a, b) => a.slot - b.slot)
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
+  ctx.font = '56px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'
+  const randDinge = [
+    ...garden.decor.map((d) => dekoById(d.decorId)?.emoji ?? ''),
+    ...garden.visitors.slice(0, 6).map((v) => ({ schmetterling: '🦋', biene: '🐝', vogel: '🐦', igel: '🦔', frosch: '🐸', eichhoernchen: '🐿️', marienkaefer: '🐞', hase: '🐰' })[v] ?? ''),
+  ].filter(Boolean)
+  randDinge.forEach((e, i) => {
+    const x = 120 + (i * (BREITE - 240)) / Math.max(1, randDinge.length - 1 || 1)
+    ctx.fillText(e, randDinge.length === 1 ? BREITE / 2 : x, 386)
+  })
 
-  for (const item of sortiert) {
-    const zone = zoneOfSlot(item.slot)
-    if (!offeneZonen.includes(zone)) continue
-    const bereich = BEREICHE.find((b) => b.zone === zone)!
-    const index = item.slot - bereich.von
-    const spalten = zone === 'wiese' ? 6 : 4
-    const spalte = index % spalten
-    const reihe = Math.floor(index / spalten)
+  // Beete in Reihen
+  const spalten = garden.bedCount <= 6 ? 3 : 4
+  const reihen = Math.ceil(garden.bedCount / spalten)
+  const beetB = Math.min(240, (BREITE - 120) / spalten)
+  const beetH = Math.min(200, (HOEHE - 470) / reihen)
+  for (let slot = 0; slot < garden.bedCount; slot++) {
+    const spalte = slot % spalten
+    const reihe = Math.floor(slot / spalten)
+    const x = 60 + spalte * ((BREITE - 120) / spalten) + (BREITE - 120) / spalten / 2
+    const y = 470 + reihe * beetH + beetH * 0.9
+    // Erde
+    ctx.fillStyle = dunkel ? '#5B4632' : '#A5784F'
+    ctx.beginPath()
+    ctx.ellipse(x, y, beetB * 0.42, 22, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.strokeStyle = '#2E4034'
+    ctx.lineWidth = 3
+    ctx.stroke()
 
-    // Zonen von oben nach unten: Hügel, Wiese, Bach
-    const zonenOben = zone === 'huegel' ? 300 : zone === 'wiese' ? 430 : 620
-    const zonenHoehe = zone === 'wiese' ? 180 : 90
-    const reihenAnzahl = Math.ceil(bereich.anzahl / spalten)
-
-    const x = (BREITE / (spalten + 1)) * (spalte + 1)
-    const y = zonenOben + (zonenHoehe / (reihenAnzahl + 1)) * (reihe + 1)
-
-    const groesse = Math.round(64 * scaleOf(item))
-    ctx.font = `${groesse}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
-    ctx.fillText(emojiOf(item), x, y)
+    const bed = garden.beds.find((b) => b.slot === slot)
+    const art = bed ? pflanzeById(bed.speciesId) : undefined
+    if (bed && art) {
+      const groesse = Math.min(beetB * 0.7, beetH * 0.95)
+      try {
+        const img = await svgAlsBild(pflanzeSvg({ form: art.form, growth: bed.growth, welk: welke(bed), farbe: art.farbe }, groesse))
+        ctx.drawImage(img, x - groesse / 2, y + 6 - groesse * 1.2 * 0.88, groesse, groesse * 1.2)
+      } catch {
+        ctx.font = `${Math.round(groesse * 0.5)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
+        ctx.fillText(art.emoji, x, y - 10)
+      }
+    }
   }
 
   // Titel
   ctx.font = '600 46px Fredoka, Trebuchet MS, sans-serif'
   ctx.textAlign = 'left'
   ctx.fillStyle = dunkel ? '#F2F7EC' : '#2E4034'
-  ctx.fillText(`${nickname}s Wunderwald`, 48, 78)
+  ctx.fillText(`${nickname}s Garten`, 48, 78)
   ctx.font = '400 24px Nunito, sans-serif'
-  ctx.fillText(`${forest.length} Dinge gepflanzt`, 48, 112)
+  ctx.fillText(
+    `${garden.beds.length} Pflanzen · ${garden.harvestsTotal} ${garden.harvestsTotal === 1 ? 'Ernte' : 'Ernten'}`,
+    48,
+    112,
+  )
 }
 
 /** Erzeugt das PNG und stößt den Download an. */
-export async function exportiereWaldBild(
-  forest: ForestItem[],
-  nickname: string,
-  zeit: Tageszeit,
-  offeneZonen: string[],
-): Promise<string> {
+export async function exportiereGartenBild(garden: Garden, nickname: string, zeit: Tageszeit): Promise<string> {
   const canvas = document.createElement('canvas')
   canvas.width = BREITE
   canvas.height = HOEHE
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas nicht verfügbar')
 
-  zeichneWald(ctx, forest, nickname, zeit, offeneZonen)
+  await zeichneGarten(ctx, garden, nickname, zeit)
 
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
   if (!blob) throw new Error('Bild konnte nicht erzeugt werden')
 
-  const dateiname = `${nickname.toLowerCase().replace(/[^a-zäöüß0-9]+/g, '-')}s-wunderwald.png`
+  const dateiname = `${nickname.toLowerCase().replace(/[^a-zäöüß0-9]+/g, '-')}s-garten.png`
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

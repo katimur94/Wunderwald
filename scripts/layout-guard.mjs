@@ -34,8 +34,9 @@ const SPIELE = [
   'zahlen-ernte', 'rechen-bruecke', 'zahlen-waage', 'zahlen-sprung',
   'buchstaben-fang', 'wort-baukasten', 'reim-boot',
   'muster-weber', 'paar-finder', 'sortier-werkstatt',
+  'flitzer-rallye', 'wissens-quiz', 'schatten-suche', 'zeit-turm', 'ballon-platzer',
   // Mix-Runden ziehen aus allen Spielen ihrer Welt
-  'mix-zahlen', 'mix-buchstaben', 'mix-logik',
+  'mix-zahlen', 'mix-buchstaben', 'mix-logik', 'mix-entdecker',
 ]
 
 const befunde = []

@@ -10,3 +10,4 @@ dev-dist
 
 # TypeScript-Inkrementaldaten
 *.tsbuildinfo
+.scratch/

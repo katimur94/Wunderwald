@@ -63,6 +63,7 @@
 .ww-levels__row--zahlen { border-color: var(--welt-zahlen); }
 .ww-levels__row--buchstaben { border-color: var(--welt-buchstaben); }
 .ww-levels__row--logik { border-color: var(--welt-logik); }
+.ww-levels__row--entdecker { border-color: var(--welt-entdecker); }
 
 .ww-levels dt {
   display: flex;

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WALDBUCH, type WaldbuchSeite } from '../world/waldbuch-daten'
+import { gartenVon, gesammelteSeiten } from '../garden/garden'
 import { StarCounter } from '../components/StarCounter'
 import { BigButton } from '../components/BigButton'
 import { useActiveChild, useSettings } from '../store/useApp'
@@ -10,14 +11,14 @@ import { sprich, stopSpeaking } from '../audio/tts'
 import './Waldbuch.css'
 
 /**
- * Das Waldbuch: eine Seite je Wald-Objekt.
+ * Das Gartenbuch: eine Seite je Pflanze, Deko und Besucher.
  *
- * Was das Kind hat, steht offen da. Was ihm noch fehlt, erscheint als
+ * Was das Kind kennt, steht offen da. Was ihm noch fehlt, erscheint als
  * Schattenriss mit Fragezeichen — sichtbar genug zum Sammeln, aber ohne
  * Zählerstand, ohne Prozent, ohne „noch 12 fehlen".
  */
 
-/** Alles, was das Kind besitzt: im Wald gepflanzt oder in der Kiste. */
+/** Alles, was das Kind im Garten kennt — gepflanzt, geerntet, gekauft oder besucht. */
 export function gesammelteObjekte(
   forest: { objectId: string }[],
   inventory: { objectId: string }[] = [],
@@ -32,8 +33,8 @@ export function Waldbuch() {
   const [offen, setOffen] = useState<WaldbuchSeite | null>(null)
 
   const besitzt = useMemo(
-    () => gesammelteObjekte(child?.forest ?? [], child?.inventory ?? []),
-    [child?.forest, child?.inventory],
+    () => (child ? gesammelteSeiten(gartenVon(child)) : new Set<string>()),
+    [child],
   )
 
   if (!child) return null
@@ -57,11 +58,11 @@ export function Waldbuch() {
             stopSpeaking()
             navigate(`/kind/${child.id}/wald`)
           }}
-          aria-label="Zurück in den Wald"
+          aria-label="Zurück in den Garten"
         >
           <span aria-hidden="true">←</span>
         </button>
-        <h1>Waldbuch</h1>
+        <h1>Gartenbuch</h1>
         <StarCounter stars={child.stars} size="s" />
       </header>
 

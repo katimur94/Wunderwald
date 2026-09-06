@@ -13,6 +13,7 @@
 .ww-world--zahlen     { --welt: var(--welt-zahlen); }
 .ww-world--buchstaben { --welt: var(--welt-buchstaben); }
 .ww-world--logik      { --welt: var(--welt-logik); }
+.ww-world--entdecker  { --welt: var(--welt-entdecker); }
 
 .ww-world__top {
   display: flex;

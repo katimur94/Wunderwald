@@ -1,8 +1,19 @@
 import Dexie, { type Table } from 'dexie'
-import type { Attempt, Child, Family, FamilySettings, Progress, Session, WorldId } from './types'
+import type {
+  Attempt,
+  Child,
+  Family,
+  FamilySettings,
+  ForestItem,
+  InventoryItem,
+  Progress,
+  Session,
+  WorldId,
+} from './types'
+import { ausWald } from '../garden/garden'
 
 export const DB_NAME = 'wunderwald'
-export const SCHEMA_VERSION = 3
+export const SCHEMA_VERSION = 4
 
 export class WunderwaldDB extends Dexie {
   family!: Table<Family, string>
@@ -70,6 +81,35 @@ export class WunderwaldDB extends Dexie {
               kind.wateredDays = alt ? [alt] : []
             }
             delete kind.lastWatered
+          }),
+      )
+
+    /*
+     * Version 4 ersetzt den Emoji-Wald durch den Garten. Der alte Wald wird
+     * beim Öffnen in Beete und Deko übersetzt (garden/garden.ts, ausWald) —
+     * die Felder `forest` und `inventory` bleiben stehen, damit nichts
+     * verloren geht, falls jemand eine ältere Version wieder öffnet.
+     */
+    this.version(4)
+      .stores({
+        family: 'id',
+        children: 'id, createdAt',
+        progress: '[childId+worldId], childId',
+        attempts: '++id, childId, gameId, ts',
+        sessions: '++id, childId, startedAt',
+      })
+      .upgrade((tx) =>
+        tx
+          .table('children')
+          .toCollection()
+          .modify((kind: Record<string, unknown>) => {
+            if (!kind.garden) {
+              kind.garden = ausWald(
+                Array.isArray(kind.forest) ? (kind.forest as ForestItem[]) : [],
+                Array.isArray(kind.inventory) ? (kind.inventory as InventoryItem[]) : [],
+                Date.now(),
+              )
+            }
           }),
       )
   }
