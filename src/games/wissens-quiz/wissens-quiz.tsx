@@ -93,7 +93,7 @@ function WissensQuiz({ task, difficulty, onDone, onWrong, revealSolution }: Game
           {THEMA_SYMBOL[d.thema]}
         </span>
         {d.uhr ? (
-          <Uhr stunde={d.uhr.stunde} minute={d.uhr.minute} size={140} ziffern={difficulty < 9} />
+          <Uhr stunde={d.uhr.stunde} minute={d.uhr.minute} size={140} ziffern={difficulty < 9} className="ww-quiz__uhr" />
         ) : d.bild ? (
           <motion.button
             type="button"
@@ -112,17 +112,19 @@ function WissensQuiz({ task, difficulty, onDone, onWrong, revealSolution }: Game
         <p className={`ww-quiz__frage ${d.frage.length > 26 ? 'ww-quiz__frage--lang' : ''}`}>{d.frage}</p>
       </div>
 
-      <ChoiceRow
-        options={d.optionen}
-        onPick={choose}
-        wrongValue={wrongPick}
-        highlight={revealSolution ? (task.answer as string) : null}
-        variant="zahl"
-        ariaLabel={(v) => d.namen?.[v] ?? v}
-        render={(v) =>
-          istWort(v) ? <span className="ww-quiz__wort">{v}</span> : <span className="ww-quiz__symbol">{v}</span>
-        }
-      />
+      <div className={`ww-quiz__wahlen ${hatWorte ? 'ww-quiz__wahlen--worte' : ''}`}>
+        <ChoiceRow
+          options={d.optionen}
+          onPick={choose}
+          wrongValue={wrongPick}
+          highlight={revealSolution ? (task.answer as string) : null}
+          variant="zahl"
+          ariaLabel={(v) => d.namen?.[v] ?? v}
+          render={(v) =>
+            istWort(v) ? <span className="ww-quiz__wort">{v}</span> : <span className="ww-quiz__symbol">{v}</span>
+          }
+        />
+      </div>
 
       {hatWorte && (
         <button

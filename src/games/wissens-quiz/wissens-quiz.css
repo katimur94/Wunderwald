@@ -65,7 +65,20 @@
   border-radius: var(--r-pill);
 }
 
+/*
+ * Wortantworten teilen sich eine Reihe: drei Knoepfe mit gleicher Breite, das
+ * Wort bricht innen um. Sonst wickelt „Vogelscheuche" die Reihe auf zwei
+ * Zeilen, und auf 360×560 rutschen die Knoepfe unter die Falz.
+ */
+.ww-quiz__wahlen { width: 100%; }
+.ww-quiz__wahlen--worte .ww-choices { flex-wrap: nowrap; gap: var(--sp-2); }
+.ww-quiz__wahlen--worte .ww-choice { flex: 1 1 0; min-width: 0; padding: var(--sp-2) 6px; }
+
 @media (max-height: 640px) {
-  .ww-quiz__karte { padding: var(--sp-3) var(--sp-4); gap: var(--sp-2); }
-  .ww-quiz__bild { font-size: 56px; }
+  .ww-quiz__karte { padding: var(--sp-2) var(--sp-3); gap: var(--sp-2); }
+  .ww-quiz__bild { font-size: 48px; }
+  .ww-quiz__uhr { width: min(120px, 20dvh); height: auto; }
+  .ww-quiz__frage { font-size: 19px; }
+  .ww-quiz__frage--lang { font-size: 17px; }
+  .ww-quiz__vorlesen { min-height: 40px; font-size: 14px; }
 }

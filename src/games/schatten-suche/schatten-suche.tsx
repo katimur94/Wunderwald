@@ -146,20 +146,22 @@ function SchattenSuche({ task, onDone, onWrong, revealSolution }: GameComponentP
         <span className="ww-schatten__boden" aria-hidden="true" />
       </motion.div>
 
-      <ChoiceRow
-        options={d.optionen}
-        onPick={choose}
-        wrongValue={wrongPick}
-        highlight={revealSolution ? (task.answer as string) : null}
-        ariaLabel={(v) => (d.mode === 'umgekehrt' ? `Schatten ${d.optionen.indexOf(v) + 1}` : d.namen[v])}
-        render={(v) =>
-          d.mode === 'umgekehrt' && !(geloest && v === task.answer) ? (
-            <Schatten emoji={v} gespiegelt={d.gespiegelt} drehung={d.drehung} size="klein" />
-          ) : (
-            <span className="ww-schatten__wahl">{v}</span>
-          )
-        }
-      />
+      <div className="ww-schatten__wahlen">
+        <ChoiceRow
+          options={d.optionen}
+          onPick={choose}
+          wrongValue={wrongPick}
+          highlight={revealSolution ? (task.answer as string) : null}
+          ariaLabel={(v) => (d.mode === 'umgekehrt' ? `Schatten ${d.optionen.indexOf(v) + 1}` : d.namen[v])}
+          render={(v) =>
+            d.mode === 'umgekehrt' && !(geloest && v === task.answer) ? (
+              <Schatten emoji={v} gespiegelt={d.gespiegelt} drehung={d.drehung} size="klein" />
+            ) : (
+              <span className="ww-schatten__wahl">{v}</span>
+            )
+          }
+        />
+      </div>
     </>
   )
 }

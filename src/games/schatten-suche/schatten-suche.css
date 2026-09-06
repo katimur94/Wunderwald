@@ -56,7 +56,7 @@
   transform-origin: center;
 }
 .ww-schatten--gross { font-size: clamp(84px, 24vw, 130px); position: relative; z-index: 1; }
-.ww-schatten--klein { font-size: clamp(34px, 9vw, 52px); }
+.ww-schatten--klein { font-size: clamp(30px, 8vw, 46px); }
 
 .ww-schatten__bild {
   position: relative;
@@ -68,7 +68,14 @@
 
 .ww-schatten__wahl { line-height: 1; }
 
+/* Vier Antworten muessen auch auf 360 px in eine Reihe passen. */
+.ww-schatten__wahlen { width: 100%; }
+.ww-schatten__wahlen .ww-choices { gap: var(--sp-2); }
+.ww-schatten__wahlen .ww-choice { min-width: 70px; min-height: 70px; padding: var(--sp-2); font-size: clamp(30px, 8vw, 46px); }
+
 @media (max-height: 640px) {
-  .ww-schatten__buehne { min-height: 130px; padding: var(--sp-3); }
-  .ww-schatten--gross, .ww-schatten__bild { font-size: 72px; }
+  .ww-schatten__buehne { min-height: min(130px, 22dvh); padding: var(--sp-2); }
+  .ww-schatten--gross, .ww-schatten__bild { font-size: min(72px, 12dvh); }
+  .ww-schatten__frage { font-size: 19px; }
+  .ww-schatten__wahlen .ww-choice { min-height: 64px; }
 }
